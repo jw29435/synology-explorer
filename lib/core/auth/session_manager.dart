@@ -68,7 +68,9 @@ class SessionManager {
     final sid = data['sid'] as String;
     client.sid = sid;
     await _write('sid', sid);
-    if (data['did'] case final String did when did.isNotEmpty) {
+    // DSM 7 liefert den Geräte-Token als `device_id`, DSM 6 als `did`.
+    if (data['device_id'] ?? data['did'] case final String did
+        when did.isNotEmpty) {
       await _write('did', did);
     }
     if (rememberPassword) {

@@ -39,7 +39,7 @@ void main() {
   test('Login mit OTP oder Geräte-Token liefert jeweils neue SID', () async {
     const login = 'api=SYNO.API.Auth&method=login&$creds';
     final a = await call('', body: '$login&otp_code=$mockOtp');
-    final did = a['data']['did'] as String;
+    final did = a['data']['device_id'] as String;
     final b = await call('', body: '$login&device_id=$did');
     expect(b['success'], isTrue);
     expect(b['data']['sid'], isNot(a['data']['sid']));

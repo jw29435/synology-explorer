@@ -27,7 +27,7 @@ Handler mockNasHandler(Directory fixtures) {
       return _json(await read('SYNO.API.Auth/login.400.json'));
     }
     final ok = jsonDecode(await read('SYNO.API.Auth/login.json'));
-    if (params['device_id'] != ok['data']['did']) {
+    if (params['device_id'] != ok['data']['device_id']) {
       final otp = params['otp_code'] ?? '';
       if (otp.isEmpty) return _json(await read('SYNO.API.Auth/login.403.json'));
       if (otp != mockOtp) {
