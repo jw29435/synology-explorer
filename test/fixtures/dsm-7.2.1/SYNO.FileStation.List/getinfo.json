@@ -1,0 +1,73 @@
+{
+  "data": {
+    "files": [
+      {
+        "additional": {
+          "owner": {
+            "gid": 65536,
+            "group": "users",
+            "uid": 1032,
+            "user": "johann"
+          },
+          "perm": {
+            "acl": {
+              "append": false,
+              "del": true,
+              "exec": true,
+              "read": true,
+              "write": false
+            },
+            "is_acl_mode": true,
+            "posix": 775
+          },
+          "real_path": "/volume1/music/Alben/Nordlicht – Treibholz/01 Ebbe.mp3",
+          "size": 15029063,
+          "time": {
+            "atime": 1747490821,
+            "crtime": 1646848749,
+            "ctime": 1709846367,
+            "mtime": 1646502413
+          },
+          "type": "MP3"
+        },
+        "isdir": false,
+        "name": "01 Ebbe.mp3",
+        "path": "/music/Alben/Nordlicht – Treibholz/01 Ebbe.mp3"
+      },
+      {
+        "additional": {
+          "owner": {
+            "gid": 65536,
+            "group": "users",
+            "uid": 1032,
+            "user": "johann"
+          },
+          "perm": {
+            "acl": {
+              "append": false,
+              "del": true,
+              "exec": true,
+              "read": true,
+              "write": false
+            },
+            "is_acl_mode": true,
+            "posix": 775
+          },
+          "real_path": "/volume1/music/Alben/Nordlicht – Treibholz",
+          "size": 472,
+          "time": {
+            "atime": 1790371600,
+            "crtime": 1646848664,
+            "ctime": 1743446996,
+            "mtime": 1646848817
+          },
+          "type": ""
+        },
+        "isdir": true,
+        "name": "Nordlicht – Treibholz",
+        "path": "/music/Alben/Nordlicht – Treibholz"
+      }
+    ]
+  },
+  "success": true
+}

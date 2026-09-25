@@ -1,0 +1,113 @@
+{
+  "data": {
+    "files": [
+      {
+        "additional": {
+          "perm": {
+            "acl": {
+              "append": false,
+              "del": true,
+              "exec": true,
+              "read": true,
+              "write": false
+            },
+            "is_acl_mode": true,
+            "posix": 775
+          },
+          "size": 15029063,
+          "time": {
+            "atime": 1747490821,
+            "crtime": 1646848749,
+            "ctime": 1709846367,
+            "mtime": 1646502413
+          },
+          "type": "MP3"
+        },
+        "isdir": false,
+        "name": "01 Ebbe.mp3",
+        "path": "/music/Alben/Nordlicht – Treibholz/01 Ebbe.mp3"
+      },
+      {
+        "additional": {
+          "perm": {
+            "acl": {
+              "append": false,
+              "del": true,
+              "exec": true,
+              "read": true,
+              "write": false
+            },
+            "is_acl_mode": true,
+            "posix": 775
+          },
+          "size": 14541305,
+          "time": {
+            "atime": 1702928176,
+            "crtime": 1646848775,
+            "ctime": 1709846367,
+            "mtime": 1646502425
+          },
+          "type": "MP3"
+        },
+        "isdir": false,
+        "name": "02 Strandgut.mp3",
+        "path": "/music/Alben/Nordlicht – Treibholz/02 Strandgut.mp3"
+      },
+      {
+        "additional": {
+          "perm": {
+            "acl": {
+              "append": false,
+              "del": true,
+              "exec": true,
+              "read": true,
+              "write": false
+            },
+            "is_acl_mode": true,
+            "posix": 775
+          },
+          "size": 13889288,
+          "time": {
+            "atime": 1702928176,
+            "crtime": 1646848813,
+            "ctime": 1709846367,
+            "mtime": 1646502436
+          },
+          "type": "MP3"
+        },
+        "isdir": false,
+        "name": "03 Nebelbank.mp3",
+        "path": "/music/Alben/Nordlicht – Treibholz/03 Nebelbank.mp3"
+      },
+      {
+        "additional": {
+          "perm": {
+            "acl": {
+              "append": false,
+              "del": true,
+              "exec": true,
+              "read": true,
+              "write": false
+            },
+            "is_acl_mode": true,
+            "posix": 775
+          },
+          "size": 15830918,
+          "time": {
+            "atime": 1768429366,
+            "crtime": 1646848817,
+            "ctime": 1709846367,
+            "mtime": 1646502448
+          },
+          "type": "MP3"
+        },
+        "isdir": false,
+        "name": "04 Leuchtfeuer.mp3",
+        "path": "/music/Alben/Nordlicht – Treibholz/04 Leuchtfeuer.mp3"
+      }
+    ],
+    "offset": 0,
+    "total": 4
+  },
+  "success": true
+}

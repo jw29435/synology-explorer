@@ -1,0 +1,47 @@
+{
+  "data": {
+    "offset": 0,
+    "shares": [
+      {
+        "additional": {
+          "owner": {
+            "gid": 0,
+            "group": "administrators",
+            "uid": 0,
+            "user": "admin"
+          },
+          "perm": {
+            "acl": {
+              "append": false,
+              "del": true,
+              "exec": true,
+              "read": true,
+              "write": false
+            },
+            "acl_enable": true,
+            "adv_right": {
+              "disable_download": false,
+              "disable_list": false,
+              "disable_modify": false
+            },
+            "is_acl_mode": true,
+            "is_share_readonly": false,
+            "posix": 555,
+            "share_right": "RW"
+          },
+          "real_path": "/volume1/music",
+          "volume_status": {
+            "freespace": 19582726021120,
+            "readonly": false,
+            "totalspace": 34538327179264
+          }
+        },
+        "isdir": true,
+        "name": "music",
+        "path": "/music"
+      }
+    ],
+    "total": 1
+  },
+  "success": true
+}
