@@ -37,10 +37,22 @@ Konzept: `docs/CONCEPT.md` (Architektur, API-Mapping, Screen-Katalog, Roadmap). 
 - Netzwerk-Tests laufen gegen den Mock-Server in `tool/mock_nas/` mit Fixtures aus `test/fixtures/`, nie gegen ein echtes NAS.
 - Kein echtes NAS in CI. Das echte NAS wird nur in ausdrücklich dafür vorgesehenen Schritten (Spike, Gerätetest) angesprochen,
   Zugangsdaten kommen dann aus Umgebungsvariablen (NAS_URL, NAS_USER, NAS_PASS, NAS_OTP) und landen nie in Dateien oder Logs.
-- Gerät: zwei Android-Handys per adb – ein älteres Samsung (Referenz für Min-API und schwache Hardware) und ein aktuelles
-  OnePlus (Hauptgerät). Geräte immer explizit mit `flutter run -d <id>` / `adb -s <id>` ansprechen, nie das erste in der Liste.
-  `flutter run` nur, wenn `adb devices` ein Gerät zeigt; sonst nur `build`/`test`. Neue Features zuerst auf dem OnePlus,
-  vor dem PR einmal auf dem Samsung gegenprüfen.
+- Gerät: zwei Android-Handys per USB – ein älteres Samsung Galaxy A40 (`R58MC1T7R4D`, Android 11/API 30; Referenz für
+  Min-API und schwache Hardware) und ein aktuelles OnePlus 9 Pro (`4c5ce6f6`, Android 16/API 36; Hauptgerät). Geräte immer
+  explizit mit `-s <id>` ansprechen, nie das erste in der Liste. Neue Features zuerst auf dem OnePlus, vor dem PR einmal
+  auf dem Samsung gegenprüfen.
+- adb-Setup: Die Geräte hängen per USB am Windows-Host, der adb-Server läuft dort. WSL läuft im NAT-Modus und erreicht
+  diesen Server nicht. Deshalb adb immer über das Windows-Binary `adb.exe` (im PATH) aufrufen, nie das Linux-`adb` –
+  das startet einen eigenen Server ohne Geräte. `flutter run`/`flutter devices` sehen die Handys daher nicht; stattdessen:
+  ```sh
+  flutter build apk --debug
+  adb.exe -s <id> install -r "$(wslpath -w build/app/outputs/flutter-apk/app-debug.apk)"
+  adb.exe -s <id> shell am start -n de.jw29435.synology_explorer/.MainActivity
+  adb.exe -s <id> logcat -s flutter           # Logs
+  adb.exe -s <id> exec-out screencap -p > screen.png
+  ```
+  Kein Hot Reload. Nie `adb.exe -a` oder `adb.exe tcpip` (öffnet adb ins Netz), keine usbipd/udev-Umbauten.
+  Zeigt `adb.exe devices` ein Gerät nicht: den Nutzer bitten, USB-Verbindung und Debugging-Freigabe am Handy zu prüfen.
 
 ## Arbeitsweise
 - Ein Prompt = ein Branch = ein PR. Branch-Name `feat/<milestone>-<thema>`, z. B. `feat/m1-browser`.
