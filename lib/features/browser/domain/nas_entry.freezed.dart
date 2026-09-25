@@ -15,7 +15,8 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$NasEntry {
 
- String get path; String get name; bool get isDir; NasFileType get type; int? get size; DateTime? get mtime; NasPerm? get perm;
+ String get path; String get name; bool get isDir; NasFileType get type; int? get size; DateTime? get mtime; NasPerm? get perm;/// Nur bei `getinfo` (Info-Sheet) befüllt.
+ DateTime? get crtime; String? get owner; String? get group; int? get posix;
 /// Create a copy of NasEntry
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -27,20 +28,20 @@ $NasEntryCopyWith<NasEntry> get copyWith => _$NasEntryCopyWithImpl<NasEntry>(thi
 @override
 bool operator ==(Object other) {
   final _this = this as NasEntry;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is NasEntry&&(identical(other.path, _this.path) || other.path == _this.path)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.isDir, _this.isDir) || other.isDir == _this.isDir)&&(identical(other.type, _this.type) || other.type == _this.type)&&(identical(other.size, _this.size) || other.size == _this.size)&&(identical(other.mtime, _this.mtime) || other.mtime == _this.mtime)&&(identical(other.perm, _this.perm) || other.perm == _this.perm));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is NasEntry&&(identical(other.path, _this.path) || other.path == _this.path)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.isDir, _this.isDir) || other.isDir == _this.isDir)&&(identical(other.type, _this.type) || other.type == _this.type)&&(identical(other.size, _this.size) || other.size == _this.size)&&(identical(other.mtime, _this.mtime) || other.mtime == _this.mtime)&&(identical(other.perm, _this.perm) || other.perm == _this.perm)&&(identical(other.crtime, _this.crtime) || other.crtime == _this.crtime)&&(identical(other.owner, _this.owner) || other.owner == _this.owner)&&(identical(other.group, _this.group) || other.group == _this.group)&&(identical(other.posix, _this.posix) || other.posix == _this.posix));
 }
 
 
 @override
 int get hashCode {
   final _this = this as NasEntry;
-  return Object.hash(runtimeType,_this.path,_this.name,_this.isDir,_this.type,_this.size,_this.mtime,_this.perm);
+  return Object.hash(runtimeType,_this.path,_this.name,_this.isDir,_this.type,_this.size,_this.mtime,_this.perm,_this.crtime,_this.owner,_this.group,_this.posix);
 }
 
 @override
 String toString() {
   final _this = this as NasEntry;
-  return 'NasEntry(path: ${_this.path}, name: ${_this.name}, isDir: ${_this.isDir}, type: ${_this.type}, size: ${_this.size}, mtime: ${_this.mtime}, perm: ${_this.perm})';
+  return 'NasEntry(path: ${_this.path}, name: ${_this.name}, isDir: ${_this.isDir}, type: ${_this.type}, size: ${_this.size}, mtime: ${_this.mtime}, perm: ${_this.perm}, crtime: ${_this.crtime}, owner: ${_this.owner}, group: ${_this.group}, posix: ${_this.posix})';
 }
 
 
@@ -51,7 +52,7 @@ abstract mixin class $NasEntryCopyWith<$Res>  {
   factory $NasEntryCopyWith(NasEntry value, $Res Function(NasEntry) _then) = _$NasEntryCopyWithImpl;
 @useResult
 $Res call({
- String path, String name, bool isDir, NasFileType type, int? size, DateTime? mtime, NasPerm? perm
+ String path, String name, bool isDir, NasFileType type, int? size, DateTime? mtime, NasPerm? perm, DateTime? crtime, String? owner, String? group, int? posix
 });
 
 
@@ -68,7 +69,7 @@ class _$NasEntryCopyWithImpl<$Res>
 
 /// Create a copy of NasEntry
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? path = null,Object? name = null,Object? isDir = null,Object? type = null,Object? size = freezed,Object? mtime = freezed,Object? perm = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? path = null,Object? name = null,Object? isDir = null,Object? type = null,Object? size = freezed,Object? mtime = freezed,Object? perm = freezed,Object? crtime = freezed,Object? owner = freezed,Object? group = freezed,Object? posix = freezed,}) {
   return _then(NasEntry(
 path: null == path ? _self.path : path // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -77,7 +78,11 @@ as bool,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_n
 as NasFileType,size: freezed == size ? _self.size : size // ignore: cast_nullable_to_non_nullable
 as int?,mtime: freezed == mtime ? _self.mtime : mtime // ignore: cast_nullable_to_non_nullable
 as DateTime?,perm: freezed == perm ? _self.perm : perm // ignore: cast_nullable_to_non_nullable
-as NasPerm?,
+as NasPerm?,crtime: freezed == crtime ? _self.crtime : crtime // ignore: cast_nullable_to_non_nullable
+as DateTime?,owner: freezed == owner ? _self.owner : owner // ignore: cast_nullable_to_non_nullable
+as String?,group: freezed == group ? _self.group : group // ignore: cast_nullable_to_non_nullable
+as String?,posix: freezed == posix ? _self.posix : posix // ignore: cast_nullable_to_non_nullable
+as int?,
   ));
 }
 
@@ -162,10 +167,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String path,  String name,  bool isDir,  NasFileType type,  int? size,  DateTime? mtime,  NasPerm? perm)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String path,  String name,  bool isDir,  NasFileType type,  int? size,  DateTime? mtime,  NasPerm? perm,  DateTime? crtime,  String? owner,  String? group,  int? posix)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _NasEntry() when $default != null:
-return $default(_that.path,_that.name,_that.isDir,_that.type,_that.size,_that.mtime,_that.perm);case _:
+return $default(_that.path,_that.name,_that.isDir,_that.type,_that.size,_that.mtime,_that.perm,_that.crtime,_that.owner,_that.group,_that.posix);case _:
   return orElse();
 
 }
@@ -183,10 +188,10 @@ return $default(_that.path,_that.name,_that.isDir,_that.type,_that.size,_that.mt
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String path,  String name,  bool isDir,  NasFileType type,  int? size,  DateTime? mtime,  NasPerm? perm)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String path,  String name,  bool isDir,  NasFileType type,  int? size,  DateTime? mtime,  NasPerm? perm,  DateTime? crtime,  String? owner,  String? group,  int? posix)  $default,) {final _that = this;
 switch (_that) {
 case _NasEntry():
-return $default(_that.path,_that.name,_that.isDir,_that.type,_that.size,_that.mtime,_that.perm);case _:
+return $default(_that.path,_that.name,_that.isDir,_that.type,_that.size,_that.mtime,_that.perm,_that.crtime,_that.owner,_that.group,_that.posix);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -203,10 +208,10 @@ return $default(_that.path,_that.name,_that.isDir,_that.type,_that.size,_that.mt
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String path,  String name,  bool isDir,  NasFileType type,  int? size,  DateTime? mtime,  NasPerm? perm)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String path,  String name,  bool isDir,  NasFileType type,  int? size,  DateTime? mtime,  NasPerm? perm,  DateTime? crtime,  String? owner,  String? group,  int? posix)?  $default,) {final _that = this;
 switch (_that) {
 case _NasEntry() when $default != null:
-return $default(_that.path,_that.name,_that.isDir,_that.type,_that.size,_that.mtime,_that.perm);case _:
+return $default(_that.path,_that.name,_that.isDir,_that.type,_that.size,_that.mtime,_that.perm,_that.crtime,_that.owner,_that.group,_that.posix);case _:
   return null;
 
 }
@@ -218,7 +223,7 @@ return $default(_that.path,_that.name,_that.isDir,_that.type,_that.size,_that.mt
 
 
 class _NasEntry implements NasEntry {
-  const _NasEntry({required this.path, required this.name, required this.isDir, required this.type, this.size, this.mtime, this.perm});
+  const _NasEntry({required this.path, required this.name, required this.isDir, required this.type, this.size, this.mtime, this.perm, this.crtime, this.owner, this.group, this.posix});
   
 
 @override final  String path;
@@ -228,6 +233,11 @@ class _NasEntry implements NasEntry {
 @override final  int? size;
 @override final  DateTime? mtime;
 @override final  NasPerm? perm;
+/// Nur bei `getinfo` (Info-Sheet) befüllt.
+@override final  DateTime? crtime;
+@override final  String? owner;
+@override final  String? group;
+@override final  int? posix;
 
 /// Create a copy of NasEntry
 /// with the given fields replaced by the non-null parameter values.
@@ -239,18 +249,18 @@ _$NasEntryCopyWith<_NasEntry> get copyWith => __$NasEntryCopyWithImpl<_NasEntry>
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _NasEntry&&(identical(other.path, path) || other.path == path)&&(identical(other.name, name) || other.name == name)&&(identical(other.isDir, isDir) || other.isDir == isDir)&&(identical(other.type, type) || other.type == type)&&(identical(other.size, size) || other.size == size)&&(identical(other.mtime, mtime) || other.mtime == mtime)&&(identical(other.perm, perm) || other.perm == perm));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _NasEntry&&(identical(other.path, path) || other.path == path)&&(identical(other.name, name) || other.name == name)&&(identical(other.isDir, isDir) || other.isDir == isDir)&&(identical(other.type, type) || other.type == type)&&(identical(other.size, size) || other.size == size)&&(identical(other.mtime, mtime) || other.mtime == mtime)&&(identical(other.perm, perm) || other.perm == perm)&&(identical(other.crtime, crtime) || other.crtime == crtime)&&(identical(other.owner, owner) || other.owner == owner)&&(identical(other.group, group) || other.group == group)&&(identical(other.posix, posix) || other.posix == posix));
 }
 
 
 @override
 int get hashCode {
-    return Object.hash(runtimeType,path,name,isDir,type,size,mtime,perm);
+    return Object.hash(runtimeType,path,name,isDir,type,size,mtime,perm,crtime,owner,group,posix);
 }
 
 @override
 String toString() {
-    return 'NasEntry(path: $path, name: $name, isDir: $isDir, type: $type, size: $size, mtime: $mtime, perm: $perm)';
+    return 'NasEntry(path: $path, name: $name, isDir: $isDir, type: $type, size: $size, mtime: $mtime, perm: $perm, crtime: $crtime, owner: $owner, group: $group, posix: $posix)';
 }
 
 
@@ -261,7 +271,7 @@ abstract mixin class _$NasEntryCopyWith<$Res> implements $NasEntryCopyWith<$Res>
   factory _$NasEntryCopyWith(_NasEntry value, $Res Function(_NasEntry) _then) = __$NasEntryCopyWithImpl;
 @override @useResult
 $Res call({
- String path, String name, bool isDir, NasFileType type, int? size, DateTime? mtime, NasPerm? perm
+ String path, String name, bool isDir, NasFileType type, int? size, DateTime? mtime, NasPerm? perm, DateTime? crtime, String? owner, String? group, int? posix
 });
 
 
@@ -278,7 +288,7 @@ class __$NasEntryCopyWithImpl<$Res>
 
 /// Create a copy of NasEntry
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? path = null,Object? name = null,Object? isDir = null,Object? type = null,Object? size = freezed,Object? mtime = freezed,Object? perm = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? path = null,Object? name = null,Object? isDir = null,Object? type = null,Object? size = freezed,Object? mtime = freezed,Object? perm = freezed,Object? crtime = freezed,Object? owner = freezed,Object? group = freezed,Object? posix = freezed,}) {
   return _then(_NasEntry(
 path: null == path ? _self.path : path // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -287,7 +297,11 @@ as bool,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_n
 as NasFileType,size: freezed == size ? _self.size : size // ignore: cast_nullable_to_non_nullable
 as int?,mtime: freezed == mtime ? _self.mtime : mtime // ignore: cast_nullable_to_non_nullable
 as DateTime?,perm: freezed == perm ? _self.perm : perm // ignore: cast_nullable_to_non_nullable
-as NasPerm?,
+as NasPerm?,crtime: freezed == crtime ? _self.crtime : crtime // ignore: cast_nullable_to_non_nullable
+as DateTime?,owner: freezed == owner ? _self.owner : owner // ignore: cast_nullable_to_non_nullable
+as String?,group: freezed == group ? _self.group : group // ignore: cast_nullable_to_non_nullable
+as String?,posix: freezed == posix ? _self.posix : posix // ignore: cast_nullable_to_non_nullable
+as int?,
   ));
 }
 

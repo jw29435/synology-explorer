@@ -66,14 +66,10 @@ class UntrustedCertificateException implements Exception {
 }
 
 /// Der Host hat ein anderes Zertifikat als das gepinnte. Harter Fehler: keine
-/// Verbindung, kein Fallback.
-class CertificateMismatchException implements Exception {
-  CertificateMismatchException(this.host, this.port, X509Certificate cert)
-    : fingerprint = certificateFingerprint(cert);
-
-  final String host;
-  final int port;
-  final String fingerprint;
+/// Verbindung, kein Fallback. Die UI zeigt den Bestätigungsdialog erneut
+/// (CONCEPT.md Abschnitt 8) – nötig z. B. nach Zertifikatserneuerung.
+class CertificateMismatchException extends UntrustedCertificateException {
+  CertificateMismatchException(super.host, super.port, super.cert);
 
   @override
   String toString() =>

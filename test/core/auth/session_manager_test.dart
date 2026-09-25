@@ -114,6 +114,24 @@ void main() {
     expect(logins(), hasLength(2));
   });
 
+  test('stiller Re-Login scheitert → keine weiteren Login-Versuche', () async {
+    final s = await session();
+    await s.login(mockUser, mockPassword, otp: mockOtp, rememberPassword: true);
+    // Passwort wurde inzwischen am NAS geändert.
+    secure['server:7:password'] = 'veraltet';
+    s.client.sid = 'abgelaufen';
+    final api = FileStationListApi(s.client);
+
+    await expectLater(api.listShares(), throwsA(isA<SynoSessionExpired>()));
+    expect(logins(), hasLength(2), reason: 'genau ein stiller Versuch');
+    for (var i = 0; i < 5; i++) {
+      await expectLater(api.listShares(), throwsA(isA<SynoSessionExpired>()));
+    }
+    expect(logins(), hasLength(2), reason: 'danach kein Login mehr');
+    expect(s.isLoggedIn, isFalse);
+    expect(secure, isNot(contains('server:7:password')));
+  });
+
   test('abgelaufene SID ohne Passwort → sessionExpired, kein Login', () async {
     final s = await session();
     await s.login(mockUser, mockPassword, otp: mockOtp);

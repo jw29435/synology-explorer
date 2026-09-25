@@ -9,7 +9,8 @@ const mockPassword = 'geheim';
 const mockOtp = '123456';
 
 /// Bedient `/webapi/entry.cgi` (GET-Query oder POST-Formular) mit
-/// `<fixtures>/<api>/<method>.json`. Unbekannte API/Methode liefern die
+/// `<fixtures>/<api>/<method>.json` bzw. binär mit `<method>.jpg`
+/// (z. B. `SYNO.FileStation.Thumb/get.jpg`). Unbekannte API/Methode liefern die
 /// Synology-Fehlercodes 102/103 – wie DSM mit HTTP 200.
 ///
 /// `SYNO.API.Auth login` prüft Passwort, OTP und Geräte-Token (`device_id`)
@@ -53,10 +54,18 @@ Handler mockNasHandler(Directory fixtures) {
     if (api == 'SYNO.API.Auth' && method == 'login') return login(params);
 
     final apiDir = Directory('${fixtures.path}/$api');
-    final file = File('${apiDir.path}/$method.json');
+    final json = File('${apiDir.path}/$method.json');
+    final jpg = File('${apiDir.path}/$method.jpg');
     // Pfadbestandteile aus der Anfrage dürfen nicht aus fixtures/ herausführen.
     final safe = !'$api/$method'.contains('..') && !api.contains('/');
-    if (!safe || !await file.exists()) {
+    final file = !safe
+        ? null
+        : await json.exists()
+        ? json
+        : await jpg.exists()
+        ? jpg
+        : null;
+    if (file == null) {
       final code = safe && await apiDir.exists() ? 103 : 102;
       return _json(
         jsonEncode({
@@ -70,6 +79,12 @@ Handler mockNasHandler(Directory fixtures) {
     }
     if (api == 'SYNO.API.Auth' && method == 'logout') {
       sids.remove(params['_sid']);
+    }
+    if (file == jpg) {
+      return Response.ok(
+        await file.readAsBytes(),
+        headers: {'content-type': 'image/jpeg'},
+      );
     }
     return _json(await file.readAsString());
   };

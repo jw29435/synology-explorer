@@ -41,6 +41,15 @@ class FileStationListApi {
     return (entries: _entries(data['files']), total: data['total'] as int);
   }
 
+  /// Details für das Info-Sheet (inkl. Besitzer, Erstellzeit, POSIX-Rechte).
+  Future<NasEntry> getInfo(String path) async {
+    final data = await _client.request(_api, 'getinfo', {
+      'path': jsonEncode([path]),
+      'additional': jsonEncode(['size', 'owner', 'time', 'perm', 'type']),
+    }) as Map;
+    return _entries(data['files']).single;
+  }
+
   static List<NasEntry> _entries(Object? list) => [
     for (final e in list as List) NasEntry.fromSyno(e as Map<String, dynamic>),
   ];

@@ -1,0 +1,39 @@
+{
+  "data": {
+    "files": [
+      {
+        "isdir": false,
+        "name": "02 Strandgut.flac",
+        "path": "/music/Alben/Nordlicht – Treibholz/02 Strandgut.flac",
+        "additional": {
+          "owner": {
+            "gid": 100,
+            "group": "users",
+            "uid": 1026,
+            "user": "johann"
+          },
+          "perm": {
+            "acl": {
+              "append": true,
+              "del": true,
+              "exec": true,
+              "read": true,
+              "write": true
+            },
+            "is_acl_mode": true,
+            "posix": 775
+          },
+          "size": 32598114,
+          "time": {
+            "atime": 1778612640,
+            "crtime": 1778612640,
+            "ctime": 1778612640,
+            "mtime": 1778612640
+          },
+          "type": "FLAC"
+        }
+      }
+    ]
+  },
+  "success": true
+}

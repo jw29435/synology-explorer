@@ -4,5 +4,269 @@
   "tabFiles": "Dateien",
   "tabOffline": "Offline",
   "tabTransfers": "Transfers",
-  "tabSettings": "Einstellungen"
+  "tabSettings": "Einstellungen",
+  "cancel": "Abbrechen",
+  "close": "Schließen",
+  "done": "Fertig",
+  "retry": "Erneut versuchen",
+  "signIn": "Anmelden",
+  "more": "Mehr",
+  "serversTitle": "Server",
+  "serverAdd": "Server hinzufügen",
+  "serverEditTitle": "Server bearbeiten",
+  "serversEmpty": "Noch kein Server eingerichtet.",
+  "serverConnectedVia": "Verbunden über {via}",
+  "@serverConnectedVia": {
+    "placeholders": {
+      "via": {
+        "type": "String"
+      }
+    }
+  },
+  "viaLan": "LAN",
+  "viaExternal": "extern",
+  "serverNotConnected": "Nicht verbunden",
+  "serverInfo": "Beim Start wird zuerst die LAN-Adresse probiert, dann die externe. QuickConnect wird nicht unterstützt.",
+  "serverEdit": "Bearbeiten",
+  "serverLogout": "Abmelden",
+  "serverDelete": "Löschen",
+  "serverDeleteConfirm": "„{name}“ löschen? Favoriten und Verlauf dieses Servers werden entfernt.",
+  "@serverDeleteConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "fieldName": "Name",
+  "fieldLanUrl": "LAN-Adresse",
+  "fieldLanUrlHint": "Wird zuerst probiert, Timeout 2 s.",
+  "fieldExternalUrl": "Externe Adresse (optional)",
+  "fieldExternalUrlHint": "DDNS, Reverse Proxy oder Tailscale-Adresse.",
+  "fieldUser": "Benutzer",
+  "fieldPassword": "Passwort",
+  "rememberPassword": "Passwort auf dem Gerät merken",
+  "rememberPasswordHint": "Sonst nur Session-Token; Re-Login fragt neu.",
+  "httpsInfo": "Nur HTTPS. Selbstsignierte Zertifikate werden beim ersten Verbinden per Fingerprint bestätigt.",
+  "httpWarning": "Unverschlüsselt (HTTP): Passwort und Dateien sind im Netz lesbar.",
+  "connect": "Verbinden",
+  "validationRequired": "Pflichtfeld",
+  "validationUrl": "Keine gültige Adresse, z. B. https://192.168.178.20:5001",
+  "certTitle": "Unbekanntes Zertifikat",
+  "certIntro": "Der Server {host} verwendet ein Zertifikat, dem dieses Gerät nicht vertraut (selbstsigniert oder unbekannte Zertifizierungsstelle). Vergleiche den Fingerprint mit DSM (Systemsteuerung › Sicherheit › Zertifikat), bevor du vertraust.",
+  "@certIntro": {
+    "placeholders": {
+      "host": {
+        "type": "String"
+      }
+    }
+  },
+  "certSubject": "Ausgestellt für",
+  "certIssuer": "Aussteller",
+  "certValidity": "Gültig",
+  "certFingerprint": "SHA-256-Fingerprint",
+  "certPinInfo": "Beim Vertrauen wird der Fingerprint gepinnt. Ändert er sich, blockiert die App die Verbindung.",
+  "certTrust": "Vertrauen",
+  "otpTitle": "Bestätigungscode",
+  "otpHeading": "Zwei-Faktor-Authentifizierung",
+  "otpIntro": "Gib den 6-stelligen Code aus deiner Authenticator-App für {account} ein.",
+  "@otpIntro": {
+    "placeholders": {
+      "account": {
+        "type": "String"
+      }
+    }
+  },
+  "otpCode": "Code",
+  "otpRemember": "Dieses Gerät merken",
+  "otpRememberHint": "Fordert ein Geräte-Token an, kein Code beim nächsten Login.",
+  "errorUnauthorized": "Benutzer oder Passwort falsch.",
+  "errorAccountLocked": "Konto gesperrt oder IP durch Auto-Block blockiert. Kein automatischer Neuversuch.",
+  "errorOtpRequired": "Bestätigungscode erforderlich.",
+  "errorOtpInvalid": "Code ungültig oder abgelaufen. Kein automatischer Neuversuch (Auto-Block).",
+  "errorSessionExpired": "Sitzung abgelaufen. Bitte neu anmelden.",
+  "errorPermission": "Keine Berechtigung.",
+  "errorNotFound": "Nicht gefunden.",
+  "errorNetwork": "Server nicht erreichbar.",
+  "errorHttp": "Server antwortet mit HTTP {status}.",
+  "@errorHttp": {
+    "placeholders": {
+      "status": {
+        "type": "int"
+      }
+    }
+  },
+  "errorCertMismatch": "Das Zertifikat von {host} hat sich geändert. Verbindung blockiert.",
+  "@errorCertMismatch": {
+    "placeholders": {
+      "host": {
+        "type": "String"
+      }
+    }
+  },
+  "errorCode": "Fehler {code} vom NAS.",
+  "@errorCode": {
+    "placeholders": {
+      "code": {
+        "type": "int"
+      }
+    }
+  },
+  "errorGeneric": "Unerwarteter Fehler.",
+  "sectionShares": "Freigegebene Ordner",
+  "sectionFavorites": "Favoriten",
+  "sectionRecent": "Zuletzt geöffnet",
+  "permReadWrite": "Lesen/Schreiben",
+  "permReadOnly": "Nur Lesen",
+  "serverStatus": "{via} · {user}",
+  "@serverStatus": {
+    "placeholders": {
+      "via": {
+        "type": "String"
+      },
+      "user": {
+        "type": "String"
+      }
+    }
+  },
+  "search": "Suchen",
+  "switchServer": "Server wechseln",
+  "today": "heute {time}",
+  "@today": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "yesterday": "gestern",
+  "datePattern": "dd.MM.yyyy",
+  "sortName": "Name",
+  "sortDate": "Datum",
+  "sortSize": "Größe",
+  "sortType": "Typ",
+  "sortAscending": "Aufsteigend",
+  "sortDescending": "Absteigend",
+  "itemCount": "{count, plural, =1{1 Element} other{{count} Elemente}}",
+  "@itemCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "folderEmpty": "Dieser Ordner ist leer.",
+  "viewGrid": "Rasteransicht",
+  "viewList": "Listenansicht",
+  "fabLater": "Hochladen und neue Ordner kommen mit M4.",
+  "openLater": "Dateien öffnen kommt mit M2 (Audio) und M3 (Viewer).",
+  "selectedCount": "{count} ausgewählt",
+  "@selectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "actionOpen": "Öffnen",
+  "actionPlayFromHere": "Abspielen ab hier",
+  "actionPlayFolder": "Ordner abspielen (inkl. Unterordner)",
+  "actionQueue": "Zur Queue hinzufügen",
+  "actionDownload": "Herunterladen",
+  "actionOffline": "Offline verfügbar halten",
+  "actionFavoriteAdd": "Zu Favoriten",
+  "actionFavoriteRemove": "Aus Favoriten entfernen",
+  "actionShareLink": "Freigabelink erstellen",
+  "actionRename": "Umbenennen",
+  "actionMove": "Verschieben nach …",
+  "actionCopy": "Kopieren nach …",
+  "actionInfo": "Info",
+  "actionDelete": "Löschen (in Papierkorb)",
+  "availableFrom": "ab {milestone}",
+  "@availableFrom": {
+    "placeholders": {
+      "milestone": {
+        "type": "String"
+      }
+    }
+  },
+  "infoPath": "Pfad",
+  "infoSize": "Größe",
+  "infoSizeBytes": "{size} ({bytes} Bytes)",
+  "@infoSizeBytes": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      },
+      "bytes": {
+        "type": "String"
+      }
+    }
+  },
+  "infoCreated": "Erstellt",
+  "infoModified": "Geändert",
+  "infoOwner": "Besitzer",
+  "infoPerm": "Rechte",
+  "infoFolder": "Ordner",
+  "computeSize": "Größe berechnen",
+  "dirSizeResult": "{size} · {files} Dateien · {dirs} Ordner",
+  "@dirSizeResult": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      },
+      "files": {
+        "type": "String"
+      },
+      "dirs": {
+        "type": "String"
+      }
+    }
+  },
+  "copyPath": "Pfad kopieren",
+  "pathCopied": "Pfad kopiert",
+  "searchHint": "Dateiname",
+  "searchIn": "Suche in {folder} (rekursiv)",
+  "@searchIn": {
+    "placeholders": {
+      "folder": {
+        "type": "String"
+      }
+    }
+  },
+  "searchWholeNas": "Ganzes NAS",
+  "searchAllShares": "Suche in allen freigegebenen Ordnern",
+  "filterAll": "Alle",
+  "filterAudio": "Audio",
+  "filterImage": "Bilder",
+  "filterVideo": "Video",
+  "filterDocument": "Dokumente",
+  "searchRunning": "Suche läuft … {count} Treffer bisher",
+  "@searchRunning": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "searchDone": "{count, plural, =0{Keine Treffer} =1{1 Treffer} other{{count} Treffer}}",
+  "@searchDone": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "searchTruncated": "Die ersten {shown} von {total} Treffern – Suche verfeinern.",
+  "@searchTruncated": {
+    "placeholders": {
+      "shown": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "searchFooter": "Suche nach Dateiname. Filter schränken auf Dateiendungen ein; beim Verlassen wird der Search-Task gestoppt und aufgeräumt."
 }

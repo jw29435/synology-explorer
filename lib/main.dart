@@ -16,5 +16,12 @@ void main() {
       ], await rootBundle.loadString('assets/fonts/OFL-$font.txt'));
     }
   });
-  runApp(const ProviderScope(child: SynologyExplorerApp()));
+  runApp(
+    ProviderScope(
+      // Kein automatischer Retry fehlgeschlagener Provider: ein Login-Fehler
+      // darf nie wiederholt werden (DSM-Auto-Block).
+      retry: (_, _) => null,
+      child: const SynologyExplorerApp(),
+    ),
+  );
 }

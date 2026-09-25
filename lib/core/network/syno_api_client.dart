@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 
 import '../../features/servers/domain/server_profile.dart';
 import 'certificate_pinning.dart';
+import 'trusted_roots.dart';
 import 'syno_exception.dart';
 
 /// Einziger Zugang zur DSM Web API eines Servers.
@@ -113,7 +114,22 @@ class SynoApiClient {
     String api,
     String method, [
     Map<String, Object?> params = const {},
-  ]) async {
+  ]) => _request(api, method, params, bytes: false);
+
+  /// Wie [request], liefert aber den Rohinhalt (Thumb, Download). API-Fehler
+  /// meldet DSM auch hier als JSON.
+  Future<Uint8List> requestBytes(
+    String api,
+    String method, [
+    Map<String, Object?> params = const {},
+  ]) async => await _request(api, method, params, bytes: true) as Uint8List;
+
+  Future<dynamic> _request(
+    String api,
+    String method,
+    Map<String, Object?> params, {
+    required bool bytes,
+  }) async {
     final base = _baseUrl;
     if (base == null) throw StateError('connect() fehlt');
     final info = _apis[api];
@@ -127,6 +143,7 @@ class SynoApiClient {
       params,
       version: info.maxVersion,
       path: info.path,
+      bytes: bytes,
     );
 
     try {
@@ -152,13 +169,14 @@ class SynoApiClient {
     required int version,
     required String path,
     Duration? timeout,
+    bool bytes = false,
   }) async {
     final url = Uri.parse(
       '${base.toString().replaceFirst(RegExp(r'/+$'), '')}/webapi/$path',
     );
-    final Response<String> res;
+    final Response<dynamic> res;
     try {
-      res = await _dio.postUri(
+      res = await _dio.postUri<dynamic>(
         url,
         data: {
           'api': api,
@@ -166,7 +184,10 @@ class SynoApiClient {
           'method': method,
           for (final MapEntry(:key, :value) in params.entries) key: ?value,
         },
-        options: Options(extra: {'timeout': ?timeout}),
+        options: Options(
+          extra: {'timeout': ?timeout},
+          responseType: bytes ? ResponseType.bytes : ResponseType.plain,
+        ),
       );
     } on DioException catch (e) {
       final cert = _rejected.remove('${url.host}:${url.port}');
@@ -175,12 +196,21 @@ class SynoApiClient {
             ? UntrustedCertificateException(url.host, url.port, cert)
             : CertificateMismatchException(url.host, url.port, cert);
       }
+      // Nur Typen loggen: Fehlermeldungen können die URL mit `_sid` enthalten.
+      debugPrint('SynoNetworkError: ${e.type} ${e.error.runtimeType}');
       throw SynoNetworkError(
         statusCode: e.response?.statusCode,
         cause: e.error ?? e.type,
       );
     }
-    final body = jsonDecode(res.data!) as Map<String, dynamic>;
+    final Object raw = res.data!;
+    if (raw is List<int>) {
+      final type = res.headers.value(Headers.contentTypeHeader) ?? '';
+      if (!type.contains('json')) return Uint8List.fromList(raw);
+    }
+    final body = jsonDecode(
+      raw is List<int> ? utf8.decode(raw) : raw as String,
+    ) as Map<String, dynamic>;
     if (body['success'] == true) return body['data'];
     throw SynoException.fromCode(
       (body['error'] as Map?)?['code'] as int? ?? 100,
@@ -188,15 +218,19 @@ class SynoApiClient {
     );
   }
 
-  /// Systemprüfung zuerst; nur was dort durchfällt, landet hier. Akzeptiert
+  /// Systemprüfung zuerst (System-Roots plus gebündelte öffentliche Roots,
+  /// siehe trusted_roots.dart); nur was dort durchfällt, landet hier. Akzeptiert
   /// wird ausschließlich ein exakt gepinnter Fingerprint.
-  HttpClient _createHttpClient() => HttpClient()
-    ..badCertificateCallback = (cert, host, port) {
-      final pinned = _pins.pinFor(host, port);
-      if (pinned != null && pinned == certificateFingerprint(cert)) return true;
-      _rejected['$host:$port'] = cert;
-      return false;
-    };
+  HttpClient _createHttpClient() =>
+      HttpClient(context: trustedSecurityContext())
+        ..badCertificateCallback = (cert, host, port) {
+          final pinned = _pins.pinFor(host, port);
+          if (pinned != null && pinned == certificateFingerprint(cert)) {
+            return true;
+          }
+          _rejected['$host:$port'] = cert;
+          return false;
+        };
 
   void close() {
     _dio.close(force: true);

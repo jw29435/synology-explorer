@@ -1,0 +1,55 @@
+{
+  "data": {
+    "files": [
+      {
+        "isdir": false,
+        "name": "03 Nebelbank.flac",
+        "path": "/music/Alben/Nordlicht – Treibholz/03 Nebelbank.flac",
+        "additional": {
+          "size": 27158118,
+          "time": {
+            "atime": 1778580420,
+            "crtime": 1778580420,
+            "ctime": 1778580420,
+            "mtime": 1778580420
+          },
+          "type": "FLAC"
+        }
+      },
+      {
+        "isdir": true,
+        "name": "Nebelhorn – Live 2024",
+        "path": "/music/Alben/Nebelhorn – Live 2024",
+        "additional": {
+          "size": 4096,
+          "time": {
+            "atime": 1778580000,
+            "crtime": 1778580000,
+            "ctime": 1778580000,
+            "mtime": 1778580000
+          },
+          "type": ""
+        }
+      },
+      {
+        "isdir": false,
+        "name": "Nebelhorn_Setlist.pdf",
+        "path": "/music/Alben/Nebelhorn – Live 2024/Nebelhorn_Setlist.pdf",
+        "additional": {
+          "size": 225280,
+          "time": {
+            "atime": 1778580000,
+            "crtime": 1778580000,
+            "ctime": 1778580000,
+            "mtime": 1778580000
+          },
+          "type": "PDF"
+        }
+      }
+    ],
+    "finished": true,
+    "offset": 0,
+    "total": 3
+  },
+  "success": true
+}
