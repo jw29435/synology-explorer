@@ -12,7 +12,7 @@ Stand 25.09.2026, per curl, Zugangsdaten aus Umgebungsvariablen. Anonymisierte e
 | Geräte-Token | **ja**, heißt in DSM 7 aber `device_id` (nicht `did`), 86 Zeichen, kommt auch ohne 2FA |
 | Zweiter Login mit `device_id` | **ja**, erfolgreich, gleiche `device_id` zurück. OTP-Pfad nicht testbar: 2FA ist auf dem Konto aus |
 | HTTP-Range beim Download | **ja**, `206 Partial Content` mit `Content-Range` |
-| HEIC-Thumb (`size=xl`) | **nicht prüfbar**: keine HEIC-Datei im sichtbaren Share. `Thumb` liefert auch für JPG nur 404 (siehe unten) |
+| HEIC-Thumb (`size=xl`) | **nein**: Das NAS erzeugt überhaupt keine Vorschaubilder (auch nicht in der Weboberfläche); `Thumb` liefert für jedes Bild 404. HEIC-Dateien gibt es im Share ohnehin keine |
 | Favorite ohne Home-Dienst | **ja**: `list` liefert die bestehenden Favoriten, `add`/`delete` funktionieren |
 
 ## API-Versionen (`SYNO.API.Info`, alle über `entry.cgi`)
@@ -58,13 +58,20 @@ möglich; der Fallback „Cache-first-Wiedergabe" wird **nicht** gebraucht.
 
 Für ein JPG liefert `SYNO.FileStation.Thumb` mit `size=xl` in v1, v2 und v3, als GET und POST, mit rohem und
 JSON-Pfad immer **HTTP 404 mit HTML-Seite** (Header siehe `test/fixtures/dsm-7.2.1/SYNO.FileStation.Thumb/`). Download
-derselben API-Session funktioniert. Mögliche Ursachen, noch nicht unterschieden:
+derselben Datei in derselben Session funktioniert.
 
-1. Für die Datei gibt es kein vom NAS erzeugtes Vorschaubild (Indexierung aus).
-2. Der Zugang über den Portal-Port (`is_portal_port: true`) leitet Thumb nicht weiter.
+**Ursache geklärt:** Auch die File-Station-Weboberfläche zeigt keine Vorschaubilder. Das NAS erzeugt keine Thumbnails;
+es liegt nicht am Portal-Port. Vermutlich ist die Thumbnail-Erzeugung des Indexierungsdienstes für diese Ordner aus –
+das ist eine NAS-Einstellung, auf die sich die App nicht verlassen kann.
 
-Nächster Schritt: In der File-Station-Weboberfläche prüfen, ob Vorschaubilder erscheinen, und Thumb einmal über die
-LAN-Adresse (DSM-Port 5001) testen. Für HEIC eine Testdatei in den Share legen.
+Folgen:
+
+- **Screen 07 (Grid, M1):** `Thumb` bleibt der erste Weg, aber bei 404 muss die App selbst verkleinern: Original per
+  Download laden, mit `cacheWidth`/`ResizeImage` dekodieren, Ergebnis als kleines JPEG im Thumbnail-Cache ablegen. Nur
+  im Viewport und mit begrenzter Parallelität, sonst lädt ein Foto-Ordner Hunderte MB.
+- **Videos im Grid:** ohne Thumb kein Standbild; Typ-Icon als Platzhalter.
+- **HEIC (M3):** Der Weg „Anzeige über `Thumb?size=xl`" fällt auf diesem NAS komplett aus. Es bleibt nur der in
+  CONCEPT.md schon genannte Fallback: Original laden und plattformnativ dekodieren (Android 10+, iOS).
 
 ## Search
 
@@ -89,5 +96,8 @@ LAN-Adresse (DSM-Port 5001) testen. Für HEIC eine Testdatei in den Share legen.
   Bedingung wie oben ergänzen. Thumb als offenen Punkt markieren.
 - Abschnitt 5 „Streaming-Kette Audio" und Abschnitt 11 „Download bedient HTTP-Range nicht": Risiko entfällt, kein
   Cache-first-Fallback nötig.
-- Abschnitt 11 „HEIC-Thumbnails": Risiko bleibt offen und betrifft Thumb generell (auch JPG), nicht nur HEIC.
+- Abschnitt 6 „Bilder" und Abschnitt 7 Screen 07: Thumbnails sind nicht garantiert; clientseitiges Verkleinern nach
+  Download als Fallback festhalten, HEIC-Anzeige über natives Dekodieren des Originals statt über Thumb.
+- Abschnitt 11 „HEIC-Thumbnails werden vom NAS nicht erzeugt": Risiko ist eingetreten und betrifft alle Bildtypen,
+  nicht nur HEIC.
 - Abschnitt 11 „Offene Punkte": DSM-Version ist 7.2.1; 2FA ist auf dem Konto nicht aktiv.
