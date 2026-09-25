@@ -1,0 +1,8 @@
+{
+  "@@locale": "de",
+  "appTitle": "Synology Explorer",
+  "tabFiles": "Dateien",
+  "tabOffline": "Offline",
+  "tabTransfers": "Transfers",
+  "tabSettings": "Einstellungen"
+}
