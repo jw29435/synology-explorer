@@ -104,12 +104,23 @@ class SessionManager {
     () => _pendingRelogin = null,
   );
 
+  /// Scheitert der stille Login an der Anmeldung selbst (Passwort geändert,
+  /// Konto gesperrt, OTP nötig), wird das gemerkte Passwort verworfen: Jeder
+  /// weitere Request endet dann ohne Login-Versuch mit [SynoSessionExpired],
+  /// bis sich der Nutzer aktiv anmeldet (DSM-Auto-Block).
   Future<void> _silentLogin() async {
     final password = await _read('password');
     if (password == null) {
       client.sid = null;
       throw const SynoSessionExpired();
     }
-    await login(client.profile.user, password, rememberPassword: true);
+    try {
+      await login(client.profile.user, password, rememberPassword: true);
+    } on SynoException catch (e) {
+      if (e is SynoNetworkError) rethrow;
+      client.sid = null;
+      await _storage.delete(key: _key(_serverId, 'password'));
+      throw const SynoSessionExpired();
+    }
   }
 }

@@ -191,7 +191,8 @@ class ErrorPanel extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final expired = error is SynoSessionExpired;
+    // Anmeldung nötig: kein „Erneut versuchen“, das nur wieder scheitert.
+    final expired = error is SynoSessionExpired || error is SynoUnauthorized;
     return Padding(
       padding: const EdgeInsets.all(24),
       child: Column(
