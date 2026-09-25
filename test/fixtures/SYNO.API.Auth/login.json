@@ -1,0 +1,8 @@
+{
+  "data": {
+    "did": "mock-device-token-0123456789abcdef",
+    "is_portal_port": false,
+    "sid": "mock-sid-0123456789abcdef"
+  },
+  "success": true
+}
