@@ -121,7 +121,9 @@ Beim Bau von Screen 07 und 11 erneut gegen das NAS geprüft (curl und App auf be
   Ordnern funktioniert. Ohne Treffer kommt `total: 0`. Ein finaler `total` von genau 1000 kam bei einer Suche vor –
   möglicherweise eine Obergrenze; die App zeigt höchstens 500 Treffer und bittet sonst ums Verfeinern.
 - **DirSize:** `status` nach `finished: true` liefert 599 (Task ist weg); die App pollt danach nicht weiter.
-- **Zertifikat auf Android 11:** Das Samsung A40 (Android 11) vertraut dem Let's-Encrypt-Zertifikat des NAS nicht
-  (neue Kette „YE2“, deren Root im alten Trust Store fehlt). Die App zeigt dann Screen 03; nach „Vertrauen“ ist der
-  Fingerprint gepinnt. Nach der Zertifikatserneuerung (alle 90 Tage) ändert sich der Fingerprint; die App blockiert
-  dann und zeigt Screen 03 mit Warnhinweis erneut (CONCEPT.md Abschnitt 8), der Nutzer muss neu bestätigen.
+- **Zertifikat auf Android 11:** Das NAS liefert die Kette vollständig aus (Leaf → „YE2“ → „Root YE“ → ISRG Root X2,
+  `openssl s_client` meldet „Verify return code: 0“). Android 11 (Samsung A40) fehlt aber ISRG Root X2 im Trust Store
+  (kam erst mit Android 14; auf dem A40 geprüft, auf dem OnePlus vorhanden). Behoben ohne Pinning: Die App bündelt
+  die öffentliche ISRG Root X2 (`lib/core/network/trusted_roots.dart`, Fingerprint gegen letsencrypt.org geprüft)
+  und fügt sie dem `SecurityContext` **zusätzlich** zu den System-Roots hinzu. Nach Löschen der App-Daten erscheint
+  auf dem A40 kein Zertifikat-Dialog mehr.

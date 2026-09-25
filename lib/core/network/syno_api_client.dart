@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 
 import '../../features/servers/domain/server_profile.dart';
 import 'certificate_pinning.dart';
+import 'trusted_roots.dart';
 import 'syno_exception.dart';
 
 /// Einziger Zugang zur DSM Web API eines Servers.
@@ -217,15 +218,19 @@ class SynoApiClient {
     );
   }
 
-  /// Systemprüfung zuerst; nur was dort durchfällt, landet hier. Akzeptiert
+  /// Systemprüfung zuerst (System-Roots plus gebündelte öffentliche Roots,
+  /// siehe trusted_roots.dart); nur was dort durchfällt, landet hier. Akzeptiert
   /// wird ausschließlich ein exakt gepinnter Fingerprint.
-  HttpClient _createHttpClient() => HttpClient()
-    ..badCertificateCallback = (cert, host, port) {
-      final pinned = _pins.pinFor(host, port);
-      if (pinned != null && pinned == certificateFingerprint(cert)) return true;
-      _rejected['$host:$port'] = cert;
-      return false;
-    };
+  HttpClient _createHttpClient() =>
+      HttpClient(context: trustedSecurityContext())
+        ..badCertificateCallback = (cert, host, port) {
+          final pinned = _pins.pinFor(host, port);
+          if (pinned != null && pinned == certificateFingerprint(cert)) {
+            return true;
+          }
+          _rejected['$host:$port'] = cert;
+          return false;
+        };
 
   void close() {
     _dio.close(force: true);
