@@ -48,12 +48,14 @@ class SessionManager {
   Future<void> restore() async => client.sid = await _read('sid');
 
   /// Wirft [SynoOtpRequired], wenn ein OTP nötig ist; dann mit [otp] erneut
-  /// aufrufen. Mit Geräte-Token aus einem früheren Login entfällt das OTP.
+  /// aufrufen. Mit Geräte-Token aus einem früheren Login entfällt das OTP;
+  /// [trustDevice] fordert einen solchen Token an.
   Future<void> login(
     String user,
     String password, {
     String? otp,
     bool rememberPassword = false,
+    bool trustDevice = true,
   }) async {
     final data = await client.request('SYNO.API.Auth', 'login', {
       'account': user,
@@ -61,7 +63,7 @@ class SessionManager {
       'session': 'FileStation',
       'format': 'sid',
       'otp_code': otp,
-      'enable_device_token': 'yes',
+      'enable_device_token': trustDevice ? 'yes' : 'no',
       'device_name': deviceName,
       'device_id': await _read('did'),
     }) as Map;
@@ -70,7 +72,7 @@ class SessionManager {
     await _write('sid', sid);
     // DSM 7 liefert den Geräte-Token als `device_id`, DSM 6 als `did`.
     if (data['device_id'] ?? data['did'] case final String did
-        when did.isNotEmpty) {
+        when trustDevice && did.isNotEmpty) {
       await _write('did', did);
     }
     if (rememberPassword) {

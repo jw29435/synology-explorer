@@ -33,9 +33,18 @@ class ServerRepository {
     _db.servers,
   )..where((s) => s.id.equals(profile.id!))).write(_toCompanion(profile));
 
-  /// Löscht Profil und dessen Secrets. Zertifikat-Pins bleiben (je Host).
+  /// Löscht Profil, Favoriten, Verlauf und Secrets. Zertifikat-Pins bleiben
+  /// (je Host).
   Future<void> remove(int id) async {
-    await (_db.delete(_db.servers)..where((s) => s.id.equals(id))).go();
+    await _db.transaction(() async {
+      await (_db.delete(_db.servers)..where((s) => s.id.equals(id))).go();
+      await (_db.delete(
+        _db.favorites,
+      )..where((f) => f.serverId.equals(id))).go();
+      await (_db.delete(
+        _db.recentFiles,
+      )..where((r) => r.serverId.equals(id))).go();
+    });
     await SessionManager.clearSecrets(_storage, id);
   }
 

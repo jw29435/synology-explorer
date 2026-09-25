@@ -55,6 +55,12 @@ enum NasFileType {
     'docx': docx,
   };
 
+  /// Alle Endungen der Typen [types], z. B. für den Such-Filter.
+  static List<String> extensionsOf(Set<NasFileType> types) => [
+    for (final MapEntry(:key, :value) in _byExtension.entries)
+      if (types.contains(value)) key,
+  ];
+
   /// Typ aus der Dateiendung, ohne Groß-/Kleinschreibung.
   static NasFileType fromName(String name) {
     final dot = name.lastIndexOf('.');
@@ -76,6 +82,12 @@ abstract class NasEntry with _$NasEntry {
     int? size,
     DateTime? mtime,
     NasPerm? perm,
+
+    /// Nur bei `getinfo` (Info-Sheet) befüllt.
+    DateTime? crtime,
+    String? owner,
+    String? group,
+    int? posix,
   }) = _NasEntry;
 
   /// Aus einem Eintrag von `list`/`list_share` inkl. `additional`.
@@ -83,7 +95,8 @@ abstract class NasEntry with _$NasEntry {
     final additional = json['additional'] as Map<String, dynamic>? ?? {};
     final name = json['name'] as String;
     final isDir = json['isdir'] as bool;
-    final mtime = (additional['time'] as Map?)?['mtime'] as int?;
+    final time = additional['time'] as Map?;
+    final owner = additional['owner'] as Map?;
     final perm = additional['perm'] as Map?;
     // Shares melden share_right, Dateien/Ordner eine ACL.
     final writable =
@@ -95,12 +108,18 @@ abstract class NasEntry with _$NasEntry {
       isDir: isDir,
       type: isDir ? NasFileType.folder : NasFileType.fromName(name),
       size: isDir ? null : additional['size'] as int?,
-      mtime: mtime == null
-          ? null
-          : DateTime.fromMillisecondsSinceEpoch(mtime * 1000, isUtc: true),
+      mtime: _time(time?['mtime']),
       perm: perm == null
           ? null
           : (writable ? NasPerm.readWrite : NasPerm.readOnly),
+      crtime: _time(time?['crtime']),
+      owner: owner?['user'] as String?,
+      group: owner?['group'] as String?,
+      posix: perm?['posix'] as int?,
     );
   }
+
+  static DateTime? _time(Object? seconds) => seconds is int
+      ? DateTime.fromMillisecondsSinceEpoch(seconds * 1000, isUtc: true)
+      : null;
 }

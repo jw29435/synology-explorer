@@ -33,6 +33,9 @@ void main() {
         isDir: true,
         type: NasFileType.folder,
         perm: NasPerm.readWrite,
+        owner: 'admin',
+        group: 'administrators',
+        posix: 555,
       ),
     );
   });
