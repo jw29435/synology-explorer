@@ -37,10 +37,13 @@ Konzept: `docs/CONCEPT.md` (Architektur, API-Mapping, Screen-Katalog, Roadmap). 
 - Netzwerk-Tests laufen gegen den Mock-Server in `tool/mock_nas/` mit Fixtures aus `test/fixtures/`, nie gegen ein echtes NAS.
 - Kein echtes NAS in CI. Das echte NAS wird nur in ausdrücklich dafür vorgesehenen Schritten (Spike, Gerätetest) angesprochen,
   Zugangsdaten kommen dann aus Umgebungsvariablen (NAS_URL, NAS_USER, NAS_PASS, NAS_OTP) und landen nie in Dateien oder Logs.
-- Gerät: zwei Android-Handys per adb – ein älteres Samsung (Referenz für Min-API und schwache Hardware) und ein aktuelles
+- Gerät: zwei Android-Handys per USB – ein älteres Samsung (Referenz für Min-API und schwache Hardware) und ein aktuelles
   OnePlus (Hauptgerät). Geräte immer explizit mit `flutter run -d <id>` / `adb -s <id>` ansprechen, nie das erste in der Liste.
-  `flutter run` nur, wenn `adb devices` ein Gerät zeigt; sonst nur `build`/`test`. Neue Features zuerst auf dem OnePlus,
-  vor dem PR einmal auf dem Samsung gegenprüfen.
+  Neue Features zuerst auf dem OnePlus, vor dem PR einmal auf dem Samsung gegenprüfen.
+- adb-Setup: Der adb-Server läuft unter Windows, die Geräte hängen dort per USB. Der Linux-adb-Client in WSL ist über
+  `ADB_SERVER_SOCKET=tcp:127.0.0.1:5037` mit ihm verbunden. Deshalb NIE `adb kill-server`, `adb start-server`, `adb -a`,
+  `adb tcpip` oder usbipd/udev ausführen. Zeigt `adb devices` nichts: den Nutzer bitten, unter Windows `adb devices` zu prüfen,
+  nicht selbst am Server drehen. `flutter run` nur, wenn `adb devices` das Zielgerät zeigt; sonst nur `build`/`test`.
 
 ## Arbeitsweise
 - Ein Prompt = ein Branch = ein PR. Branch-Name `feat/<milestone>-<thema>`, z. B. `feat/m1-browser`.
