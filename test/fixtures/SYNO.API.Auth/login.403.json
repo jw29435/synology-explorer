@@ -1,0 +1,14 @@
+{
+  "error": {
+    "code": 403,
+    "errors": {
+      "token": "mock-otp-token",
+      "types": [
+        {
+          "type": "otp"
+        }
+      ]
+    }
+  },
+  "success": false
+}

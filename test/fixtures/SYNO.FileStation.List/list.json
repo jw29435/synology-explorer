@@ -1,0 +1,191 @@
+{
+  "data": {
+    "files": [
+      {
+        "isdir": true,
+        "name": "Bonus",
+        "path": "/music/Alben/Nordlicht – Treibholz/Bonus",
+        "additional": {
+          "perm": {
+            "acl": {
+              "append": true,
+              "del": true,
+              "exec": true,
+              "read": true,
+              "write": true
+            },
+            "is_acl_mode": true,
+            "posix": 777
+          },
+          "size": 4096,
+          "time": {
+            "atime": 1778580000,
+            "crtime": 1778580000,
+            "ctime": 1778580000,
+            "mtime": 1778580000
+          },
+          "type": ""
+        }
+      },
+      {
+        "isdir": false,
+        "name": "01 Ebbe.flac",
+        "path": "/music/Alben/Nordlicht – Treibholz/01 Ebbe.flac",
+        "additional": {
+          "perm": {
+            "acl": {
+              "append": true,
+              "del": true,
+              "exec": true,
+              "read": true,
+              "write": true
+            },
+            "is_acl_mode": true,
+            "posix": 777
+          },
+          "size": 29779968,
+          "time": {
+            "atime": 1778580300,
+            "crtime": 1778580300,
+            "ctime": 1778580300,
+            "mtime": 1778580300
+          },
+          "type": "FLAC"
+        }
+      },
+      {
+        "isdir": false,
+        "name": "02 Strandgut.flac",
+        "path": "/music/Alben/Nordlicht – Treibholz/02 Strandgut.flac",
+        "additional": {
+          "perm": {
+            "acl": {
+              "append": true,
+              "del": true,
+              "exec": true,
+              "read": true,
+              "write": true
+            },
+            "is_acl_mode": true,
+            "posix": 777
+          },
+          "size": 32610099,
+          "time": {
+            "atime": 1778580360,
+            "crtime": 1778580360,
+            "ctime": 1778580360,
+            "mtime": 1778580360
+          },
+          "type": "FLAC"
+        }
+      },
+      {
+        "isdir": false,
+        "name": "03 Nebelbank.flac",
+        "path": "/music/Alben/Nordlicht – Treibholz/03 Nebelbank.flac",
+        "additional": {
+          "perm": {
+            "acl": {
+              "append": true,
+              "del": true,
+              "exec": true,
+              "read": true,
+              "write": true
+            },
+            "is_acl_mode": true,
+            "posix": 777
+          },
+          "size": 27158118,
+          "time": {
+            "atime": 1778580420,
+            "crtime": 1778580420,
+            "ctime": 1778580420,
+            "mtime": 1778580420
+          },
+          "type": "FLAC"
+        }
+      },
+      {
+        "isdir": false,
+        "name": "04 Leuchtfeuer.flac",
+        "path": "/music/Alben/Nordlicht – Treibholz/04 Leuchtfeuer.flac",
+        "additional": {
+          "perm": {
+            "acl": {
+              "append": true,
+              "del": true,
+              "exec": true,
+              "read": true,
+              "write": true
+            },
+            "is_acl_mode": true,
+            "posix": 777
+          },
+          "size": 35336397,
+          "time": {
+            "atime": 1778580480,
+            "crtime": 1778580480,
+            "ctime": 1778580480,
+            "mtime": 1778580480
+          },
+          "type": "FLAC"
+        }
+      },
+      {
+        "isdir": false,
+        "name": "cover.jpg",
+        "path": "/music/Alben/Nordlicht – Treibholz/cover.jpg",
+        "additional": {
+          "perm": {
+            "acl": {
+              "append": true,
+              "del": true,
+              "exec": true,
+              "read": true,
+              "write": true
+            },
+            "is_acl_mode": true,
+            "posix": 777
+          },
+          "size": 1258291,
+          "time": {
+            "atime": 1778580540,
+            "crtime": 1778580540,
+            "ctime": 1778580540,
+            "mtime": 1778580540
+          },
+          "type": "JPG"
+        }
+      },
+      {
+        "isdir": false,
+        "name": "booklet.pdf",
+        "path": "/music/Alben/Nordlicht – Treibholz/booklet.pdf",
+        "additional": {
+          "perm": {
+            "acl": {
+              "append": true,
+              "del": true,
+              "exec": true,
+              "read": true,
+              "write": true
+            },
+            "is_acl_mode": true,
+            "posix": 777
+          },
+          "size": 5033165,
+          "time": {
+            "atime": 1778580600,
+            "crtime": 1778580600,
+            "ctime": 1778580600,
+            "mtime": 1778580600
+          },
+          "type": "PDF"
+        }
+      }
+    ],
+    "offset": 0,
+    "total": 7
+  },
+  "success": true
+}

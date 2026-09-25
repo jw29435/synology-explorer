@@ -1,8 +1,11 @@
 {
   "data": {
-    "did": "mock-device-token-0123456789abcdef",
+    "account": "johann",
+    "device_id": "mock-device-token-0123456789abcdef",
+    "ik_message": "",
     "is_portal_port": false,
-    "sid": "mock-sid-0123456789abcdef"
+    "sid": "mock-sid-0123456789abcdef",
+    "synotoken": "mocktokn"
   },
   "success": true
 }
