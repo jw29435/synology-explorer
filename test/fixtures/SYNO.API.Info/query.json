@@ -1,0 +1,21 @@
+{
+  "data": {
+    "SYNO.API.Auth": { "maxVersion": 7, "minVersion": 1, "path": "entry.cgi" },
+    "SYNO.API.Info": { "maxVersion": 1, "minVersion": 1, "path": "entry.cgi" },
+    "SYNO.FileStation.Info": { "maxVersion": 2, "minVersion": 1, "path": "entry.cgi" },
+    "SYNO.FileStation.List": { "maxVersion": 2, "minVersion": 1, "path": "entry.cgi" },
+    "SYNO.FileStation.Search": { "maxVersion": 2, "minVersion": 1, "path": "entry.cgi" },
+    "SYNO.FileStation.Thumb": { "maxVersion": 2, "minVersion": 1, "path": "entry.cgi" },
+    "SYNO.FileStation.Download": { "maxVersion": 2, "minVersion": 1, "path": "entry.cgi" },
+    "SYNO.FileStation.Upload": { "maxVersion": 2, "minVersion": 1, "path": "entry.cgi" },
+    "SYNO.FileStation.CreateFolder": { "maxVersion": 2, "minVersion": 1, "path": "entry.cgi" },
+    "SYNO.FileStation.Rename": { "maxVersion": 2, "minVersion": 1, "path": "entry.cgi" },
+    "SYNO.FileStation.CopyMove": { "maxVersion": 3, "minVersion": 1, "path": "entry.cgi" },
+    "SYNO.FileStation.Delete": { "maxVersion": 2, "minVersion": 1, "path": "entry.cgi" },
+    "SYNO.FileStation.DirSize": { "maxVersion": 2, "minVersion": 1, "path": "entry.cgi" },
+    "SYNO.FileStation.MD5": { "maxVersion": 2, "minVersion": 1, "path": "entry.cgi" },
+    "SYNO.FileStation.Sharing": { "maxVersion": 3, "minVersion": 1, "path": "entry.cgi" },
+    "SYNO.FileStation.Favorite": { "maxVersion": 2, "minVersion": 1, "path": "entry.cgi" }
+  },
+  "success": true
+}
