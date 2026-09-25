@@ -59,8 +59,89 @@ abstract final class AppTheme {
       colorScheme: scheme,
       scaffoldBackgroundColor: scheme.surface,
     );
+    final radius14 = BorderRadius.circular(14);
     return base.copyWith(
       textTheme: GoogleFonts.manropeTextTheme(base.textTheme),
+      appBarTheme: AppBarTheme(
+        backgroundColor: scheme.surface,
+        surfaceTintColor: Colors.transparent,
+        scrolledUnderElevation: 0,
+        titleTextStyle: GoogleFonts.manrope(
+          fontSize: 22,
+          fontWeight: FontWeight.w700,
+          color: scheme.onSurface,
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: scheme.surfaceContainer,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: radius14,
+          borderSide: BorderSide(color: scheme.outline),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: radius14,
+          borderSide: BorderSide(color: scheme.outline),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: radius14,
+          borderSide: BorderSide(color: scheme.primary, width: 2),
+        ),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          minimumSize: const Size.fromHeight(52),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          textStyle: GoogleFonts.manrope(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          minimumSize: const Size(44, 52),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+      ),
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: scheme.primary,
+        foregroundColor: scheme.onPrimary,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      ),
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: scheme.surfaceContainer,
+        surfaceTintColor: Colors.transparent,
+        showDragHandle: true,
+        dragHandleColor: scheme.outline,
+      ),
+      chipTheme: ChipThemeData(
+        shape: const StadiumBorder(),
+        side: BorderSide(color: scheme.outline),
+        showCheckmark: false,
+        selectedColor: scheme.primary.withValues(alpha: 0.16),
+        backgroundColor: scheme.surface,
+        labelStyle: WidgetStateTextStyle.resolveWith(
+          (states) => GoogleFonts.manrope(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+            color: states.contains(WidgetState.selected)
+                ? scheme.primary
+                : scheme.onSurface,
+          ),
+        ),
+      ),
+      snackBarTheme: const SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+      ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: scheme.surface,
         indicatorColor: Colors.transparent,
