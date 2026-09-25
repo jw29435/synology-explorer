@@ -149,7 +149,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      l10n.searchRunning(search.entries.length),
+                      l10n.searchRunning(search.total ?? search.entries.length),
                       style: muted,
                     ),
                   ),
