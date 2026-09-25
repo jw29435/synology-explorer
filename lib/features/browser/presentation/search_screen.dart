@@ -243,7 +243,7 @@ List<TextSpan> highlight(String name, String query) {
         text: name.substring(i, i + q.length),
         style: const TextStyle(
           color: AppColors.accent,
-          backgroundColor: Color(0x40F2A93B),
+          backgroundColor: AppColors.accentHighlight,
         ),
       ),
     );

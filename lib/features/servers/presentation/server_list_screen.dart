@@ -254,7 +254,7 @@ class _ServerCard extends StatelessWidget {
                       height: 44,
                       decoration: BoxDecoration(
                         color: active
-                            ? const Color(0x26F2A93B)
+                            ? AppColors.accentSurface
                             : AppColors.surfaceRaised,
                         borderRadius: BorderRadius.circular(12),
                       ),

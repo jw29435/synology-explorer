@@ -464,7 +464,7 @@ class _OtpScreenState extends State<OtpScreen> {
               width: 72,
               height: 72,
               decoration: BoxDecoration(
-                color: const Color(0x26F2A93B),
+                color: AppColors.accentSurface,
                 borderRadius: BorderRadius.circular(20),
               ),
               child: const Icon(

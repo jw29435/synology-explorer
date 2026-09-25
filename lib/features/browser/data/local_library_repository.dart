@@ -59,11 +59,14 @@ class LocalLibraryRepository {
           );
 
   /// Merkt [path] als geöffnet und hält die Liste bei [maxRecent] Einträgen.
+  /// `insertOrReplace` löscht die alte Zeile und vergibt eine neue rowid –
+  /// die rowid bestimmt die Reihenfolge (DateTime hat nur Sekunden).
   Future<void> addRecent(int serverId, String path) =>
       _db.transaction(() async {
         await _db
             .into(_db.recentFiles)
-            .insertOnConflictUpdate(
+            .insert(
+              mode: InsertMode.insertOrReplace,
               RecentFilesCompanion.insert(
                 serverId: serverId,
                 path: path,

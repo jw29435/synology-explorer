@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 
 import '../../../core/network/syno_api_client.dart';
+import '../../../core/network/syno_exception.dart';
 import '../domain/nas_entry.dart';
 
 /// Vorschaubilder über `SYNO.FileStation.Thumb` mit Disk-Cache. Dateinamen
@@ -45,16 +46,27 @@ class ThumbnailCache {
         'path': entry.path,
         'size': 'small',
       });
-    } catch (_) {
-      _failed.add(key);
+    } on SynoException catch (e) {
+      if (_permanent(e)) _failed.add(key);
       rethrow;
     }
     await dir.create(recursive: true);
-    await file.writeAsBytes(bytes);
+    // Atomar: halb geschriebene Dateien dürfen nie als Cache-Treffer gelten.
+    final tmp = File('${file.path}.tmp');
+    await tmp.writeAsBytes(bytes, flush: true);
+    await tmp.rename(file.path);
     _size = (_size ?? await _usage(dir)) + bytes.length;
     if (_size! > maxBytes) _size = await _prune(dir);
     return bytes;
   }
+
+  /// Nur Antworten des NAS (HTTP-Status wie 404, API-Fehler) gelten für die
+  /// Session als endgültig – Netzwerkfehler und abgelaufene Sessions nicht.
+  static bool _permanent(SynoException e) => switch (e) {
+    SynoNetworkError(:final statusCode) => statusCode != null,
+    SynoSessionExpired() => false,
+    _ => true,
+  };
 
   static Future<int> _usage(Directory dir) async {
     var sum = 0;

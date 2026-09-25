@@ -30,6 +30,22 @@ void main() {
     expect(await repo.recent(2).first, hasLength(1));
   });
 
+  test('erneut geöffnete Datei rückt nach oben und bleibt erhalten', () async {
+    final db = AppDatabase(NativeDatabase.memory());
+    addTearDown(db.close);
+    final repo = LocalLibraryRepository(db);
+    await repo.addRecent(1, '/a.mp3');
+    for (var i = 0; i < 49; i++) {
+      await repo.addRecent(1, '/f$i.mp3');
+    }
+    await repo.addRecent(1, '/a.mp3');
+    await repo.addRecent(1, '/neu.mp3');
+    final names = [for (final r in await repo.recent(1).first) r.entry.name];
+    expect(names.take(2), ['neu.mp3', 'a.mp3']);
+    expect(names, hasLength(50));
+    expect(names, isNot(contains('f0.mp3')), reason: 'älteste fällt raus');
+  });
+
   test('Favoriten setzen und entfernen', () async {
     final db = AppDatabase(NativeDatabase.memory());
     addTearDown(db.close);

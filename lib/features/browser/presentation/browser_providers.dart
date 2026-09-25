@@ -89,10 +89,14 @@ final gridViewProvider = NotifierProvider<Setting<bool>, bool>(
 // Ordnerinhalt mit Paging
 
 class FolderState {
-  const FolderState(this.entries, this.total);
+  const FolderState(this.entries, this.total, {this.loadMoreError});
 
   final List<NasEntry> entries;
   final int total;
+
+  /// Fehler beim Nachladen der nächsten Seite; die Liste zeigt dann
+  /// „Erneut versuchen“ statt automatisch neu zu laden.
+  final Object? loadMoreError;
 
   bool get hasMore => entries.length < total;
 }
@@ -129,20 +133,39 @@ class FolderNotifier extends AsyncNotifier<FolderState> {
     return FolderState(page.entries, page.total);
   }
 
-  /// Lädt die nächste Seite (offset/limit), falls vorhanden.
+  /// Lädt die nächste Seite (offset/limit), falls vorhanden. Nach einem
+  /// Fehler nur über [retryLoadMore].
   Future<void> loadMore() async {
     final current = state.value;
-    if (_loadingMore || current == null || !current.hasMore) return;
+    if (_loadingMore ||
+        current == null ||
+        !current.hasMore ||
+        current.loadMoreError != null) {
+      return;
+    }
     _loadingMore = true;
     try {
       final page = await _page(current.entries.length);
-      if (!ref.mounted) return;
+      // Inzwischen neu sortiert oder aktualisiert: Seite gehört nicht dazu.
+      if (!ref.mounted || !identical(state.value, current)) return;
       state = AsyncData(
         FolderState([...current.entries, ...page.entries], page.total),
+      );
+    } catch (e) {
+      if (!ref.mounted || !identical(state.value, current)) return;
+      state = AsyncData(
+        FolderState(current.entries, current.total, loadMoreError: e),
       );
     } finally {
       _loadingMore = false;
     }
+  }
+
+  Future<void> retryLoadMore() {
+    if (state.value case final current?) {
+      state = AsyncData(FolderState(current.entries, current.total));
+    }
+    return loadMore();
   }
 }
 
@@ -225,7 +248,13 @@ class DirSizeNotifier extends Notifier<AsyncValue<DirSize>?> {
     final poll = _poll = Backoff();
     state = const AsyncLoading();
     try {
-      final task = _task = await _api.start(path);
+      final task = await _api.start(path);
+      // Beim Warten auf start verlassen: Task gleich wieder stoppen.
+      if (poll.cancelled) {
+        unawaited(_quietly(() => _api.stop(task)));
+        return;
+      }
+      _task = task;
       while (!poll.cancelled) {
         final size = await _api.status(task);
         if (poll.cancelled) return;

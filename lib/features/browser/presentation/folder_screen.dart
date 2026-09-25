@@ -232,10 +232,41 @@ class _SortButton extends ConsumerWidget {
   }
 }
 
-/// Lädt die nächste Seite, sobald das Ende der Liste näher kommt.
+/// Lädt die nächste Seite, sobald das Ende der Liste näher kommt – nicht
+/// nach einem Fehler (dann „Erneut versuchen“ in [_PageFooter]).
 void _maybeLoadMore(WidgetRef ref, String path, FolderState state, int index) {
-  if (state.hasMore && index >= state.entries.length - 50) {
+  if (state.hasMore &&
+      state.loadMoreError == null &&
+      index >= state.entries.length - 50) {
     scheduleMicrotask(() => ref.read(folderProvider(path).notifier).loadMore());
+  }
+}
+
+/// Letzte Zeile/Kachel beim Paging: Spinner oder Fehler mit Retry.
+class _PageFooter extends ConsumerWidget {
+  const _PageFooter({required this.path, required this.state});
+
+  final String path;
+  final FolderState state;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final error = state.loadMoreError;
+    if (error == null) {
+      return const Padding(
+        padding: EdgeInsets.all(16),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+    final l10n = AppLocalizations.of(context);
+    return Center(
+      child: TextButton.icon(
+        icon: const Icon(Icons.refresh),
+        label: Text(l10n.retry),
+        onPressed: () =>
+            ref.read(folderProvider(path).notifier).retryLoadMore(),
+      ),
+    );
   }
 }
 
@@ -256,10 +287,7 @@ class _FolderList extends ConsumerWidget {
       itemBuilder: (context, i) {
         _maybeLoadMore(ref, path, state, i);
         if (i == entries.length) {
-          return const Padding(
-            padding: EdgeInsets.all(16),
-            child: Center(child: CircularProgressIndicator()),
-          );
+          return _PageFooter(path: path, state: state);
         }
         final e = entries[i];
         final selected = selection.contains(e.path);
@@ -314,9 +342,12 @@ class _FolderGrid extends ConsumerWidget {
         mainAxisSpacing: 8,
         crossAxisSpacing: 8,
       ),
-      itemCount: entries.length,
+      itemCount: entries.length + (state.hasMore ? 1 : 0),
       itemBuilder: (context, i) {
         _maybeLoadMore(ref, path, state, i);
+        if (i == entries.length) {
+          return _PageFooter(path: path, state: state);
+        }
         final e = entries[i];
         final selected = selection.contains(e.path);
         void toggle() =>
@@ -337,7 +368,7 @@ class _FolderGrid extends ConsumerWidget {
                 const Center(
                   child: CircleAvatar(
                     radius: 18,
-                    backgroundColor: Color(0x99000000),
+                    backgroundColor: AppColors.playScrim,
                     child: Icon(Icons.play_arrow, color: AppColors.text),
                   ),
                 ),
@@ -372,7 +403,7 @@ class _Badge extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
     decoration: BoxDecoration(
-      color: const Color(0xCC15171C),
+      color: AppColors.badgeScrim,
       borderRadius: BorderRadius.circular(6),
     ),
     child: Text(

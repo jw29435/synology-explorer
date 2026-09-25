@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:synology_explorer/core/network/syno_exception.dart';
+import 'package:synology_explorer/features/browser/domain/nas_entry.dart';
 import 'package:synology_explorer/features/browser/data/file_station_list_api.dart';
 import 'package:synology_explorer/features/browser/presentation/entry_widgets.dart';
 
@@ -97,4 +99,79 @@ void main() {
     expect(find.text('johann · users'), findsOne);
     expect(find.text('rwxrwxr-x · ACL: Lesen/Schreiben'), findsOne);
   });
+
+  testWidgets('06: Anmeldefehler → „Anmelden“ statt „Erneut versuchen“', (
+    tester,
+  ) async {
+    final app = await pumpApp(
+      tester,
+      listApi: _FailingApi(const SynoUnauthorized(400)),
+      location: folderLocation(album),
+    );
+    expect(find.text('Benutzer oder Passwort falsch.'), findsOne);
+    expect(find.text('Erneut versuchen'), findsNothing);
+    await tester.tap(find.text('Anmelden'));
+    await tester.pumpAndSettle();
+    expect(routerOf(app.container).state.matchedLocation, '/servers/1');
+  });
+
+  testWidgets('06: Fehler beim Nachladen zeigt Retry am Listenende', (
+    tester,
+  ) async {
+    final api = _FailingApi(const SynoNetworkError(), firstPage: true);
+    await pumpApp(tester, listApi: api, location: folderLocation(album));
+    await tester.scrollUntilVisible(
+      find.text('Erneut versuchen'),
+      500,
+      scrollable: find
+          .descendant(
+            of: find.byType(ListView),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
+    final calls = api.calls.length;
+    await tester.pump(const Duration(seconds: 1));
+    expect(api.calls, hasLength(calls), reason: 'kein Auto-Reload');
+    await tester.tap(find.text('Erneut versuchen'));
+    await tester.pumpAndSettle();
+    expect(api.calls, hasLength(calls + 1));
+  });
+}
+
+/// Scheitert immer bzw. mit [firstPage] erst ab der zweiten Seite.
+class _FailingApi extends FakeListApi {
+  _FailingApi(this.error, {this.firstPage = false});
+
+  final Object error;
+  final bool firstPage;
+
+  @override
+  Future<NasPage> list(
+    String folderPath, {
+    NasSortBy sortBy = NasSortBy.name,
+    bool descending = false,
+    int offset = 0,
+    int limit = 500,
+  }) async {
+    calls.add((
+      path: folderPath,
+      by: sortBy,
+      descending: descending,
+      offset: offset,
+    ));
+    if (!firstPage || offset > 0) throw error;
+    return (
+      entries: [
+        for (var i = 0; i < 30; i++)
+          NasEntry(
+            path: '/p/$i',
+            name: 'Datei $i',
+            isDir: false,
+            type: NasFileType.other,
+          ),
+      ],
+      total: 60,
+    );
+  }
 }

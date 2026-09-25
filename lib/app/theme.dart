@@ -15,6 +15,18 @@ abstract final class AppColors {
   static const info = Color(0xFF5AB0FF);
   static const errorSoft = Color(0xFFF0A8A8);
   static const error = Color(0xFFD64545);
+
+  /// Akzent als Fläche hinter Icons (15 %).
+  static const accentSurface = Color(0x26F2A93B);
+
+  /// Treffer-Hervorhebung in der Suche (25 %).
+  static const accentHighlight = Color(0x40F2A93B);
+
+  /// Hintergrund für Badges auf Vorschaubildern (80 %).
+  static const badgeScrim = Color(0xCC15171C);
+
+  /// Kreis hinter dem Play-Symbol auf Video-Kacheln (60 % Schwarz).
+  static const playScrim = Color(0x99000000);
 }
 
 abstract final class AppTheme {
