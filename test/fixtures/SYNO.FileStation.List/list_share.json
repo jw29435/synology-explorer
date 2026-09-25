@@ -1,0 +1,157 @@
+{
+  "data": {
+    "offset": 0,
+    "shares": [
+      {
+        "isdir": true,
+        "name": "music",
+        "path": "/music",
+        "additional": {
+          "owner": {
+            "gid": 100,
+            "group": "users",
+            "uid": 1024,
+            "user": "admin"
+          },
+          "perm": {
+            "acl": {
+              "append": true,
+              "del": true,
+              "exec": true,
+              "read": true,
+              "write": true
+            },
+            "acl_enable": true,
+            "adv_right": {
+              "disable_download": false,
+              "disable_list": false,
+              "disable_modify": false
+            },
+            "is_acl_mode": true,
+            "posix": 0,
+            "share_right": "RW"
+          },
+          "real_path": "/volume1/music",
+          "volume_status": {
+            "freespace": 1834567892992,
+            "readonly": false,
+            "totalspace": 3839999999999
+          }
+        }
+      },
+      {
+        "isdir": true,
+        "name": "photo",
+        "path": "/photo",
+        "additional": {
+          "owner": {
+            "gid": 100,
+            "group": "users",
+            "uid": 1024,
+            "user": "admin"
+          },
+          "perm": {
+            "acl": {
+              "append": true,
+              "del": true,
+              "exec": true,
+              "read": true,
+              "write": true
+            },
+            "acl_enable": true,
+            "adv_right": {
+              "disable_download": false,
+              "disable_list": false,
+              "disable_modify": false
+            },
+            "is_acl_mode": true,
+            "posix": 0,
+            "share_right": "RW"
+          },
+          "real_path": "/volume1/photo",
+          "volume_status": {
+            "freespace": 1834567892992,
+            "readonly": false,
+            "totalspace": 3839999999999
+          }
+        }
+      },
+      {
+        "isdir": true,
+        "name": "video",
+        "path": "/video",
+        "additional": {
+          "owner": {
+            "gid": 100,
+            "group": "users",
+            "uid": 1024,
+            "user": "admin"
+          },
+          "perm": {
+            "acl": {
+              "append": false,
+              "del": false,
+              "exec": true,
+              "read": true,
+              "write": false
+            },
+            "acl_enable": true,
+            "adv_right": {
+              "disable_download": false,
+              "disable_list": false,
+              "disable_modify": false
+            },
+            "is_acl_mode": true,
+            "posix": 0,
+            "share_right": "RO"
+          },
+          "real_path": "/volume1/video",
+          "volume_status": {
+            "freespace": 1834567892992,
+            "readonly": false,
+            "totalspace": 3839999999999
+          }
+        }
+      },
+      {
+        "isdir": true,
+        "name": "dokumente",
+        "path": "/dokumente",
+        "additional": {
+          "owner": {
+            "gid": 100,
+            "group": "users",
+            "uid": 1024,
+            "user": "admin"
+          },
+          "perm": {
+            "acl": {
+              "append": true,
+              "del": true,
+              "exec": true,
+              "read": true,
+              "write": true
+            },
+            "acl_enable": true,
+            "adv_right": {
+              "disable_download": false,
+              "disable_list": false,
+              "disable_modify": false
+            },
+            "is_acl_mode": true,
+            "posix": 0,
+            "share_right": "RW"
+          },
+          "real_path": "/volume1/dokumente",
+          "volume_status": {
+            "freespace": 1834567892992,
+            "readonly": false,
+            "totalspace": 3839999999999
+          }
+        }
+      }
+    ],
+    "total": 4
+  },
+  "success": true
+}
