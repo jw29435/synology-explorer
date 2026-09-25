@@ -12,7 +12,7 @@ Stand 25.09.2026, per curl, Zugangsdaten aus Umgebungsvariablen. Anonymisierte e
 | Geräte-Token | **ja**, heißt in DSM 7 aber `device_id` (nicht `did`), 86 Zeichen, kommt auch ohne 2FA |
 | Zweiter Login mit `device_id` | **ja**, erfolgreich, gleiche `device_id` zurück. OTP-Pfad nicht testbar: 2FA ist auf dem Konto aus |
 | HTTP-Range beim Download | **ja**, `206 Partial Content` mit `Content-Range` |
-| HEIC-Thumb (`size=xl`) | **nein**: Das NAS erzeugt überhaupt keine Vorschaubilder (auch nicht in der Weboberfläche); `Thumb` liefert für jedes Bild 404. HEIC-Dateien gibt es im Share ohnehin keine |
+| HEIC-Thumb (`size=xl`) | **nein**: `size=xl` liefert immer 404. **Korrektur M1:** `size=small` funktioniert (siehe „Nachtrag M1“). HEIC-Dateien gibt es im Share keine |
 | Favorite ohne Home-Dienst | **ja**: `list` liefert die bestehenden Favoriten, `add`/`delete` funktionieren |
 
 ## API-Versionen (`SYNO.API.Info`, alle über `entry.cgi`)
@@ -101,3 +101,27 @@ Folgen:
 - Abschnitt 11 „HEIC-Thumbnails werden vom NAS nicht erzeugt": Risiko ist eingetreten und betrifft alle Bildtypen,
   nicht nur HEIC.
 - Abschnitt 11 „Offene Punkte": DSM-Version ist 7.2.1; 2FA ist auf dem Konto nicht aktiv.
+
+## Nachtrag M1 (26.09.2026)
+
+Beim Bau von Screen 07 und 11 erneut gegen das NAS geprüft (curl und App auf beiden Handys).
+
+- **Thumb geht doch – nur nicht mit `xl`.** `size=small` liefert für JPGs ein echtes 160×160-JPEG, für manche Dateien
+  ein anderes kleines Format (z. B. BMP). `size=medium` liefert teils das **Original** (mehrere MB), `size=xl` immer
+  404. Die App fragt deshalb `small` an und fällt bei Fehlern auf Typ-Icons zurück. Der oben beschriebene Befund
+  „keine Vorschaubilder“ galt nur für `xl`. Nebenwirkung: Thumb-Anfragen ändern die `mtime` des Ordners (DSM legt
+  offenbar `@eaDir`-Einträge an).
+- **Task-IDs müssen JSON-kodiert gesendet werden.** `taskid=<id>` roh findet DSM nur bei einem Teil der Tasks
+  (zufällig, ca. 40 %). Die übrigen melden bei `Search list` dauerhaft `finished: true` ohne `total` – das ist die
+  Ursache für den oben beschriebenen „Zwischenzustand“ und für „`extension=jpg` nach 180 s ohne total“ – und bei
+  `DirSize status` Fehler 599. Mit `taskid="<id>"` (JSON-String) funktionieren alle Tasks sofort. Die Regel
+  „fertig erst mit `finished` und `total`“ bleibt als Absicherung im Code.
+- **Search-Parameter:** `filetype` kennt nur `file`/`dir`/`all`. Typ-Filter (Audio, Bilder …) laufen über
+  `extension` mit kommagetrennter Liste (`mp3,flac,…`), das funktioniert. `folder_path` als JSON-Array mit mehreren
+  Ordnern funktioniert. Ohne Treffer kommt `total: 0`. Ein finaler `total` von genau 1000 kam bei einer Suche vor –
+  möglicherweise eine Obergrenze; die App zeigt höchstens 500 Treffer und bittet sonst ums Verfeinern.
+- **DirSize:** `status` nach `finished: true` liefert 599 (Task ist weg); die App pollt danach nicht weiter.
+- **Zertifikat auf Android 11:** Das Samsung A40 (Android 11) vertraut dem Let's-Encrypt-Zertifikat des NAS nicht
+  (neue Kette „YE2“, deren Root im alten Trust Store fehlt). Die App zeigt dann Screen 03; nach „Vertrauen“ ist der
+  Fingerprint gepinnt. Nach der Zertifikatserneuerung (alle 90 Tage) ändert sich der Fingerprint; die App blockiert
+  dann und zeigt Screen 03 mit Warnhinweis erneut (CONCEPT.md Abschnitt 8), der Nutzer muss neu bestätigen.
