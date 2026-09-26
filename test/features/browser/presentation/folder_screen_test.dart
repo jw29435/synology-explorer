@@ -158,6 +158,22 @@ void main() {
     );
   });
 
+  testWidgets('07: Typ-Badge außer bei JPEG und Video (E2E-049)', (
+    tester,
+  ) async {
+    await pumpApp(
+      tester,
+      listApi: _MediaApi(),
+      location: folderLocation('/photo'),
+    );
+    await tester.tap(find.byTooltip('Rasteransicht'));
+    await tester.pumpAndSettle();
+    expect(find.text('HEIC'), findsOne);
+    expect(find.text('PNG'), findsOne);
+    expect(find.text('JPG'), findsNothing);
+    expect(find.text('MP4'), findsNothing);
+  });
+
   testWidgets('09/10: Kebab öffnet Aktionen, Info zeigt getinfo', (
     tester,
   ) async {
@@ -290,7 +306,7 @@ class _FailingApi extends FakeListApi {
   }
 }
 
-/// Ein Video, ein HEIC- und ein JPEG-Bild.
+/// Ein Video, je ein HEIC-, JPEG- und PNG-Bild.
 class _MediaApi extends FakeListApi {
   @override
   Future<NasPage> list(
@@ -305,6 +321,7 @@ class _MediaApi extends FakeListApi {
         ('clip.mp4', NasFileType.video),
         ('foto.heic', NasFileType.image),
         ('bild.jpg', NasFileType.image),
+        ('grafik.png', NasFileType.image),
       ])
         NasEntry(
           path: '$folderPath/$name',
@@ -313,6 +330,6 @@ class _MediaApi extends FakeListApi {
           type: type,
         ),
     ],
-    total: 3,
+    total: 4,
   );
 }

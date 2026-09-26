@@ -620,7 +620,10 @@ class _FolderGrid extends ConsumerWidget {
             fit: StackFit.expand,
             children: [
               EntryIcon(e, label: true),
-              if (ext == 'HEIC' || ext == 'HEIF')
+              // Typ-Badge (Katalog 07); JPEG ist der Normalfall und bleibt
+              // wie im Mockup ohne, Videos haben das Play-Symbol.
+              if (e.type == NasFileType.image &&
+                  !const {'', 'JPG', 'JPEG'}.contains(ext))
                 Positioned(left: 6, top: 6, child: _Badge(ext)),
               if (e.type == NasFileType.video)
                 Center(
