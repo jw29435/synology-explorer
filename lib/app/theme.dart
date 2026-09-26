@@ -57,7 +57,7 @@ class Neutrals {
 /// Akzent- und Statusfarben sind hell wie dunkel gleich.
 abstract final class AppColors {
   // ponytail: globaler Schalter statt ThemeExtension – die App baut beim
-  // Designwechsel komplett neu auf (Key am MaterialApp). ThemeExtension,
+  // Designwechsel komplett neu auf (SynologyExplorerApp._rebuildAll). ThemeExtension,
   // falls Widgets je außerhalb dieses Baums gerendert werden.
   static Neutrals neutrals = Neutrals.dark;
 

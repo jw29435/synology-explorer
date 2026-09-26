@@ -12,6 +12,37 @@ void main() {
   );
   final letters = RegExp('[A-Za-zÄÖÜäöüß]{2,}');
 
+  // Positionale Literale an Widgets und Helfern (`showSnack(context, '…')`,
+  // `SectionLabel('…')`): nur Satzartiges (zwei Wörter) zählt, sonst wären
+  // Schlüssel, Pfade und Endungen lauter Fehlalarme.
+  final positional = RegExp(r'''(?:\b(\w+)\(|,)\s*(?=['"])''');
+  final sentence = RegExp('[A-Za-zÄÖÜäöüß]{2,}[ ]+[A-Za-zÄÖÜäöüß]{2,}');
+  // Aufrufe, deren Text nie angezeigt wird (Fehler, Logs, Schlüssel, Pfade).
+  const notUi = {
+    'Key',
+    'ValueKey',
+    'StateError',
+    'UnimplementedError',
+    'ArgumentError',
+    'FormatException',
+    'Exception',
+    'debugPrint',
+    'print',
+    'Directory',
+    'File',
+    'Uri',
+    'RegExp',
+    'go',
+    'push',
+    'startsWith',
+    'endsWith',
+    'contains',
+    'getAttribute',
+    'Locale',
+    'AndroidNotificationDetails',
+    'AndroidInitializationSettings',
+  };
+
   /// Literal ab [start] (Anführungszeichen) ohne Interpolationen `${…}`/`$x`.
   ({String text, int end}) readLiteral(String s, int start) {
     final quote = s[start];
@@ -48,17 +79,20 @@ void main() {
 
   List<String> literalsIn(String source) {
     final lines = source.split('\n');
-    return [
+    String? hit(int at, bool Function(String) isUi) {
+      final literal = readLiteral(source, at).text;
+      final line = '\n'.allMatches(source.substring(0, at)).length + 1;
+      return isUi(literal) && !lines[line - 1].contains('l10n-ignore')
+          ? '$line: $literal'
+          : null;
+    }
+
+    return {
       for (final m in uiArgument.allMatches(source))
-        if ((
-              literal: readLiteral(source, m.end).text,
-              line: '\n'.allMatches(source.substring(0, m.end)).length + 1,
-            )
-            case (:final literal, :final line)
-            when letters.hasMatch(literal) &&
-                !lines[line - 1].contains('l10n-ignore'))
-          '$line: $literal',
-    ];
+        ?hit(m.end, letters.hasMatch),
+      for (final m in positional.allMatches(source))
+        if (!notUi.contains(m.group(1))) ?hit(m.end, sentence.hasMatch),
+    }.toList();
   }
 
   test('erkennt Literale und Ausnahmen', () {
@@ -69,18 +103,31 @@ void main() {
     expect(literalsIn(r"Text('Datei ${f('x')}')"), ['1: Datei ']);
     expect(literalsIn("hintText: 'https://', // l10n-ignore"), isEmpty);
     expect(literalsIn('Text(l10n.title)'), isEmpty);
+    expect(literalsIn("showSnack(context, 'Datei gelöscht')"), [
+      '1: Datei gelöscht',
+    ]);
+    expect(literalsIn("SectionLabel('Zuletzt geöffnet')"), [
+      '1: Zuletzt geöffnet',
+    ]);
+    expect(literalsIn("StateError('Keine Session')"), isEmpty);
+    expect(literalsIn("Key('play-pause'), go('/files')"), isEmpty);
+    expect(literalsIn("_xml(archive, 'word/document.xml')"), isEmpty);
   });
 
-  test('keine hartkodierten UI-Texte in presentation/ und app/', () {
+  test('keine hartkodierten UI-Texte in presentation/, app/, viewers/', () {
     final files =
         [
           ...Directory('lib/app').listSync(recursive: true),
+          ...Directory('lib/features/viewers').listSync(recursive: true),
           for (final feature in Directory('lib/features').listSync())
             if (Directory('${feature.path}/presentation') case final dir
                 when dir.existsSync())
               ...dir.listSync(recursive: true),
         ].whereType<File>().where(
-          (f) => f.path.endsWith('.dart') && !f.path.endsWith('.g.dart'),
+          (f) =>
+              f.path.endsWith('.dart') &&
+              !f.path.endsWith('.g.dart') &&
+              !f.path.endsWith('.freezed.dart'),
         );
     final found = {
       for (final f in files)

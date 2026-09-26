@@ -56,6 +56,31 @@ void main() {
     expect(find.text('Server verwalten'), findsOne);
   });
 
+  testWidgets('Designwechsel (auch vom System) verliert keinen App-State', (
+    tester,
+  ) async {
+    final app = await pumpApp(
+      tester,
+      location: '/settings',
+      overrides: settingsOverrides(),
+    );
+    final context = tester.element(find.text('Server verwalten'));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(const SnackBar(content: Text('bleibt')));
+    await tester.pumpAndSettle();
+    await tester.runAsync(
+      () =>
+          SettingsRepository(app.db)
+              .write(SettingsRepository.themeMode, 'light'),
+    );
+    await tester.pumpAndSettle();
+    expect(AppColors.neutrals, same(Neutrals.light));
+    expect(find.text('bleibt'), findsOne);
+    // Widgets, die AppColors direkt lesen, sind neu gebaut.
+    final label = tester.widget<Text>(find.text('VERBINDUNG'));
+    expect(label.style?.color, Neutrals.light.textSecondary);
+  });
+
   testWidgets('Sprache Englisch übersetzt die App sofort', (tester) async {
     await pumpApp(
       tester,
