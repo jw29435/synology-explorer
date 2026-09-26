@@ -97,6 +97,7 @@ void main() {
     expect(download.enabled, isTrue);
     expect(find.byTooltip('ab M4'), findsNothing);
 
+    await tester.ensureVisible(find.text('Info'));
     await tester.tap(find.text('Info'));
     await tester.pumpAndSettle();
     expect(find.text('johann · users'), findsOne);

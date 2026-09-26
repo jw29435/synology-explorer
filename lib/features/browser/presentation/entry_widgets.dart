@@ -10,6 +10,7 @@ import '../../../core/network/syno_exception.dart';
 import '../../../core/utils/format.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../viewers/presentation/viewer_screen.dart';
+import '../../audio/presentation/audio_widgets.dart';
 import '../data/thumbnail_cache.dart';
 import '../domain/nas_entry.dart';
 import 'browser_providers.dart';
@@ -34,12 +35,7 @@ void openEntry(BuildContext context, WidgetRef ref, NasEntry entry) {
       .addRecent(ref.read(serverIdProvider), entry.path);
   switch (entry.type) {
     case NasFileType.audio:
-      // Der Player kommt mit M2; bis dahin nur ein Hinweis.
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context).openLater)),
-        );
+      playAudioEntry(context, entry);
     default:
       context.push(viewerLocation(entry.path), extra: entry);
   }

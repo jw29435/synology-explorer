@@ -83,6 +83,26 @@ class PlaybackPositions extends Table {
   Set<Column> get primaryKey => {serverId, path};
 }
 
+/// Ordner im Hörbuch-Modus (Zeile vorhanden = an) mit zuletzt gespieltem
+/// Titel.
+class AudiobookFolders extends Table {
+  IntColumn get serverId => integer()();
+  TextColumn get path => text()();
+  TextColumn get lastTrack => text().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {serverId, path};
+}
+
+/// Einfache App-Einstellungen als Schlüssel/Wert.
+class Settings extends Table {
+  TextColumn get key => text()();
+  TextColumn get value => text()();
+
+  @override
+  Set<Column> get primaryKey => {key};
+}
+
 @DriftDatabase(
   tables: [
     Servers,
@@ -91,13 +111,15 @@ class PlaybackPositions extends Table {
     Transfers,
     OfflineFiles,
     PlaybackPositions,
+    AudiobookFolders,
+    Settings,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -111,6 +133,10 @@ class AppDatabase extends _$AppDatabase {
         await m.createTable(offlineFiles);
       }
       if (from < 4) await m.createTable(playbackPositions);
+      if (from < 5) {
+        await m.createTable(audiobookFolders);
+        await m.createTable(settings);
+      }
     },
   );
 }

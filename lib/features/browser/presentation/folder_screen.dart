@@ -7,6 +7,8 @@ import 'package:go_router/go_router.dart';
 import '../../../app/theme.dart';
 import '../../../core/utils/format.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../audio/presentation/audio_widgets.dart';
+import '../../audio/presentation/playback_providers.dart';
 import '../../sharing/presentation/share_link_sheet.dart';
 import '../data/file_station_list_api.dart';
 import '../domain/nas_entry.dart';
@@ -131,6 +133,14 @@ class FolderScreen extends ConsumerWidget {
               child: Row(
                 children: [
                   const _SortButton(),
+                  if (folder.value?.entries.any(
+                        (e) => e.type == NasFileType.audio,
+                      ) ??
+                      false) ...[
+                    const SizedBox(width: 8),
+                    // Schmale Displays: Chip kürzt, statt die Zeile zu sprengen.
+                    Flexible(flex: 10, child: PlayFolderChip(path: path)),
+                  ],
                   const Spacer(),
                   if (folder.value case final state?)
                     Text(
@@ -442,6 +452,9 @@ class _FolderList extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final selection = ref.watch(selectionProvider(path));
+    final nowPlaying = ref.watch(
+      audioControllerProvider.select((s) => s.track?.path),
+    );
     final entries = state.entries;
     return ListView.builder(
       padding: const EdgeInsets.only(bottom: 96),
@@ -453,6 +466,7 @@ class _FolderList extends ConsumerWidget {
         }
         final e = entries[i];
         final selected = selection.contains(e.path);
+        final playing = e.path == nowPlaying;
         void toggle() =>
             ref.read(selectionProvider(path).notifier).toggle(e.path);
         return ListTile(
@@ -473,11 +487,18 @@ class _FolderList extends ConsumerWidget {
                     EntryIcon(e),
                   ],
                 ),
-          title: Text(e.name, overflow: TextOverflow.ellipsis),
+          title: Text(
+            e.name,
+            overflow: TextOverflow.ellipsis,
+            style: playing ? const TextStyle(color: AppColors.accent) : null,
+          ),
           subtitle: Text(
             [
               if (e.size case final size?) formatSize(size, l10n.localeName),
-              if (e.mtime case final mtime?) formatDate(mtime, l10n),
+              if (playing)
+                l10n.nowPlayingRow
+              else if (e.mtime case final mtime?)
+                formatDate(mtime, l10n),
             ].join(' · '),
             style: const TextStyle(color: AppColors.textSecondary),
           ),

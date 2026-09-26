@@ -2,8 +2,8 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:synology_explorer/core/utils/format.dart';
 import 'package:synology_explorer/features/browser/domain/nas_entry.dart';
-import 'package:synology_explorer/features/viewers/presentation/video_player_screen.dart';
 import 'package:synology_explorer/features/viewers/presentation/viewer_common.dart';
 import 'package:synology_explorer/features/viewers/presentation/viewer_providers.dart';
 import 'package:synology_explorer/features/viewers/presentation/viewer_screen.dart';
@@ -31,7 +31,11 @@ Future<FakeMediaRepository> _open(WidgetTester tester, NasEntry entry) async {
     overrides: [mediaRepositoryProvider.overrideWithValue(media)],
   );
   routerOf(app.container).push(viewerLocation(entry.path), extra: entry);
-  await pumpWithIo(tester);
+  // Bis die Datei gelesen ist (Spinner weg), nicht nur eine feste Zeit.
+  await pumpWithIo(
+    tester,
+    until: () => find.byType(CircularProgressIndicator).evaluate().isEmpty,
+  );
   await tester.pumpAndSettle();
   return media;
 }
@@ -81,14 +85,17 @@ void main() {
         LocalFile(File('test/fixtures/text/README.md'), 1),
       ),
     );
-    await pumpWithIo(tester);
+    await pumpWithIo(
+      tester,
+      until: () => find.byType(CircularProgressIndicator).evaluate().isEmpty,
+    );
     await tester.pumpAndSettle();
     expect(find.text('NAS-Setup Heim'), findsOne);
     expect(find.byTooltip('Teilen'), findsOne);
   });
 
   test('16: Zeitformat des Players', () {
-    expect(formatPlaybackTime(const Duration(seconds: 102)), '1:42');
-    expect(formatPlaybackTime(const Duration(hours: 1, seconds: 5)), '1:00:05');
+    expect(formatDuration(const Duration(seconds: 102)), '1:42');
+    expect(formatDuration(const Duration(hours: 1, seconds: 5)), '1:00:05');
   });
 }

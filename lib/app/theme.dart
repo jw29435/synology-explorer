@@ -30,6 +30,13 @@ abstract final class AppColors {
 
   /// Kreis hinter dem Play-Symbol auf Video-Kacheln (60 % Schwarz).
   static const playScrim = Color(0x99000000);
+
+  /// Cover-Platzhalter (Screen 12/13, Mini-Player): obere und untere Fläche.
+  static const coverTop = Color(0xFF2F3A4B);
+  static const coverBottom = Color(0xFF4A6178);
+
+  /// Play/Pause-Knopf im Player (Akzent, abgedunkelt).
+  static const accentStrong = Color(0xFFA8680A);
 }
 
 abstract final class AppTheme {

@@ -19,15 +19,6 @@ import '../data/playback_position_repository.dart';
 import 'viewer_common.dart';
 import 'viewer_providers.dart';
 
-/// `m:ss` bzw. `h:mm:ss`.
-String formatPlaybackTime(Duration d) {
-  final s = d.inSeconds;
-  String two(int n) => n.toString().padLeft(2, '0');
-  return s >= 3600
-      ? '${s ~/ 3600}:${two(s ~/ 60 % 60)}:${two(s % 60)}'
-      : '${s ~/ 60}:${two(s % 60)}';
-}
-
 /// Screen 16: Streaming mit media_kit (Seek per HTTP-Range) im
 /// Landscape-Vollbild. Doppeltipp ±10 s, Wischen rechts Lautstärke, links
 /// Helligkeit; Position wie bei Audio alle 5 s und bei Pause gespeichert.
@@ -417,8 +408,8 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
                 children: [
                   const SizedBox(width: 8),
                   Text(
-                    '${formatPlaybackTime(Duration(milliseconds: position.round()))}'
-                    ' / ${formatPlaybackTime(s.duration)}',
+                    '${formatDuration(Duration(milliseconds: position.round()))}'
+                    ' / ${formatDuration(s.duration)}',
                     style: AppTheme.mono(const TextStyle(fontSize: 16)),
                   ),
                   const Spacer(),
@@ -489,7 +480,7 @@ class _ResumeCard extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(l10n.resumeAt(formatPlaybackTime(at))),
+          Text(l10n.resumeAt(formatDuration(at))),
           const SizedBox(width: 16),
           FilledButton(onPressed: onResume, child: Text(l10n.resume)),
           const SizedBox(width: 8),

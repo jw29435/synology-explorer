@@ -703,5 +703,101 @@
     }
   },
   "fullscreen": "Vollbild umschalten",
-  "videoUnavailable": "Video kann nicht abgespielt werden"
+  "videoUnavailable": "Video kann nicht abgespielt werden",
+  "audioChannelName": "Wiedergabe",
+  "playFolder": "Ordner abspielen",
+  "playingFromFolder": "Wiedergabe aus Ordner",
+  "trackOf": "Titel {index} von {count}",
+  "@trackOf": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "nowPlayingRow": "läuft gerade",
+  "queueTitle": "Queue",
+  "queueButton": "Queue ({count})",
+  "@queueButton": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "queueClear": "Leeren",
+  "queueNowPlaying": "Läuft gerade",
+  "queueUpNext": "{count, plural, =0{Als Nächstes · keine Titel} =1{Als Nächstes · 1 Titel} other{Als Nächstes · {count} Titel}}",
+  "@queueUpNext": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "queueHint": "{played, plural, =0{Wischen nach links entfernt, Handle zieht.} =1{1 Titel wurde bereits gespielt. Wischen nach links entfernt, Handle zieht.} other{{played} Titel wurden bereits gespielt. Wischen nach links entfernt, Handle zieht.}}",
+  "@queueHint": {
+    "placeholders": {
+      "played": {
+        "type": "int"
+      }
+    }
+  },
+  "queueRemove": "Aus der Queue entfernen",
+  "queueAdded": "Zur Queue hinzugefügt",
+  "noAudioInFolder": "Keine Audiodateien in diesem Ordner.",
+  "nextTrack": "Nächster Titel",
+  "previousTrack": "Vorheriger Titel",
+  "collapse": "Einklappen",
+  "shuffleOn": "Zufallswiedergabe an",
+  "shuffleOff": "Zufallswiedergabe aus",
+  "repeatOff": "Wiederholen aus",
+  "repeatOne": "Titel wiederholen",
+  "repeatAll": "Ordner wiederholen",
+  "repeatSummaryOff": "Ordner · einmal",
+  "repeatSummaryOne": "Titel · Wiederholen",
+  "repeatSummaryAll": "Ordner · Wiederholen",
+  "shuffleSummary": "Zufällig",
+  "speedTitle": "Geschwindigkeit",
+  "speedValue": "{speed}×",
+  "@speedValue": {
+    "placeholders": {
+      "speed": {
+        "type": "String"
+      }
+    }
+  },
+  "sleep": "Sleep",
+  "sleepTitle": "Sleep-Timer",
+  "sleepMinutes": "Sleep {minutes} min",
+  "@sleepMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "sleepEndOfTrackShort": "Sleep: Titelende",
+  "sleepOption": "{minutes} Minuten",
+  "@sleepOption": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "sleepEndOfTrack": "Ende des Titels",
+  "sleepOff": "Aus",
+  "resumeAction": "Fortsetzen",
+  "errorWifiRequired": "Streaming nur im WLAN – gerade keine WLAN-Verbindung.",
+  "errorNotPlayable": "Nicht abspielbar: Das Format wird auf diesem Gerät nicht unterstützt.",
+  "audiobookMode": "Hörbuch-Modus",
+  "audiobookModeHint": "Merkt sich Titel und Position im Ordner",
+  "settingsWifiOnly": "Streaming nur im WLAN",
+  "settingsWifiOnlyHint": "Über Mobilfunk wird nicht gestreamt.",
+  "errorStreamFailed": "Datei konnte nicht geladen werden – Verbindung zum NAS prüfen.",
+  "playFolderShort": "Abspielen"
 }

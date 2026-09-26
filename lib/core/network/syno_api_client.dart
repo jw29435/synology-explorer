@@ -44,8 +44,83 @@ class SynoApiClient {
           }
           handler.next(options);
         },
+        onError: (error, handler) async {
+          final options = error.requestOptions;
+          if (options.extra[_retriedKey] == true ||
+              !isStaleConnection(error) ||
+              !isIdempotentRead(options)) {
+            return handler.next(error);
+          }
+          // Tote Keep-alive-Verbindung (z. B. nach WLAN aus/an): genau ein
+          // zweiter Versuch über eine neue Verbindung. Nur Lese-Requests –
+          // Schreiben könnte doppelt ausgeführt werden, Login zählt beim
+          // DSM-Auto-Block.
+          options.extra[_retriedKey] = true;
+          try {
+            handler.resolve(await _dio.fetch<dynamic>(options));
+          } on DioException catch (e) {
+            handler.next(e);
+          }
+        },
       ),
     );
+  }
+
+  static const _retriedKey = 'staleRetry';
+
+  /// Lese-Requests, die sich gefahrlos wiederholen lassen (je API die
+  /// Methoden). Schreibende Methoden und `SYNO.API.Auth` fehlen bewusst.
+  static const _idempotent = {
+    'SYNO.API.Info': {'query'},
+    'SYNO.FileStation.List': {'list', 'list_share', 'getinfo'},
+    'SYNO.FileStation.Search': {'list'},
+    'SYNO.FileStation.DirSize': {'status'},
+    'SYNO.FileStation.Thumb': {'get'},
+    'SYNO.FileStation.Download': {'download'},
+    'SYNO.FileStation.CopyMove': {'status'},
+    'SYNO.FileStation.Delete': {'status'},
+    'SYNO.FileStation.MD5': {'status'},
+    'SYNO.FileStation.Sharing': {'list', 'getinfo'},
+    'SYNO.FileStation.Favorite': {'list'},
+  };
+
+  /// API und Methode stehen je nach Aufruf in der Query (GET) oder im
+  /// Formular (POST).
+  @visibleForTesting
+  static bool isIdempotentRead(RequestOptions options) {
+    final data = options.data;
+    String? field(String key) =>
+        (options.queryParameters[key] ?? (data is Map ? data[key] : null))
+            ?.toString();
+    return _idempotent[field('api')]?.contains(field('method')) ?? false;
+  }
+
+  /// Verbindung vor oder beim Header geschlossen bzw. vom Server
+  /// zurückgesetzt – typisch für eine wiederverwendete, inzwischen tote
+  /// Keep-alive-Verbindung. Timeouts, „Connection refused“, DNS usw. zählen
+  /// nicht: Da hilft ein sofortiger zweiter Versuch nichts.
+  @visibleForTesting
+  static bool isStaleConnection(DioException e) {
+    if (e.type == DioExceptionType.cancel ||
+        e.type == DioExceptionType.badResponse ||
+        e.type == DioExceptionType.badCertificate ||
+        e.type == DioExceptionType.connectionTimeout ||
+        e.type == DioExceptionType.receiveTimeout ||
+        e.type == DioExceptionType.sendTimeout) {
+      return false;
+    }
+    return switch (e.error) {
+      HttpException(:final message) =>
+        message.contains('Connection closed before full header') ||
+            message.contains('Connection reset'),
+      // ECONNRESET (Linux/Android 104, Darwin 54), EPIPE (32).
+      SocketException(:final osError?) => const {
+        104,
+        54,
+        32,
+      }.contains(osError.errorCode),
+      _ => false,
+    };
   }
 
   /// Timeout für den LAN-Versuch, wenn eine externe Adresse existiert.

@@ -56,3 +56,12 @@ String describeError(Object error, AppLocalizations l10n) => switch (error) {
   CertificateMismatchException(:final host) => l10n.errorCertMismatch(host),
   _ => l10n.errorGeneric,
 };
+
+/// Spielzeit als `m:ss`, ab einer Stunde `h:mm:ss`.
+String formatDuration(Duration d) {
+  final s = d.inSeconds.abs();
+  String two(int n) => n.toString().padLeft(2, '0');
+  final h = s ~/ 3600;
+  final m = s % 3600 ~/ 60;
+  return h > 0 ? '$h:${two(m)}:${two(s % 60)}' : '$m:${two(s % 60)}';
+}

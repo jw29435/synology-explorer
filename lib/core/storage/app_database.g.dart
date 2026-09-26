@@ -2377,6 +2377,479 @@ class PlaybackPositionsCompanion extends UpdateCompanion<PlaybackPosition> {
   }
 }
 
+class $AudiobookFoldersTable extends AudiobookFolders
+    with TableInfo<$AudiobookFoldersTable, AudiobookFolder> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AudiobookFoldersTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _serverIdMeta = const VerificationMeta(
+    'serverId',
+  );
+  @override
+  late final GeneratedColumn<int> serverId = GeneratedColumn<int>(
+    'server_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _pathMeta = const VerificationMeta('path');
+  @override
+  late final GeneratedColumn<String> path = GeneratedColumn<String>(
+    'path',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _lastTrackMeta = const VerificationMeta(
+    'lastTrack',
+  );
+  @override
+  late final GeneratedColumn<String> lastTrack = GeneratedColumn<String>(
+    'last_track',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [serverId, path, lastTrack];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'audiobook_folders';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<AudiobookFolder> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('server_id')) {
+      context.handle(
+        _serverIdMeta,
+        serverId.isAcceptableOrUnknown(data['server_id']!, _serverIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_serverIdMeta);
+    }
+    if (data.containsKey('path')) {
+      context.handle(
+        _pathMeta,
+        path.isAcceptableOrUnknown(data['path']!, _pathMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_pathMeta);
+    }
+    if (data.containsKey('last_track')) {
+      context.handle(
+        _lastTrackMeta,
+        lastTrack.isAcceptableOrUnknown(data['last_track']!, _lastTrackMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {serverId, path};
+  @override
+  AudiobookFolder map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AudiobookFolder(
+      serverId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}server_id'],
+      )!,
+      path: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}path'],
+      )!,
+      lastTrack: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}last_track'],
+      ),
+    );
+  }
+
+  @override
+  $AudiobookFoldersTable createAlias(String alias) {
+    return $AudiobookFoldersTable(attachedDatabase, alias);
+  }
+}
+
+class AudiobookFolder extends DataClass implements Insertable<AudiobookFolder> {
+  final int serverId;
+  final String path;
+  final String? lastTrack;
+  const AudiobookFolder({
+    required this.serverId,
+    required this.path,
+    this.lastTrack,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['server_id'] = Variable<int>(serverId);
+    map['path'] = Variable<String>(path);
+    if (!nullToAbsent || lastTrack != null) {
+      map['last_track'] = Variable<String>(lastTrack);
+    }
+    return map;
+  }
+
+  AudiobookFoldersCompanion toCompanion(bool nullToAbsent) {
+    return AudiobookFoldersCompanion(
+      serverId: Value(serverId),
+      path: Value(path),
+      lastTrack: lastTrack == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastTrack),
+    );
+  }
+
+  factory AudiobookFolder.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AudiobookFolder(
+      serverId: serializer.fromJson<int>(json['serverId']),
+      path: serializer.fromJson<String>(json['path']),
+      lastTrack: serializer.fromJson<String?>(json['lastTrack']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'serverId': serializer.toJson<int>(serverId),
+      'path': serializer.toJson<String>(path),
+      'lastTrack': serializer.toJson<String?>(lastTrack),
+    };
+  }
+
+  AudiobookFolder copyWith({
+    int? serverId,
+    String? path,
+    Value<String?> lastTrack = const Value.absent(),
+  }) => AudiobookFolder(
+    serverId: serverId ?? this.serverId,
+    path: path ?? this.path,
+    lastTrack: lastTrack.present ? lastTrack.value : this.lastTrack,
+  );
+  AudiobookFolder copyWithCompanion(AudiobookFoldersCompanion data) {
+    return AudiobookFolder(
+      serverId: data.serverId.present ? data.serverId.value : this.serverId,
+      path: data.path.present ? data.path.value : this.path,
+      lastTrack: data.lastTrack.present ? data.lastTrack.value : this.lastTrack,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AudiobookFolder(')
+          ..write('serverId: $serverId, ')
+          ..write('path: $path, ')
+          ..write('lastTrack: $lastTrack')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(serverId, path, lastTrack);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AudiobookFolder &&
+          other.serverId == this.serverId &&
+          other.path == this.path &&
+          other.lastTrack == this.lastTrack);
+}
+
+class AudiobookFoldersCompanion extends UpdateCompanion<AudiobookFolder> {
+  final Value<int> serverId;
+  final Value<String> path;
+  final Value<String?> lastTrack;
+  final Value<int> rowid;
+  const AudiobookFoldersCompanion({
+    this.serverId = const Value.absent(),
+    this.path = const Value.absent(),
+    this.lastTrack = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  AudiobookFoldersCompanion.insert({
+    required int serverId,
+    required String path,
+    this.lastTrack = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : serverId = Value(serverId),
+       path = Value(path);
+  static Insertable<AudiobookFolder> custom({
+    Expression<int>? serverId,
+    Expression<String>? path,
+    Expression<String>? lastTrack,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (serverId != null) 'server_id': serverId,
+      if (path != null) 'path': path,
+      if (lastTrack != null) 'last_track': lastTrack,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  AudiobookFoldersCompanion copyWith({
+    Value<int>? serverId,
+    Value<String>? path,
+    Value<String?>? lastTrack,
+    Value<int>? rowid,
+  }) {
+    return AudiobookFoldersCompanion(
+      serverId: serverId ?? this.serverId,
+      path: path ?? this.path,
+      lastTrack: lastTrack ?? this.lastTrack,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (serverId.present) {
+      map['server_id'] = Variable<int>(serverId.value);
+    }
+    if (path.present) {
+      map['path'] = Variable<String>(path.value);
+    }
+    if (lastTrack.present) {
+      map['last_track'] = Variable<String>(lastTrack.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AudiobookFoldersCompanion(')
+          ..write('serverId: $serverId, ')
+          ..write('path: $path, ')
+          ..write('lastTrack: $lastTrack, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $SettingsTable extends Settings with TableInfo<$SettingsTable, Setting> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SettingsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _keyMeta = const VerificationMeta('key');
+  @override
+  late final GeneratedColumn<String> key = GeneratedColumn<String>(
+    'key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _valueMeta = const VerificationMeta('value');
+  @override
+  late final GeneratedColumn<String> value = GeneratedColumn<String>(
+    'value',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [key, value];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'settings';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Setting> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('key')) {
+      context.handle(
+        _keyMeta,
+        key.isAcceptableOrUnknown(data['key']!, _keyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_keyMeta);
+    }
+    if (data.containsKey('value')) {
+      context.handle(
+        _valueMeta,
+        value.isAcceptableOrUnknown(data['value']!, _valueMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_valueMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {key};
+  @override
+  Setting map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Setting(
+      key: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}key'],
+      )!,
+      value: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}value'],
+      )!,
+    );
+  }
+
+  @override
+  $SettingsTable createAlias(String alias) {
+    return $SettingsTable(attachedDatabase, alias);
+  }
+}
+
+class Setting extends DataClass implements Insertable<Setting> {
+  final String key;
+  final String value;
+  const Setting({required this.key, required this.value});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['key'] = Variable<String>(key);
+    map['value'] = Variable<String>(value);
+    return map;
+  }
+
+  SettingsCompanion toCompanion(bool nullToAbsent) {
+    return SettingsCompanion(key: Value(key), value: Value(value));
+  }
+
+  factory Setting.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Setting(
+      key: serializer.fromJson<String>(json['key']),
+      value: serializer.fromJson<String>(json['value']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'key': serializer.toJson<String>(key),
+      'value': serializer.toJson<String>(value),
+    };
+  }
+
+  Setting copyWith({String? key, String? value}) =>
+      Setting(key: key ?? this.key, value: value ?? this.value);
+  Setting copyWithCompanion(SettingsCompanion data) {
+    return Setting(
+      key: data.key.present ? data.key.value : this.key,
+      value: data.value.present ? data.value.value : this.value,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Setting(')
+          ..write('key: $key, ')
+          ..write('value: $value')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(key, value);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Setting && other.key == this.key && other.value == this.value);
+}
+
+class SettingsCompanion extends UpdateCompanion<Setting> {
+  final Value<String> key;
+  final Value<String> value;
+  final Value<int> rowid;
+  const SettingsCompanion({
+    this.key = const Value.absent(),
+    this.value = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SettingsCompanion.insert({
+    required String key,
+    required String value,
+    this.rowid = const Value.absent(),
+  }) : key = Value(key),
+       value = Value(value);
+  static Insertable<Setting> custom({
+    Expression<String>? key,
+    Expression<String>? value,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (key != null) 'key': key,
+      if (value != null) 'value': value,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SettingsCompanion copyWith({
+    Value<String>? key,
+    Value<String>? value,
+    Value<int>? rowid,
+  }) {
+    return SettingsCompanion(
+      key: key ?? this.key,
+      value: value ?? this.value,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (key.present) {
+      map['key'] = Variable<String>(key.value);
+    }
+    if (value.present) {
+      map['value'] = Variable<String>(value.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SettingsCompanion(')
+          ..write('key: $key, ')
+          ..write('value: $value, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -2387,6 +2860,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $OfflineFilesTable offlineFiles = $OfflineFilesTable(this);
   late final $PlaybackPositionsTable playbackPositions =
       $PlaybackPositionsTable(this);
+  late final $AudiobookFoldersTable audiobookFolders = $AudiobookFoldersTable(
+    this,
+  );
+  late final $SettingsTable settings = $SettingsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2398,6 +2875,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     transfers,
     offlineFiles,
     playbackPositions,
+    audiobookFolders,
+    settings,
   ];
 }
 
@@ -3722,6 +4201,317 @@ typedef $$PlaybackPositionsTableProcessedTableManager =
       PlaybackPosition,
       PrefetchHooks Function()
     >;
+typedef $$AudiobookFoldersTableCreateCompanionBuilder =
+    AudiobookFoldersCompanion Function({
+      required int serverId,
+      required String path,
+      Value<String?> lastTrack,
+      Value<int> rowid,
+    });
+typedef $$AudiobookFoldersTableUpdateCompanionBuilder =
+    AudiobookFoldersCompanion Function({
+      Value<int> serverId,
+      Value<String> path,
+      Value<String?> lastTrack,
+      Value<int> rowid,
+    });
+
+class $$AudiobookFoldersTableFilterComposer
+    extends Composer<_$AppDatabase, $AudiobookFoldersTable> {
+  $$AudiobookFoldersTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get serverId => $composableBuilder(
+    column: $table.serverId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get path => $composableBuilder(
+    column: $table.path,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get lastTrack => $composableBuilder(
+    column: $table.lastTrack,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$AudiobookFoldersTableOrderingComposer
+    extends Composer<_$AppDatabase, $AudiobookFoldersTable> {
+  $$AudiobookFoldersTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get serverId => $composableBuilder(
+    column: $table.serverId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get path => $composableBuilder(
+    column: $table.path,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get lastTrack => $composableBuilder(
+    column: $table.lastTrack,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$AudiobookFoldersTableAnnotationComposer
+    extends Composer<_$AppDatabase, $AudiobookFoldersTable> {
+  $$AudiobookFoldersTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get serverId =>
+      $composableBuilder(column: $table.serverId, builder: (column) => column);
+
+  GeneratedColumn<String> get path =>
+      $composableBuilder(column: $table.path, builder: (column) => column);
+
+  GeneratedColumn<String> get lastTrack =>
+      $composableBuilder(column: $table.lastTrack, builder: (column) => column);
+}
+
+class $$AudiobookFoldersTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $AudiobookFoldersTable,
+          AudiobookFolder,
+          $$AudiobookFoldersTableFilterComposer,
+          $$AudiobookFoldersTableOrderingComposer,
+          $$AudiobookFoldersTableAnnotationComposer,
+          $$AudiobookFoldersTableCreateCompanionBuilder,
+          $$AudiobookFoldersTableUpdateCompanionBuilder,
+          (
+            AudiobookFolder,
+            BaseReferences<
+              _$AppDatabase,
+              $AudiobookFoldersTable,
+              AudiobookFolder
+            >,
+          ),
+          AudiobookFolder,
+          PrefetchHooks Function()
+        > {
+  $$AudiobookFoldersTableTableManager(
+    _$AppDatabase db,
+    $AudiobookFoldersTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AudiobookFoldersTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AudiobookFoldersTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AudiobookFoldersTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> serverId = const Value.absent(),
+                Value<String> path = const Value.absent(),
+                Value<String?> lastTrack = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => AudiobookFoldersCompanion(
+                serverId: serverId,
+                path: path,
+                lastTrack: lastTrack,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required int serverId,
+                required String path,
+                Value<String?> lastTrack = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => AudiobookFoldersCompanion.insert(
+                serverId: serverId,
+                path: path,
+                lastTrack: lastTrack,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$AudiobookFoldersTable, AudiobookFolder>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $AudiobookFoldersTable,
+                    AudiobookFolder
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$AudiobookFoldersTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $AudiobookFoldersTable,
+      AudiobookFolder,
+      $$AudiobookFoldersTableFilterComposer,
+      $$AudiobookFoldersTableOrderingComposer,
+      $$AudiobookFoldersTableAnnotationComposer,
+      $$AudiobookFoldersTableCreateCompanionBuilder,
+      $$AudiobookFoldersTableUpdateCompanionBuilder,
+      (
+        AudiobookFolder,
+        BaseReferences<_$AppDatabase, $AudiobookFoldersTable, AudiobookFolder>,
+      ),
+      AudiobookFolder,
+      PrefetchHooks Function()
+    >;
+typedef $$SettingsTableCreateCompanionBuilder = SettingsCompanion Function({
+  required String key,
+  required String value,
+  Value<int> rowid,
+});
+typedef $$SettingsTableUpdateCompanionBuilder = SettingsCompanion Function({
+  Value<String> key,
+  Value<String> value,
+  Value<int> rowid,
+});
+
+class $$SettingsTableFilterComposer
+    extends Composer<_$AppDatabase, $SettingsTable> {
+  $$SettingsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get key => $composableBuilder(
+    column: $table.key,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get value => $composableBuilder(
+    column: $table.value,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$SettingsTableOrderingComposer
+    extends Composer<_$AppDatabase, $SettingsTable> {
+  $$SettingsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get key => $composableBuilder(
+    column: $table.key,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get value => $composableBuilder(
+    column: $table.value,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$SettingsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SettingsTable> {
+  $$SettingsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get key =>
+      $composableBuilder(column: $table.key, builder: (column) => column);
+
+  GeneratedColumn<String> get value =>
+      $composableBuilder(column: $table.value, builder: (column) => column);
+}
+
+class $$SettingsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $SettingsTable,
+          Setting,
+          $$SettingsTableFilterComposer,
+          $$SettingsTableOrderingComposer,
+          $$SettingsTableAnnotationComposer,
+          $$SettingsTableCreateCompanionBuilder,
+          $$SettingsTableUpdateCompanionBuilder,
+          (Setting, BaseReferences<_$AppDatabase, $SettingsTable, Setting>),
+          Setting,
+          PrefetchHooks Function()
+        > {
+  $$SettingsTableTableManager(_$AppDatabase db, $SettingsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SettingsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SettingsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SettingsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> key = const Value.absent(),
+            Value<String> value = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) => SettingsCompanion(key: key, value: value, rowid: rowid),
+          createCompanionCallback: ({
+            required String key,
+            required String value,
+            Value<int> rowid = const Value.absent(),
+          }) => SettingsCompanion.insert(key: key, value: value, rowid: rowid),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$SettingsTable, Setting>(table),
+                  BaseReferences<_$AppDatabase, $SettingsTable, Setting>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$SettingsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $SettingsTable,
+      Setting,
+      $$SettingsTableFilterComposer,
+      $$SettingsTableOrderingComposer,
+      $$SettingsTableAnnotationComposer,
+      $$SettingsTableCreateCompanionBuilder,
+      $$SettingsTableUpdateCompanionBuilder,
+      (Setting, BaseReferences<_$AppDatabase, $SettingsTable, Setting>),
+      Setting,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -3738,4 +4528,8 @@ class $AppDatabaseManager {
       $$OfflineFilesTableTableManager(_db, _db.offlineFiles);
   $$PlaybackPositionsTableTableManager get playbackPositions =>
       $$PlaybackPositionsTableTableManager(_db, _db.playbackPositions);
+  $$AudiobookFoldersTableTableManager get audiobookFolders =>
+      $$AudiobookFoldersTableTableManager(_db, _db.audiobookFolders);
+  $$SettingsTableTableManager get settings =>
+      $$SettingsTableTableManager(_db, _db.settings);
 }

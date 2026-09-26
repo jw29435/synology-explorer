@@ -1039,4 +1039,168 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get videoUnavailable => 'Video kann nicht abgespielt werden';
+
+  @override
+  String get audioChannelName => 'Wiedergabe';
+
+  @override
+  String get playFolder => 'Ordner abspielen';
+
+  @override
+  String get playingFromFolder => 'Wiedergabe aus Ordner';
+
+  @override
+  String trackOf(int index, int count) {
+    return 'Titel $index von $count';
+  }
+
+  @override
+  String get nowPlayingRow => 'läuft gerade';
+
+  @override
+  String get queueTitle => 'Queue';
+
+  @override
+  String queueButton(int count) {
+    return 'Queue ($count)';
+  }
+
+  @override
+  String get queueClear => 'Leeren';
+
+  @override
+  String get queueNowPlaying => 'Läuft gerade';
+
+  @override
+  String queueUpNext(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Als Nächstes · $count Titel',
+      one: 'Als Nächstes · 1 Titel',
+      zero: 'Als Nächstes · keine Titel',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String queueHint(int played) {
+    String _temp0 = intl.Intl.pluralLogic(
+      played,
+      locale: localeName,
+      other:
+          '$played Titel wurden bereits gespielt. Wischen nach links entfernt, Handle zieht.',
+      one: '1 Titel wurde bereits gespielt. Wischen nach links entfernt, Handle zieht.',
+      zero: 'Wischen nach links entfernt, Handle zieht.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get queueRemove => 'Aus der Queue entfernen';
+
+  @override
+  String get queueAdded => 'Zur Queue hinzugefügt';
+
+  @override
+  String get noAudioInFolder => 'Keine Audiodateien in diesem Ordner.';
+
+  @override
+  String get nextTrack => 'Nächster Titel';
+
+  @override
+  String get previousTrack => 'Vorheriger Titel';
+
+  @override
+  String get collapse => 'Einklappen';
+
+  @override
+  String get shuffleOn => 'Zufallswiedergabe an';
+
+  @override
+  String get shuffleOff => 'Zufallswiedergabe aus';
+
+  @override
+  String get repeatOff => 'Wiederholen aus';
+
+  @override
+  String get repeatOne => 'Titel wiederholen';
+
+  @override
+  String get repeatAll => 'Ordner wiederholen';
+
+  @override
+  String get repeatSummaryOff => 'Ordner · einmal';
+
+  @override
+  String get repeatSummaryOne => 'Titel · Wiederholen';
+
+  @override
+  String get repeatSummaryAll => 'Ordner · Wiederholen';
+
+  @override
+  String get shuffleSummary => 'Zufällig';
+
+  @override
+  String get speedTitle => 'Geschwindigkeit';
+
+  @override
+  String speedValue(String speed) {
+    return '$speed×';
+  }
+
+  @override
+  String get sleep => 'Sleep';
+
+  @override
+  String get sleepTitle => 'Sleep-Timer';
+
+  @override
+  String sleepMinutes(int minutes) {
+    return 'Sleep $minutes min';
+  }
+
+  @override
+  String get sleepEndOfTrackShort => 'Sleep: Titelende';
+
+  @override
+  String sleepOption(int minutes) {
+    return '$minutes Minuten';
+  }
+
+  @override
+  String get sleepEndOfTrack => 'Ende des Titels';
+
+  @override
+  String get sleepOff => 'Aus';
+
+  @override
+  String get resumeAction => 'Fortsetzen';
+
+  @override
+  String get errorWifiRequired =>
+      'Streaming nur im WLAN – gerade keine WLAN-Verbindung.';
+
+  @override
+  String get errorNotPlayable =>
+      'Nicht abspielbar: Das Format wird auf diesem Gerät nicht unterstützt.';
+
+  @override
+  String get audiobookMode => 'Hörbuch-Modus';
+
+  @override
+  String get audiobookModeHint => 'Merkt sich Titel und Position im Ordner';
+
+  @override
+  String get settingsWifiOnly => 'Streaming nur im WLAN';
+
+  @override
+  String get settingsWifiOnlyHint => 'Über Mobilfunk wird nicht gestreamt.';
+
+  @override
+  String get errorStreamFailed =>
+      'Datei konnte nicht geladen werden – Verbindung zum NAS prüfen.';
+
+  @override
+  String get playFolderShort => 'Abspielen';
 }

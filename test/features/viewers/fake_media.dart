@@ -37,9 +37,17 @@ class FakeMediaRepository implements MediaRepository {
 }
 
 /// Wechselt zwischen Frames und echter Zeit, bis Datei-IO (außerhalb der
-/// Fake-Zeit der Widget-Tests) durch ist.
-Future<void> pumpWithIo(WidgetTester tester, {int rounds = 5}) async {
-  for (var i = 0; i < rounds; i++) {
+/// Fake-Zeit der Widget-Tests) durch ist. Mit [until] wird gewartet, bis die
+/// Bedingung erfüllt ist (höchstens 10 s) – feste Runden allein reichen
+/// nicht, wenn der Rechner ausgelastet ist (CI, parallele Tests).
+Future<void> pumpWithIo(
+  WidgetTester tester, {
+  int rounds = 5,
+  bool Function()? until,
+}) async {
+  final deadline = DateTime.now().add(const Duration(seconds: 10));
+  for (var i = 0; i < rounds || !(until?.call() ?? true); i++) {
+    if (DateTime.now().isAfter(deadline)) break;
     await tester.pump();
     await tester.runAsync(
       () => Future<void>.delayed(const Duration(milliseconds: 50)),
