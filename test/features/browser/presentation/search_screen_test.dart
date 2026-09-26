@@ -81,6 +81,23 @@ void main() {
     expect(api.lists, polled, reason: 'kein Polling nach dem Verlassen');
   });
 
+  testWidgets('11: „Ganzes NAS“ hat ein Touch-Ziel von 44 px (E2E-054)', (
+    tester,
+  ) async {
+    await pumpApp(
+      tester,
+      location: '/files/search?path=/music',
+      overrides: [searchApiProvider.overrideWithValue(_EndlessSearch())],
+    );
+    final target = tester.getSize(
+      find.ancestor(
+        of: find.text('Ganzes NAS'),
+        matching: find.byType(InkWell),
+      ),
+    );
+    expect(target.height, greaterThanOrEqualTo(44));
+  });
+
   test('Filter setzen Dateiendungen', () {
     expect(SearchFilter.all.extensions, isEmpty);
     expect(SearchFilter.audio.extensions, containsAll(['mp3', 'flac']));

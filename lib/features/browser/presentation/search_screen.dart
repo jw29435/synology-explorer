@@ -106,11 +106,22 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                             .search(_query.text, filter),
                       );
                     },
-                    child: Text(
-                      l10n.searchWholeNas,
-                      style: muted?.copyWith(
-                        color: AppColors.accent,
-                        fontWeight: FontWeight.w700,
+                    // Touch-Ziel mindestens 44 px.
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        minWidth: 44,
+                        minHeight: 44,
+                      ),
+                      child: Center(
+                        widthFactor: 1,
+                        heightFactor: 1,
+                        child: Text(
+                          l10n.searchWholeNas,
+                          style: muted?.copyWith(
+                            color: AppColors.accent,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                       ),
                     ),
                   ),
