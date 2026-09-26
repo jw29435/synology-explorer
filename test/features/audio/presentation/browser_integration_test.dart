@@ -146,4 +146,22 @@ void main() {
     expect(tester.getSemantics(chip).label, contains('Ordner abspielen'));
     semantics.dispose();
   });
+
+  testWidgets(
+    '„Ordner abspielen“ ohne Audio meldet das, auch wenn etwas läuft',
+    (tester) async {
+      await pumpApp(
+        tester,
+        location: folderLocation(album),
+        overrides: audioOverrides(
+          FakeAudioController(playingAlbum(), emptyFolder: true),
+        ),
+      );
+      await tester.tap(find.byKey(const Key('play-folder')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(find.text('Keine Audiodateien in diesem Ordner.'), findsOne);
+      await tester.pumpAndSettle(const Duration(seconds: 10));
+    },
+  );
 }

@@ -42,9 +42,6 @@ Future<void> startPlayback(
       startPath: startPath,
       recursive: recursive,
     );
-    if (!container.read(audioControllerProvider).active) {
-      return show(l10n.noAudioInFolder);
-    }
     if (resume == null) return;
     show(
       l10n.resumeAt(formatDuration(resume)),
@@ -102,6 +99,7 @@ String describePlaybackError(Object error, AppLocalizations l10n) =>
     switch (error) {
       WifiRequired() => l10n.errorWifiRequired,
       NotPlayable() => l10n.errorNotPlayable,
+      NoAudioInFolder() => l10n.noAudioInFolder,
       StreamFailed() => l10n.errorStreamFailed,
       _ => describeError(error, l10n),
     };

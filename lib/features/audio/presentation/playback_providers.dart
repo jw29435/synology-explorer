@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -69,17 +68,8 @@ final trackInfoLoaderProvider = Provider<TrackInfoLoader>((ref) {
   final client = ref.watch(sessionProvider)!.client;
   final thumbs = ref.watch(thumbnailCacheProvider);
   return TrackInfoLoader(
-    download: (path, {maxBytes}) async {
-      final body = await client.requestStream(
-        'SYNO.FileStation.Download',
-        'download',
-        {'path': path, 'mode': 'open'},
-        end: maxBytes,
-      );
-      final bytes = BytesBuilder(copy: false);
-      await body.stream.forEach(bytes.add);
-      return bytes.takeBytes();
-    },
+    download: (path, {maxBytes}) =>
+        downloadBytes(client, path, maxBytes: maxBytes),
     thumbnail: thumbs.load,
     cache: MediaCache(
       getApplicationCacheDirectory().then(
@@ -124,6 +114,11 @@ class WifiRequired extends PlaybackError {
 /// Format wird auf dem Gerät nicht dekodiert.
 class NotPlayable extends PlaybackError {
   const NotPlayable();
+}
+
+/// Im Ordner gibt es nichts zum Abspielen.
+class NoAudioInFolder extends PlaybackError {
+  const NoAudioInFolder();
 }
 
 /// Datei ließ sich nicht laden (Netz, NAS, Proxy).
@@ -235,6 +230,10 @@ class AudioController extends Notifier<AudioState> {
   AppAudioHandler get _handler => ref.read(audioHandlerProvider);
   AudioPlayer get _player => _handler.player;
   PlaybackRepository get _repo => ref.read(playbackRepositoryProvider);
+
+  /// Offline-Kopie: braucht weder Netz noch WLAN.
+  bool get _playingLocal => _localFiles.containsKey(state.track?.path);
+
   int get _serverId => _localServerId ?? ref.read(serverIdProvider);
   PlaybackPositionRepository get _positions => _positionsFor(ref, _serverId);
 
@@ -265,7 +264,7 @@ class AudioController extends Notifier<AudioState> {
     }
     startPath ??= await _repo.lastTrack(_serverId, folder);
     final queue = PlaybackQueue.fromEntries(entries, startPath: startPath);
-    if (queue.isEmpty) return null;
+    if (queue.isEmpty) throw const NoAudioInFolder();
     // Erst die Position des bisherigen Titels sichern, dann lesen – so
     // stimmt sie auch, wenn derselbe Titel erneut geöffnet wird.
     await _savePosition();
@@ -318,7 +317,9 @@ class AudioController extends Notifier<AudioState> {
         position: _attached ? _player.position : null,
       );
     }
-    if (!await _networkAllowed(resumeAt: _player.position)) return;
+    if (!_playingLocal && !await _networkAllowed(resumeAt: _player.position)) {
+      return;
+    }
     unawaited(_player.play());
   }
 
@@ -507,9 +508,9 @@ class AudioController extends Notifier<AudioState> {
       info: null,
       duration: null,
     );
+    final previous = _proxy;
     try {
       final AudioSource source;
-      final previous = _proxy;
       if (_localFiles[entry.path] case final file?) {
         // Offline-Kopie: kein Netz, keine Session.
         _proxy = null;
@@ -546,6 +547,11 @@ class AudioController extends Notifier<AudioState> {
       }
       unawaited(_loadInfo(entry, token));
     } catch (e) {
+      // Der alte Proxy wird nicht mehr gelesen (Fehler oder überholt durch
+      // schnelles Weiterschalten) – sonst bliebe er samt Token offen.
+      if (previous != null && !identical(previous, _proxy)) {
+        await previous.close();
+      }
       if (token != _loadToken) return;
       // Nur den Typ loggen: Meldungen können URLs mit `_sid` enthalten.
       debugPrint('Wiedergabe fehlgeschlagen: ${e.runtimeType}');
@@ -590,8 +596,17 @@ class AudioController extends Notifier<AudioState> {
   Future<void> _onCompleted() async {
     final entry = state.track;
     if (entry != null) await _positions.clear(entry);
-    if (_sleep.trackEnded()) return;
     final i = state.queue.next(state.repeat, auto: true);
+    if (_sleep.trackEnded()) {
+      // Pausiert am Titelende: nicht im completed-Zustand stehen bleiben –
+      // play() liefe dort ins Leere. Nächsten Titel pausiert bereitlegen.
+      if (i == null || i == state.queue.index) {
+        await _player.seek(Duration.zero);
+      } else {
+        await _playIndex(i, autoplay: false);
+      }
+      return;
+    }
     if (i == state.queue.index) {
       await _player.seek(Duration.zero);
       return;
@@ -653,10 +668,12 @@ class AudioController extends Notifier<AudioState> {
       unawaited(_playIndex(state.queue.index, position: _errorPosition));
       return;
     }
-    if (isUnmetered(types) || !_player.playing) return;
+    if (isUnmetered(types) || !_player.playing || _playingLocal) return;
     unawaited(
       _repo.wifiOnly().then((wifiOnly) async {
         if (!wifiOnly) return;
+        // Bei WLAN-Rückkehr genau hier weiter.
+        _errorPosition = _player.position;
         await _player.pause();
         state = state.copyWith(error: const WifiRequired());
       }),

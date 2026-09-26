@@ -28,7 +28,15 @@ AudioState playingAlbum({bool playing = true}) => AudioState(
 
 /// AudioController ohne Player: merkt sich Aufrufe, ändert nur den State.
 class FakeAudioController extends AudioController {
-  FakeAudioController(this._initial, {this.resume, this.delay});
+  FakeAudioController(
+    this._initial, {
+    this.resume,
+    this.delay,
+    this.emptyFolder = false,
+  });
+
+  /// [playFolder] meldet „keine Audiodateien“.
+  final bool emptyFolder;
 
   final AudioState _initial;
   final calls = <String>[];
@@ -48,6 +56,7 @@ class FakeAudioController extends AudioController {
   }) async {
     calls.add('playFolder $folder ${startPath ?? '-'} $recursive');
     if (delay case final d?) await Future<void>.delayed(d);
+    if (emptyFolder) throw const NoAudioInFolder();
     if (!state.active) state = playingAlbum();
     return resume;
   }

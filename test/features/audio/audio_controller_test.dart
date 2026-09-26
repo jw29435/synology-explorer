@@ -23,6 +23,7 @@ import 'package:synology_explorer/features/audio/data/playback_repository.dart';
 import 'package:synology_explorer/features/audio/data/track_info_loader.dart';
 import 'package:synology_explorer/features/audio/domain/playback_queue.dart';
 import 'package:synology_explorer/features/audio/presentation/playback_providers.dart';
+import 'package:synology_explorer/features/browser/data/file_station_list_api.dart';
 import 'package:synology_explorer/features/browser/domain/nas_entry.dart';
 import 'package:synology_explorer/features/browser/presentation/browser_providers.dart';
 import 'package:synology_explorer/features/viewers/data/playback_position_repository.dart';
@@ -100,6 +101,7 @@ class FakePlayer implements AudioPlayer {
     return d;
   }
 
+  /// Wie just_audio: play() im completed-Zustand startet nichts neu.
   @override
   Future<void> play() async {
     calls.add('play');
@@ -220,6 +222,7 @@ void main() {
   late PlaybackRepository repo;
   late PlaybackPositionRepository positions;
   late List<_FakeProxy> proxies;
+  late _ListApi listApi;
 
   final entries = {
     for (final e in fixtureEntries('SYNO.FileStation.List/list.json', 'files'))
@@ -239,7 +242,7 @@ void main() {
       overrides: [
         appDatabaseProvider.overrideWithValue(db),
         sessionProvider.overrideWith(() => FixedSession(_connectableSession())),
-        fileStationListApiProvider.overrideWithValue(FakeListApi()),
+        fileStationListApiProvider.overrideWithValue(listApi = _ListApi()),
         audioHandlerProvider.overrideWithValue(handler),
         audioProxyStarterProvider.overrideWithValue((path) async {
           final proxy = _FakeProxy(path);
@@ -378,8 +381,8 @@ void main() {
     controller.setSleepEndOfTrack();
     player.complete();
     await settle();
-    expect(player.sources, ['01 Ebbe.flac']);
-    expect(player.calls.last, 'pause');
+    expect(player.calls, contains('pause'));
+    expect(player.calls.where((c) => c == 'play'), hasLength(1));
     expect(state().playing, isFalse);
     expect(state().sleepEndOfTrack, isFalse);
   });
@@ -501,4 +504,112 @@ void main() {
       expect(state().playing, isTrue);
     },
   );
+
+  test(
+    'Player-Fehler beim Titelwechsel: alter Proxy wird geschlossen',
+    () async {
+      await controller.playFolder(album, startPath: ebbe);
+      await settle();
+      player.failNext = PlayerException(0, 'Source error', null);
+      await controller.next();
+      await settle();
+      expect(proxies, hasLength(2));
+      expect(proxies[0].closed, isTrue, reason: 'kein Leck samt Token');
+    },
+  );
+
+  test(
+    '„Nur WLAN“: WLAN weg mitten im Titel, zurück → weiter an der Stelle',
+    () async {
+      await repo.setWifiOnly(true);
+      await controller.playFolder(album, startPath: ebbe);
+      await settle();
+      player.position = const Duration(seconds: 70);
+      net.now = [ConnectivityResult.mobile];
+      net.changes.add(net.now);
+      await settle();
+      expect(state().error, isA<WifiRequired>());
+
+      net.now = [ConnectivityResult.wifi];
+      net.changes.add(net.now);
+      for (var i = 0; i < 50 && player.sources.length < 2; i++) {
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+      }
+      expect(player.sources, hasLength(2));
+      expect(player.position, const Duration(seconds: 70));
+    },
+  );
+
+  test('„Nur WLAN“ bremst Offline-Audio nicht (Zug ohne WLAN)', () async {
+    await repo.setWifiOnly(true);
+    net.now = [ConnectivityResult.none];
+    final local = File('${Directory.systemTemp.path}/01 Ebbe.flac');
+    await controller.playLocal(entry(ebbe), local, 1);
+    await settle();
+    expect(state().playing, isTrue);
+    expect(state().error, isNull);
+
+    net.now = [ConnectivityResult.mobile];
+    net.changes.add(net.now);
+    await settle();
+    expect(state().playing, isTrue, reason: 'kein Pausieren bei Netzwechsel');
+
+    await controller.pause();
+    await controller.play();
+    await settle();
+    expect(state().playing, isTrue);
+    expect(state().error, isNull);
+  });
+
+  test('Ordner ohne Audio meldet das, auch während etwas läuft', () async {
+    await controller.playFolder(album, startPath: ebbe);
+    await settle();
+    listApi.empty = true;
+    await expectLater(
+      controller.playFolder('/leer'),
+      throwsA(isA<NoAudioInFolder>()),
+    );
+    expect(state().track!.path, ebbe, reason: 'Wiedergabe läuft weiter');
+  });
+
+  test(
+    'Sleep „Titelende“: nächster Titel liegt pausiert bereit, Play geht',
+    () async {
+      await controller.playFolder(album, startPath: ebbe);
+      await settle();
+      controller.setSleepEndOfTrack();
+      player.complete();
+      await settle();
+      expect(state().playing, isFalse);
+      expect(player.sources, ['01 Ebbe.flac', '02 Strandgut.flac']);
+      expect(player.processingState, ProcessingState.ready);
+
+      await controller.play();
+      await settle();
+      expect(state().playing, isTrue);
+      expect(state().track!.path, strandgut);
+    },
+  );
+}
+
+/// Wie [FakeListApi]; mit [empty] ist jeder Ordner leer.
+class _ListApi extends FakeListApi {
+  bool empty = false;
+
+  @override
+  Future<NasPage> list(
+    String folderPath, {
+    NasSortBy sortBy = NasSortBy.name,
+    bool descending = false,
+    int offset = 0,
+    int limit = 500,
+  }) async => empty
+      ? (entries: <NasEntry>[], total: 0)
+      : super.list(
+          folderPath,
+          sortBy: sortBy,
+          descending: descending,
+          offset: offset,
+          limit: limit,
+        );
 }

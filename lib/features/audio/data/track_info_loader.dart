@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
@@ -5,9 +6,47 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
+import 'package:dio/dio.dart';
 
+import '../../../core/network/syno_api_client.dart';
+import '../../../core/network/syno_exception.dart';
 import '../../../core/storage/media_cache.dart';
 import '../../browser/domain/nas_entry.dart';
+
+/// Lädt [path] (höchstens [maxBytes], per Range) komplett in den Speicher –
+/// für Tags und Cover, nicht für den Player. Bricht nach [timeout] ab: Der
+/// Cache teilt Ladevorgänge, ein an einer toten Verbindung hängender
+/// Download würde sonst jeden weiteren Load desselben Titels blockieren.
+Future<Uint8List> downloadBytes(
+  SynoApiClient client,
+  String path, {
+  int? maxBytes,
+  Duration timeout = const Duration(seconds: 30),
+}) async {
+  final cancel = CancelToken();
+  final timer = Timer(timeout, cancel.cancel);
+  try {
+    final body = await client.requestStream(
+      'SYNO.FileStation.Download',
+      'download',
+      {'path': path, 'mode': 'open'},
+      end: maxBytes,
+      cancelToken: cancel,
+    );
+    final bytes = BytesBuilder(copy: false);
+    await body.stream.forEach(bytes.add);
+    return bytes.takeBytes();
+  } on DioException catch (e) {
+    throw SynoNetworkError(cause: e.type);
+  } on SynoNetworkError {
+    if (cancel.isCancelled) {
+      throw const SynoNetworkError(cause: 'Timeout');
+    }
+    rethrow;
+  } finally {
+    timer.cancel();
+  }
+}
 
 /// Tags und Cover eines Titels.
 class TrackInfo {
