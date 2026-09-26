@@ -31,9 +31,9 @@ Future<void> main() async {
     todo.addAll((p['dependencies'] as List).cast<String>());
   }
 
-  final config =
-      jsonDecode(File('.dart_tool/package_config.json').readAsStringSync())
-          as Map<String, dynamic>;
+  final config = jsonDecode(
+    File('.dart_tool/package_config.json').readAsStringSync(),
+  ) as Map<String, dynamic>;
   final roots = {
     for (final p in (config['packages'] as List).cast<Map<String, dynamic>>())
       p['name'] as String: Uri.parse(p['rootUri'] as String),

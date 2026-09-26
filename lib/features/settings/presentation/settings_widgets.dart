@@ -48,12 +48,11 @@ class SettingsValue extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final style = TextStyle(color: color ?? AppColors.textMuted, fontSize: 15);
+    final style = TextStyle(color: color ?? AppColors.textMuted, fontSize: 14);
     return Row(
-      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 170),
+        Flexible(
           child: Text(
             text,
             style: mono ? AppTheme.mono(style) : style,

@@ -39,29 +39,45 @@ class SettingsScreen extends ConsumerWidget {
     final language = ref.watch(localeProvider).value?.languageCode;
     final info = ref.watch(packageInfoProvider).value;
 
+    // Titel hat Vorrang, der Wert rechts nimmt den Rest (bricht um bzw.
+    // kürzt) – ListTile würde sonst den Titel mitten im Wort umbrechen.
     Widget row({
       Key? key,
       required IconData? icon,
       required String title,
       Widget? trailing,
       VoidCallback? onTap,
-      Color? color,
-    }) => ListTile(
+    }) => InkWell(
       key: key,
-      minTileHeight: 60,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-      leading: icon == null
-          ? null
-          : Icon(icon, color: color ?? AppColors.textSecondary),
-      title: Text(
-        title,
-        style: text.titleMedium?.copyWith(
-          fontWeight: FontWeight.w600,
-          color: color,
+      onTap: onTap,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 60),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          child: Row(
+            children: [
+              if (icon != null) ...[
+                Icon(icon, color: AppColors.textSecondary),
+                const SizedBox(width: 16),
+              ],
+              ConstrainedBox(
+                // Große Schrift: Titel bricht um, statt überzulaufen.
+                constraints: BoxConstraints(
+                  maxWidth: MediaQuery.sizeOf(context).width * 0.55,
+                ),
+                child: Text(
+                  title,
+                  style: text.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(child: trailing ?? const SizedBox()),
+            ],
+          ),
         ),
       ),
-      trailing: trailing,
-      onTap: onTap,
     );
 
     return Scaffold(

@@ -91,12 +91,20 @@ class AutoUploadScreen extends ConsumerWidget {
                   vertical: 6,
                 ),
                 title: SectionLabel(l10n.autoUploadTarget),
-                subtitle: Text(
-                  config.targetPath?.substring(1) ?? l10n.autoUploadTargetNone,
-                  style: AppTheme.mono(
-                    TextStyle(color: AppColors.text, fontSize: 16),
-                  ),
-                ),
+                subtitle: config.targetPath == null
+                    ? Text(
+                        l10n.autoUploadTargetNone,
+                        style: TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 16,
+                        ),
+                      )
+                    : Text(
+                        config.targetPath!.substring(1),
+                        style: AppTheme.mono(
+                          TextStyle(color: AppColors.text, fontSize: 16),
+                        ),
+                      ),
                 trailing: Icon(Icons.chevron_right, color: AppColors.textMuted),
                 onTap: () => _pickTarget(context, ref, config),
               ),
@@ -187,21 +195,20 @@ class AutoUploadScreen extends ConsumerWidget {
         FolderScheme.flat => l10n.schemeFlat,
       };
 
-  /// Einschalten: Zielordner und Fotozugriff sind Voraussetzung. Gesichert
-  /// wird, was ab jetzt aufgenommen wird.
+  /// Einschalten: erst Fotozugriff, dann (falls noch keiner) Zielordner.
+  /// Gesichert wird, was ab jetzt aufgenommen wird.
   Future<void> _enable(
     BuildContext context,
     WidgetRef ref,
     AutoUploadConfig config,
   ) async {
     final l10n = AppLocalizations.of(context);
-    var target = config;
-    if (target.targetPath == null) {
-      target = await _pickTarget(context, ref, config) ?? config;
-      if (target.targetPath == null) return;
+    if (!await _ensureAccess(context, ref, videos: config.includeVideos) ||
+        !context.mounted) {
+      return;
     }
-    if (!context.mounted ||
-        !await _ensureAccess(context, ref, videos: target.includeVideos)) {
+    if (config.targetPath == null &&
+        await _pickTarget(context, ref, config) == null) {
       return;
     }
     await ref
@@ -414,6 +421,9 @@ class _StatusCard extends ConsumerWidget {
               Expanded(
                 child: FilledButton(
                   key: const Key('auto-upload-run'),
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                  ),
                   onPressed: canRun
                       ? () => ref
                             .read(autoUploadControllerProvider.notifier)
@@ -425,6 +435,9 @@ class _StatusCard extends ConsumerWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                  ),
                   onPressed: () => _showLog(context),
                   child: Text(l10n.autoUploadLog),
                 ),
