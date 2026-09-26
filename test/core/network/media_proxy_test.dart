@@ -164,6 +164,8 @@ void main() {
     ).thenThrow(const SynoSessionExpired(119));
     final (res, _) = await get(proxy.url, range: 'bytes=0-');
     expect(res.statusCode, 502);
+    // Der Player unterscheidet darüber Session, Netz und Rechte (E2E-027).
+    expect(proxy.lastError, isA<SynoSessionExpired>());
   });
 
   test('Backpressure: langsamer Client zieht nicht die ganze Datei, '

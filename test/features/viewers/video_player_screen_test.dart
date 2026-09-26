@@ -4,11 +4,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:synology_explorer/app/theme.dart';
+import 'package:synology_explorer/core/network/syno_exception.dart';
 import 'package:synology_explorer/features/audio/presentation/playback_providers.dart';
 import 'package:synology_explorer/features/viewers/presentation/video_player_screen.dart';
 import 'package:synology_explorer/l10n/app_localizations.dart';
 
 import '../../helpers/audio_fakes.dart';
+
+final l10n = lookupAppLocalizations(const Locale('de'));
 
 // Den Player selbst (media_kit/libmpv) gibt es headless nicht; getestet
 // werden die Teile ohne Player.
@@ -20,12 +23,14 @@ Future<void> _pump(WidgetTester tester, Widget child, {Size? size}) async {
     ..devicePixelRatio = 3;
   addTearDown(tester.view.reset);
   await tester.pumpWidget(
-    MaterialApp(
-      theme: AppTheme.dark,
-      locale: const Locale('de'),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: Scaffold(body: child),
+    ProviderScope(
+      child: MaterialApp(
+        theme: AppTheme.dark,
+        locale: const Locale('de'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(body: child),
+      ),
     ),
   );
   await tester.pumpAndSettle();
@@ -102,5 +107,39 @@ void main() {
         reason: label,
       );
     }
+  });
+
+  group('E2E-027: Fehlerarten', () {
+    Future<List<String>> show(WidgetTester tester, Object error) async {
+      final retries = <String>[];
+      await _pump(
+        tester,
+        VideoError(error: error, onRetry: () => retries.add('retry')),
+      );
+      return retries;
+    }
+
+    testWidgets('Netz: Meldung und „Erneut versuchen“', (tester) async {
+      final retries = await show(tester, const SynoNetworkError());
+      expect(find.text(l10n.errorNetwork), findsOne);
+      await tester.tap(find.text(l10n.retry));
+      expect(retries, ['retry']);
+    });
+
+    testWidgets('Session abgelaufen: „Anmelden“ statt Erneut', (tester) async {
+      await show(tester, const SynoSessionExpired(119));
+      expect(find.text(l10n.errorSessionExpired), findsOne);
+      expect(find.text(l10n.signIn), findsOne);
+      expect(find.text(l10n.retry), findsNothing);
+    });
+
+    testWidgets('Player-Meldung: nicht abspielbar, „Erneut versuchen“', (
+      tester,
+    ) async {
+      final retries = await show(tester, 'vd: could not open codec');
+      expect(find.text(l10n.videoUnavailable), findsOne);
+      await tester.tap(find.text(l10n.retry));
+      expect(retries, ['retry']);
+    });
   });
 }

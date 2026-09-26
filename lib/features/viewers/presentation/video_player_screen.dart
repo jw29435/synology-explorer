@@ -10,12 +10,14 @@ import 'package:screen_brightness/screen_brightness.dart';
 
 import '../../../app/theme.dart';
 import '../../../core/network/media_proxy.dart';
+import '../../../core/network/syno_exception.dart';
 import '../../../core/storage/storage_providers.dart';
 import '../../../core/utils/format.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../audio/presentation/playback_providers.dart';
 import '../../browser/domain/nas_entry.dart';
 import '../../browser/presentation/browser_providers.dart';
+import '../../browser/presentation/entry_widgets.dart';
 import '../data/playback_position_repository.dart';
 import 'viewer_common.dart';
 import 'viewer_providers.dart';
@@ -63,7 +65,10 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
   /// gesetzt, steht der Hinweis „Bei mm:ss fortsetzen?“ im Bild.
   Duration? _resumedAt;
   bool _controls = true;
-  bool _error = false;
+
+  /// Grund, warum nichts läuft: [SynoException] vom Proxy bzw. beim Start,
+  /// sonst die Meldung des Players (Format, Decoder).
+  Object? _error;
 
   /// Liefert dem Player die Bytes; die SID steht nie in seiner URL.
   MediaProxy? _proxy;
@@ -114,9 +119,9 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
       )
       // Nur solange nichts läuft: sonst sind es meist harmlose Meldungen.
       ..add(
-        s.error.listen((_) {
+        s.error.listen((message) {
           if (_player.state.duration == Duration.zero) {
-            setState(() => _error = true);
+            setState(() => _error = _proxy?.lastError ?? message);
           }
         }),
       );
@@ -124,10 +129,13 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
     _start();
   }
 
-  Future<void> _start() async {
+  /// Öffnet das Video bei [at], sonst bei der gespeicherten Position (mit
+  /// Hinweis „Bei mm:ss fortsetzen?“).
+  Future<void> _start({Duration? at}) async {
     final Duration? saved;
+    final old = _proxy;
     try {
-      saved = await _positions.load(widget.entry);
+      saved = at ?? await _positions.load(widget.entry);
       if (!mounted) return;
       if (widget.local case final local?) {
         await _player.open(Media(local.file.path, start: saved));
@@ -142,16 +150,27 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
         _proxy = proxy;
         await _player.open(Media(proxy.url.toString(), start: saved));
       }
-    } catch (_) {
-      if (mounted) setState(() => _error = true);
+    } catch (e) {
+      if (mounted) setState(() => _error = e);
       return;
+    } finally {
+      // Erneuter Versuch: den alten Proxy erst schließen, wenn der Player
+      // weg von ihm ist.
+      if (!identical(old, _proxy)) unawaited(old?.close());
     }
     if (!mounted) return;
-    setState(() => _resumedAt = saved);
-    _saveTimer = Timer.periodic(
+    if (at == null) setState(() => _resumedAt = saved);
+    _saveTimer ??= Timer.periodic(
       const Duration(seconds: 5),
       (_) => _savePosition(),
     );
+  }
+
+  /// „Erneut versuchen“: neu öffnen, wo die Wiedergabe stand.
+  void _retry() {
+    final at = _player.state.position;
+    setState(() => _error = null);
+    _start(at: at > Duration.zero ? at : null);
   }
 
   /// Merkt die Position; am Anfang und kurz vor Schluss gibt es nichts
@@ -257,15 +276,10 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
                   onVerticalDragUpdate: (d) => _drag(d, box),
                   onVerticalDragEnd: (_) => setState(() => _gesture = null),
                 ),
-                if (videoLoading(state, failed: _error))
+                if (videoLoading(state, failed: _error != null))
                   const Center(child: CircularProgressIndicator()),
-                if (_error)
-                  Center(
-                    child: _Pill(
-                      icon: Icons.error_outline,
-                      text: l10n.videoUnavailable,
-                    ),
-                  ),
+                if (_error case final error?)
+                  VideoError(error: error, onRetry: _retry),
                 if (_gesture case (:final volume, :final value))
                   Center(
                     child: _Pill(
@@ -277,7 +291,7 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
                   ),
                 if (_controls) ...[
                   _topBar(context, l10n, state),
-                  if (!videoLoading(state, failed: _error))
+                  if (_error == null && !videoLoading(state, failed: false))
                     _centerControls(l10n, state),
                   Align(
                     alignment: Alignment.bottomCenter,
@@ -477,6 +491,50 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Fehler über dem Video wie auf den anderen Screens: Netz und Rechte mit
+/// „Erneut versuchen“, abgelaufene Session mit „Anmelden“; kann der Player
+/// die Datei nicht abspielen (Format, Decoder), dies mit „Erneut versuchen“.
+class VideoError extends StatelessWidget {
+  const VideoError({super.key, required this.error, required this.onRetry});
+
+  final Object error;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Center(
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 360),
+        margin: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.playScrim,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: IntrinsicHeight(
+          child: error is SynoException
+              ? ErrorPanel(error: error, onRetry: onRetry)
+              : Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    children: [
+                      Icon(Icons.error_outline, color: Neutrals.dark.errorSoft),
+                      const SizedBox(height: 8),
+                      Text(l10n.videoUnavailable, textAlign: TextAlign.center),
+                      const SizedBox(height: 12),
+                      OutlinedButton(
+                        onPressed: onRetry,
+                        child: Text(l10n.retry),
+                      ),
+                    ],
+                  ),
+                ),
         ),
       ),
     );

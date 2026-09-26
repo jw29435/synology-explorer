@@ -50,6 +50,11 @@ class MediaProxy {
 
   InternetAddress get address => _server.address;
 
+  /// Fehler der letzten Anfrage ans NAS (`null`, sobald eine wieder
+  /// klappt). Der Player sieht nur einen HTTP-Status; hierüber
+  /// unterscheidet er Netz, Rechte und abgelaufene Session.
+  SynoException? lastError;
+
   /// URL für den Player; der Dateiname hilft nur bei der Formaterkennung.
   Uri get url => Uri(
     scheme: 'http',
@@ -95,6 +100,7 @@ class MediaProxy {
         end: end == null || end.isEmpty ? null : int.parse(end) + 1,
         cancelToken: upstream,
       );
+      lastError = null;
       String? header(String name) => body.headers[name]?.first;
       final contentRange = header('content-range');
       // Ohne Range-Anfrage des Players: ganze Datei als 200.
@@ -119,6 +125,7 @@ class MediaProxy {
         await res.addStream(body.stream);
       }
     } on SynoException catch (e) {
+      lastError = e;
       res.statusCode = switch (e) {
         SynoNotFound() => HttpStatus.notFound,
         SynoPermissionDenied() => HttpStatus.forbidden,
