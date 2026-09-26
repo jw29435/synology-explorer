@@ -312,7 +312,7 @@ class SynoApiClient {
       }
       return total;
     } on DioException catch (e) {
-      throw _downloadError(url, e);
+      throw await _downloadError(url, e, params);
     }
   });
 
@@ -356,7 +356,7 @@ class SynoApiClient {
           ? body
           : ResponseBody(data.cast(), body.statusCode, headers: body.headers);
     } on DioException catch (e) {
-      throw _downloadError(url, e);
+      throw await _downloadError(url, e, params);
     }
   });
 
@@ -455,11 +455,32 @@ class SynoApiClient {
   }
 
   /// Wie [_networkError], für `SYNO.FileStation.Download`: DSM meldet eine
-  /// fehlende Datei dort mit HTTP 502 und HTML statt JSON (SPIKE M4).
-  Exception _downloadError(Uri url, DioException e) =>
-      e.response?.statusCode == 502
-      ? const SynoNotFound(502)
-      : _networkError(url, e);
+  /// fehlende Datei dort mit HTTP 502 und HTML statt JSON (SPIKE M4). Ein
+  /// Reverse-Proxy meldet Ausfälle genauso – deshalb per `getinfo` nachsehen,
+  /// ob die Datei wirklich fehlt.
+  Future<Exception> _downloadError(
+    Uri url,
+    DioException e,
+    Map<String, Object?> params,
+  ) async {
+    final path = params['path'];
+    if (e.response?.statusCode == 502 && path is String) {
+      try {
+        final data = await request('SYNO.FileStation.List', 'getinfo', {
+          'path': jsonEncode([path]),
+        }) as Map;
+        final files = data['files'] as List;
+        if (files.isNotEmpty && (files.first as Map)['code'] == 408) {
+          return const SynoNotFound(408);
+        }
+      } on SynoNotFound catch (notFound) {
+        return notFound;
+      } on SynoException {
+        // NAS selbst nicht erreichbar: bleibt ein Netzwerkfehler.
+      }
+    }
+    return _networkError(url, e);
+  }
 
   Exception _networkError(Uri url, DioException e) {
     final cert = _rejected.remove('${url.host}:${url.port}');

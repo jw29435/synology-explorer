@@ -450,6 +450,14 @@ Handler mockNasHandler(
     if (api == 'SYNO.FileStation.List' && method == 'getinfo') {
       final path =
           (jsonDecode(params['path'] ?? '[]') as List).single as String;
+      // Wie DSM: fehlende Datei (Download → 502) meldet getinfo als 408.
+      if (nas.downloadErrors[path] == 502) {
+        return _ok({
+          'files': [
+            {'code': 408, 'path': path},
+          ],
+        });
+      }
       final info = jsonDecode(await file.readAsString());
       final name = path.split('/').last;
       info['data']['files'][0]
