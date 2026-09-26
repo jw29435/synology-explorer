@@ -95,6 +95,17 @@ void main() {
     expect(router.state.uri.toString(), search);
   });
 
+  testWidgets('06: Breadcrumb-Touch-Ziel mindestens 44 px (E2E-053)', (
+    tester,
+  ) async {
+    await pumpApp(tester, location: folderLocation(album));
+    final target = tester.getSize(
+      find.ancestor(of: find.text('Alben'), matching: find.byType(InkWell)),
+    );
+    expect(target.height, greaterThanOrEqualTo(44));
+    expect(target.width, greaterThanOrEqualTo(44));
+  });
+
   testWidgets('06: Long-Press setzt die Auswahl, Grid-Umschalter', (
     tester,
   ) async {

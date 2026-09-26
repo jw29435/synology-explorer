@@ -371,7 +371,15 @@ class _Breadcrumb extends StatelessWidget {
               onTap: i == segments.length - 1
                   ? null
                   : () => _open(context, '/${segments.take(i + 1).join('/')}'),
-              child: Text(segment, style: style),
+              // Touch-Ziel mindestens 44 px, Text bleibt klein.
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+                child: Center(
+                  widthFactor: 1,
+                  heightFactor: 1,
+                  child: Text(segment, style: style),
+                ),
+              ),
             ),
           ],
         ],
