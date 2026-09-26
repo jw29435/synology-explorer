@@ -126,9 +126,15 @@ class _ImageViewerScreenState extends ConsumerState<ImageViewerScreen> {
   Widget build(BuildContext context) {
     final images = _gallery();
     if (images == null) {
+      // Zurück auch, solange der Ordner lädt.
       return const Scaffold(
         backgroundColor: Colors.black,
-        body: Center(child: CircularProgressIndicator()),
+        body: Stack(
+          children: [
+            Center(child: CircularProgressIndicator()),
+            SafeArea(child: BackButton()),
+          ],
+        ),
       );
     }
     final index = images.indexWhere((e) => e.path == _current.path);

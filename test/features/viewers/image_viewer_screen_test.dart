@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:synology_explorer/features/browser/data/file_station_list_api.dart';
 import 'package:synology_explorer/features/browser/domain/nas_entry.dart';
 import 'package:synology_explorer/features/browser/presentation/entry_widgets.dart';
 import 'package:synology_explorer/features/viewers/presentation/viewer_providers.dart';
+import 'package:synology_explorer/features/viewers/presentation/viewer_screen.dart';
 
 import '../../helpers/app_harness.dart';
 import 'fake_media.dart';
@@ -38,7 +41,39 @@ class _PhotoFolder extends FakeListApi {
   }
 }
 
+/// Der Ordner lädt nie fertig (langsames Netz).
+class _SlowFolder extends FakeListApi {
+  @override
+  Future<NasPage> list(
+    String folderPath, {
+    NasSortBy sortBy = NasSortBy.name,
+    bool descending = false,
+    int offset = 0,
+    int limit = 500,
+  }) => Completer<NasPage>().future;
+}
+
 void main() {
+  testWidgets('E2E-043: Zurück, während der Ordner lädt', (tester) async {
+    final app = await pumpApp(
+      tester,
+      listApi: _SlowFolder(),
+      location: '/files',
+    );
+    final entry = _file('IMG_1.jpg', NasFileType.image);
+    routerOf(app.container).push(viewerLocation(entry.path), extra: entry);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+
+    expect(find.byType(CircularProgressIndicator), findsOne);
+    await tester.tap(find.byType(BackButton));
+    await tester.pumpAndSettle();
+    expect(
+      routerOf(app.container).routerDelegate.state.uri.toString(),
+      '/files',
+    );
+  });
+
   testWidgets('15: Galerie über die Bilder des Ordners, Favorit', (
     tester,
   ) async {
