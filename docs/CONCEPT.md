@@ -25,7 +25,7 @@ Die wichtigste Randbedingung ist der deaktivierte Home-Dienst: Es gibt keinen pe
 
 - Einstiegsseite zeigt die Liste der Shared Folders, keinen „Home"-Eintrag.
 - Wiedergabepositionen, Zuletzt-geöffnet und Playlists werden lokal auf dem Gerät gespeichert (SQLite), nicht auf dem NAS.
-- Ordner-Favoriten kommen vom NAS (`SYNO.FileStation.Favorite`, funktioniert ohne Home-Dienst, siehe SPIKE.md) – dieselben wie in DS File. Die App spiegelt sie in SQLite (Sofort-Anzeige und offline) und lädt sie beim Öffnen von 05, per Pull-to-Refresh und nach jeder Änderung neu. Datei-Favoriten bleiben lokal: DSM nimmt Dateien zwar an, führt sie aber sofort als `broken`.
+- Ordner-Favoriten kommen vom NAS (`SYNO.FileStation.Favorite`, funktioniert ohne Home-Dienst, siehe SPIKE.md) – dieselben wie in DS File. Die App spiegelt sie in SQLite (Sofort-Anzeige und offline) und lädt sie beim Öffnen von 05, per Pull-to-Refresh und nach jeder Änderung neu. Datei-Favoriten bleiben lokal: DSM nimmt Dateien zwar an, führt sie aber sofort als `broken`. Beim Update von v1.0 ersetzt der erste Abgleich die bisher lokalen Ordner-Favoriten durch die NAS-Liste (sie werden nicht hochgeladen).
 - Auto-Foto-Upload braucht einen vom Nutzer gewählten Zielordner in einem Shared Folder (z. B. `photo/Handy-Johann`).
 - Papierkorb ist der Ordner `#recycle` je Shared Folder. Ob er sichtbar ist, entscheidet die Freigabe-Einstellung „Zugriff auf Papierkorb nur für Administratoren". Die App zeigt ihn nur, wenn das Listing erfolgreich ist.
 
@@ -96,7 +96,7 @@ Alles läuft über `/webapi/entry.cgi` mit `api`, `version`, `method` und der `_
 | Papierkorb | `SYNO.FileStation.List` / `CopyMove` | `list`, `start` | `#recycle` listen; Wiederherstellen = Verschieben zurück. Endgültig löschen = `Delete` im `#recycle` |
 | Ordnergröße | `SYNO.FileStation.DirSize` | `start`, `status` | Asynchron |
 | Freigabelinks | `SYNO.FileStation.Sharing` | `create`, `list`, `delete`, `getinfo` | `expire_times`, `password`, `date_expired` |
-| Favoriten (NAS-seitig) | `SYNO.FileStation.Favorite` | `list`, `add`, `delete` | Nur Ordner. `list` mit `status_filter=all` (`status` valid/broken). Vor `add`/`delete` immer `list`: `delete` entfernt auch fremde Favoriten, `add` auf Vorhandenes liefert 800 (= Erfolg). 105/verweigert → Meldung, Cache unverändert |
+| Favoriten (NAS-seitig) | `SYNO.FileStation.Favorite` | `list`, `add`, `delete` | Nur Ordner. `list` mit `status_filter=all` (`status` valid/broken). Vor `add`/`delete` immer `list` (Zustand bekannt, keine überflüssigen Aufrufe); `add` auf Vorhandenes liefert 800 (= Erfolg), `delete` ohne Favorit ist ein No-op. 105 löst hier keinen Re-Login aus. 105/verweigert → Meldung, Cache unverändert |
 | Prüfsumme | `SYNO.FileStation.MD5` | `start`, `status` | Optional für Download-Verifikation |
 
 **Fehlerbehandlung**

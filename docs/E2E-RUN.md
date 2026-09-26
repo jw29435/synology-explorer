@@ -14,7 +14,7 @@ Logcat liegen nur lokal unter `.e2e/` (in `.gitignore`), weil sie echte Dateinam
 | `svc wifi disable/enable` | erlaubt |
 | Testdaten | Nicht vorgegeben; per `SYNO.FileStation.Search` (lesend) selbst suchen |
 | Test-Favorit `_e2e_<ts>` | erlaubt (anlegen und wieder löschen) |
-| Testordner mit Schreibrecht | gibt es nicht; `CreateFolder` in `/Daten` einmal versuchen (erwartet 407), sonst nur Fehlerpfade |
+| Testordner mit Schreibrecht | gibt es nicht; `CreateFolder` im Share einmal versuchen (erwartet 407), sonst nur Fehlerpfade |
 | Freigabelink | erlaubt (erwartet 407; bei Erfolg sofort löschen) |
 | `pm clear` | auf beiden Geräten erlaubt |
 | Überspringen | nichts (außer den Sperren aus dem Auftrag: Auto-Upload nie einschalten, Papierkorb nur listen) |
@@ -22,8 +22,7 @@ Logcat liegen nur lokal unter `.e2e/` (in `.gitignore`), weil sie echte Dateinam
 
 ## Phase 1 – Capabilities des Testkontos (curl, 26.09.2026)
 
-DSM 7.2.1, einziger sichtbarer Share `/Daten` (`share_right: RW`, ACL `read/del/exec: true`, `write/append: false`,
-`adv_right` alles `false`, POSIX 555). Testdaten per `Search` gefunden: Audio-Ordner mit 8 MP3 + 3 JPG, Ordner mit
+Ein einziger sichtbarer Share (`share_right: RW`, laut ACL aber ohne Schreib-/Anfügerecht, Löschen erlaubt). Testdaten per `Search` gefunden: Audio-Ordner mit 8 MP3 + 3 JPG, Ordner mit
 PDF/TXT/MP3, MP4 (42 MB), DOCX (89 KB), großer Ordner für DirSize (≈ 8 000 Dateien, ≈ 100 GB). **Nicht vorhanden:**
 FLAC, Markdown (nur `.txt`), HEIC.
 
@@ -42,12 +41,12 @@ FLAC, Markdown (nur `.txt`), HEIC.
 | `Search start/list/stop/clean` (Muster, `extension`) | ok, `taskid` JSON-kodiert | 11 liefert Treffer |
 | `DirSize start/status/stop` | ok; `status` nach `stop`/`finished` → 599 | 10 berechnet, Abbruch ok |
 | `List #recycle` | **407** | 24: Share nicht angeboten |
-| `CreateFolder /Daten/_e2e_<ts>` | **1100 / 407** – kein Testordner | alle Schreibaktionen: nur Fehlerpfad |
+| `CreateFolder <Share>/_e2e_<ts>` | **1100 / 407** – kein Testordner | alle Schreibaktionen: nur Fehlerpfad |
 | `Upload` in nicht existierenden Ordner | 408 (ohne `create_parents`), 407 (mit) | 14/20: Fehlermeldung, kein Endlos-Retry |
 | `Rename` auf nicht existierende Datei im Testordner-Pfad | 1200 / 408 | Fehlermeldung |
 | `CopyMove` / `Delete` auf nicht existierende Datei | `start` ok, `status` 599 bzw. `finished` ohne Fehler | Delete kann auf echten Dateien klappen (`del: true`) → nie auf echten Dateien |
 
-Auf dem NAS blieb nach Phase 1 nichts zurück: `/Daten` enthält weiter nur den bisherigen Ordner, die Favoritenliste
+Auf dem NAS blieb nach Phase 1 nichts zurück: Der Share enthält weiter nur den bisherigen Ordner, die Favoritenliste
 ist vor und nach dem Test identisch (drei temporäre `_e2e_…`-Favoriten angelegt und gelöscht), keine Freigabelinks.
 
 ## Phase 2 – Statisches Audit
@@ -156,8 +155,29 @@ benennt den Favoriten nach dem Ordner, der Auftrag erlaubt nur einen Test-Favori
 
 ## Phase 7 – Abschluss
 
-- Review des gesamten Diffs durch einen frischen Agent (Ergebnis und Nacharbeiten siehe unten).
-- NAS-Endzustand per curl: keine Freigabelinks, `/Daten` unverändert (kein Testordner – `CreateFolder` wurde
+- Review des gesamten Diffs durch einen frischen Agent, der die Fixes nicht kannte: kein Blocker; Sicherheitsregeln
+  (höchstens ein Login je Request-Kette, kein Login nach gescheitertem stillem Login, keine SIDs im Log, TLS
+  unverändert), keine Secrets/echten Namen im Repo, Tests je Fix in der Stichprobe vorhanden. 14 kleinere Punkte,
+  alle bearbeitet:
+
+  | Review | Ergebnis |
+  | --- | --- |
+  | R-01 Lücke beim 105-Re-Login | behoben 67a5b4e |
+  | R-02 Favoriten-105 löste stillen Login aus | behoben 67a5b4e (Test in favorites_sync_test) |
+  | R-03 Update ersetzt lokale Ordner-Favoriten | dokumentiert (CONCEPT 2), vom Auftrag so erlaubt |
+  | R-04 Sitzungsverlust unter gepushtem 01 | behoben abb224e (regression_servers_test) |
+  | R-05 fehlender Test für Abmelden unter gepushtem 01 | ergänzt abb224e |
+  | R-06 jeder 502 als „Nicht gefunden“ | behoben b79b431 (getinfo prüft, download_502_test) |
+  | R-07 kaputte Favoriten nicht entfernbar | behoben d7e65ce (flow_10) |
+  | R-08 Doku zu Datei-Favoriten widersprüchlich | Doku korrigiert |
+  | R-09 jeder unbekannte Code als „nicht verfügbar“ | behoben d7e65ce |
+  | R-10 Ablauf-Meldung erschien mehrfach | behoben abb224e |
+  | R-11 Passwort nur zum Prüfen gelesen | behoben 67a5b4e (containsKey) |
+  | R-12 Race beim Vorbelegen von „Passwort merken“ | behoben 0a67425 |
+  | R-13 Begründung „list vor delete“ falsch | Kommentar und CONCEPT 4 korrigiert |
+  | R-14 zu viele Kontodetails in E2E-RUN | anonymisiert (Share-Name, ACL-Details) |
+
+- NAS-Endzustand per curl: keine Freigabelinks, Share-Wurzel unverändert (kein Testordner – `CreateFolder` wurde
   verweigert), Favoritenliste identisch mit Phase 1, curl-Session abgemeldet.
 - Handys: `_e2e.txt` wurde nie angelegt (Upload per UI gesperrt), „Aktiv lassen“ war schon an und wurde nicht
   verändert, Rotation (OnePlus) und WLAN (beide) sind zurückgesetzt, Design der App wieder „Dunkel“. Die App bleibt auf
@@ -193,8 +213,8 @@ benennt den Favoriten nach dem Ordner, der Auftrag erlaubt nur einen Test-Favori
 
 ## Annahmen
 
-- NAS-Favoriten nur für Ordner: DSM nimmt Dateien als Favorit an, meldet sie aber sofort als `broken`. Die App
-  bietet „Favorit“ deshalb nur für Ordner an (DS-File-Verhalten, dort gibt es ebenfalls nur Ordner-Favoriten).
+- NAS-Favoriten nur für Ordner: DSM nimmt Dateien als Favorit an, meldet sie aber sofort als `broken`. Ordner-Favoriten
+  gehen deshalb aufs NAS, Datei-Favoriten bleiben lokal (siehe unten und CONCEPT.md Abschnitt 2).
 - Schweregrad „sicherheit“ ergänzt die vorgegebene Skala (crash > blockiert > sicherheit > navigation > fehlermeldung
   > kosmetik), weil Backup-/Log-Lecks weder „blockiert“ noch „kosmetik“ sind.
 - Auf dem A40 öffnete ein Tipp auf die Tastatur-Symbolleiste versehentlich die Einstellungen der Samsung-Tastatur. Es
