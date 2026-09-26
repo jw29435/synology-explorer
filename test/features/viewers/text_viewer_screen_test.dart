@@ -2,8 +2,8 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:synology_explorer/core/utils/format.dart';
 import 'package:synology_explorer/features/browser/domain/nas_entry.dart';
-import 'package:synology_explorer/features/viewers/presentation/video_player_screen.dart';
 import 'package:synology_explorer/features/viewers/presentation/viewer_common.dart';
 import 'package:synology_explorer/features/viewers/presentation/viewer_providers.dart';
 import 'package:synology_explorer/features/viewers/presentation/viewer_screen.dart';
@@ -95,7 +95,7 @@ void main() {
   });
 
   test('16: Zeitformat des Players', () {
-    expect(formatPlaybackTime(const Duration(seconds: 102)), '1:42');
-    expect(formatPlaybackTime(const Duration(hours: 1, seconds: 5)), '1:00:05');
+    expect(formatDuration(const Duration(seconds: 102)), '1:42');
+    expect(formatDuration(const Duration(hours: 1, seconds: 5)), '1:00:05');
   });
 }
