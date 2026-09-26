@@ -1,4 +1,4 @@
-# Synology Explorer
+# Nuvo Explorer
 
 Flutter-Client für Android und iOS, der Dateien auf einem Synology NAS über die File-Station-API browst, verwaltet
 und direkt wiedergibt – mit Musik als Kernfunktion. Der Player läuft im Hintergrund, ist über Sperrbildschirm und
@@ -77,8 +77,8 @@ curl "http://127.0.0.1:5000/webapi/entry.cgi?api=SYNO.API.Info&version=1&method=
 Tags `v*` bauen signierte Artefakte (`.github/workflows/release-android.yml`, `release-ios.yml`). Normalerweise
 entstehen Tags über [release-please](https://github.com/googleapis/release-please): Conventional Commits auf `main`
 ergeben einen Release-PR mit `CHANGELOG.md` und neuer Version; sein Merge legt Tag und GitHub-Release an und startet
-beide Release-Workflows. Die erste Version ist über `"release-as": "1.0.0"` in `release-please-config.json` festgelegt; nach dem
-ersten Release den Eintrag entfernen. Die Build-Nummer ist die Zahl der Commits bis zum Tag (steigt monoton).
+beide Release-Workflows. Das erste Release ist erfolgt, der frühere `"release-as"`-Eintrag in `release-please-config.json`
+ist entfernt; release-please leitet die nächste Version aus den Commits ab. Die Build-Nummer ist die Zahl der Commits bis zum Tag (steigt monoton).
 
 Benötigte Repository-Secrets (Settings › Secrets and variables › Actions):
 
