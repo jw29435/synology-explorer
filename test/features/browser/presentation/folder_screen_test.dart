@@ -201,7 +201,7 @@ void main() {
     );
     expect(
       tester.getSemantics(tile),
-      containsSemantics(label: 'bild.jpg', hasTapAction: true),
+      isSemantics(label: 'bild.jpg', hasTapAction: true),
     );
     semantics.dispose();
   });
