@@ -47,7 +47,7 @@ void main() {
       client,
       storage,
       deviceName: 'Test',
-    ).login(mockUser, mockPassword, otp: mockOtp);
+    ).login(mockUser, mockPassword, otp: mockOtp, rememberPassword: true);
     api = FileStationFavoriteApi(client);
   });
   tearDown(() async {
@@ -143,5 +143,15 @@ void main() {
       throwsA(isA<SynoPermissionDenied>()),
     );
     expect(await cached(), before);
+  });
+
+  test('105 bei Favoriten: kein stiller Re-Login (Review R-02)', () async {
+    final logins = nas.calls('SYNO.API.Auth', 'login').length;
+    nas.control.denyFavorites = 105;
+    await expectLater(
+      repo.syncFavorites(1, api),
+      throwsA(isA<SynoPermissionDenied>()),
+    );
+    expect(nas.calls('SYNO.API.Auth', 'login'), hasLength(logins));
   });
 }

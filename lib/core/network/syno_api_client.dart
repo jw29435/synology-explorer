@@ -237,7 +237,10 @@ class SynoApiClient {
       final relogin = onSessionExpired;
       if (relogin == null ||
           api == 'SYNO.API.Auth' ||
-          !SynoException.reloginCodes.contains(e.code)) {
+          !SynoException.reloginCodes.contains(e.code) ||
+          // Favoriten: 105 heißt „für dieses Konto nicht verfügbar“, kein
+          // Sessionablauf – sonst ein Login bei jedem Öffnen von 05.
+          (api == 'SYNO.FileStation.Favorite' && e.code == 105)) {
         rethrow;
       }
       // Ein paralleler Request hat die SID schon erneuert: nur wiederholen.

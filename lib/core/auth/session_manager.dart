@@ -40,7 +40,7 @@ class SessionManager {
   static Future<bool> hasRememberedPassword(
     FlutterSecureStorage storage,
     int serverId,
-  ) async => await storage.read(key: _key(serverId, 'password')) != null;
+  ) => storage.containsKey(key: _key(serverId, 'password'));
 
   int get _serverId =>
       client.profile.id ?? (throw StateError('Profil nicht gespeichert'));
@@ -115,13 +115,17 @@ class SessionManager {
   /// gemerktes Passwort bleibt die Session dann bestehen und der Fehler geht
   /// als solcher raus, statt den Nutzer abzumelden.
   Future<void> _relogin(SynoException cause) async {
-    if (cause is SynoPermissionDenied && await _read('password') == null) {
-      throw cause;
-    }
+    final before = client.sid;
+    if (cause is SynoPermissionDenied && !await _hasPassword()) throw cause;
+    // Während des Nachsehens hat ein paralleler Request neu angemeldet.
+    if (client.sid != before && client.sid != null) return;
     return _pendingRelogin ??= _silentLogin().whenComplete(
       () => _pendingRelogin = null,
     );
   }
+
+  Future<bool> _hasPassword() =>
+      _storage.containsKey(key: _key(_serverId, 'password'));
 
   /// Scheitert der stille Login an der Anmeldung selbst (Passwort geändert,
   /// Konto gesperrt, OTP nötig), wird das gemerkte Passwort verworfen: Jeder
