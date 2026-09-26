@@ -1,0 +1,87 @@
+{
+  "data": {
+    "files": [
+      {
+        "isdir": true,
+        "name": "Alben",
+        "path": "/music/#recycle/Alben",
+        "additional": {
+          "perm": {
+            "acl": {
+              "append": true,
+              "del": true,
+              "exec": true,
+              "read": true,
+              "write": true
+            },
+            "is_acl_mode": true,
+            "posix": 777
+          },
+          "size": 4096,
+          "time": {
+            "atime": 1778580000,
+            "crtime": 1778580000,
+            "ctime": 1778580000,
+            "mtime": 1778580000
+          },
+          "type": ""
+        }
+      },
+      {
+        "isdir": false,
+        "name": "Demo Sturmflut.mp3",
+        "path": "/music/#recycle/Demo Sturmflut.mp3",
+        "additional": {
+          "perm": {
+            "acl": {
+              "append": true,
+              "del": true,
+              "exec": true,
+              "read": true,
+              "write": true
+            },
+            "is_acl_mode": true,
+            "posix": 777
+          },
+          "size": 8388608,
+          "time": {
+            "atime": 1778612640,
+            "crtime": 1778612640,
+            "ctime": 1778612640,
+            "mtime": 1778612640
+          },
+          "type": "MP3"
+        }
+      },
+      {
+        "isdir": false,
+        "name": "altes-cover.jpg",
+        "path": "/music/#recycle/Alben/altes-cover.jpg",
+        "additional": {
+          "perm": {
+            "acl": {
+              "append": true,
+              "del": true,
+              "exec": true,
+              "read": true,
+              "write": true
+            },
+            "is_acl_mode": true,
+            "posix": 777
+          },
+          "size": 524288,
+          "time": {
+            "atime": 1778612640,
+            "crtime": 1778612640,
+            "ctime": 1778612640,
+            "mtime": 1778612640
+          },
+          "type": "JPG"
+        }
+      }
+    ],
+    "offset": 0,
+    "total": 3
+  },
+  "success": true
+}

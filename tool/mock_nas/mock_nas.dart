@@ -21,20 +21,29 @@ const mockOtp = '123456';
 /// beim zweiten `status` fertig sind; Upload (Multipart, merkt sich Pfade,
 /// die `getinfo` mit mehreren Pfaden dann kennt); Sharing create/list/delete;
 /// Download mit HTTP-Range über [mockFileSize] Byte Testdaten.
-Handler mockNasHandler(Directory fixtures) {
-  final sids = <String>{};
+///
+/// `list` auf `/music/#recycle` liefert `recycle/music.json`
+/// (ohne Gelöschtes und Verschobenes), `/photo/#recycle` 407 (nur für
+/// Administratoren), andere Papierkörbe 408. Fehlerfälle schaltet [control].
+Handler mockNasHandler(Directory fixtures, {MockNasControl? control}) {
+  final nas = control ?? MockNasControl();
+  final sids = nas._sids;
   var logins = 0;
   final tasks = <String, int>{};
   var taskCount = 0;
   final uploaded = <String>{};
   final links = <Map<String, Object?>>[];
   var linkCount = 0;
+  // Aus dem Papierkorb gelöscht oder verschoben (wiederhergestellt).
+  final removed = <String>{};
 
   Future<String> read(String path) =>
       File('${fixtures.path}/$path').readAsString();
 
   Future<Response> login(Map<String, String> params) async {
-    if (params['account'] != mockUser || params['passwd'] != mockPassword) {
+    if (nas.rejectLogin ||
+        params['account'] != mockUser ||
+        params['passwd'] != mockPassword) {
       return _json(await read('SYNO.API.Auth/login.400.json'));
     }
     final ok = jsonDecode(await read('SYNO.API.Auth/login.json'));
@@ -58,7 +67,12 @@ Handler mockNasHandler(Directory fixtures) {
     Map<String, String> p,
   ) async {
     final kind = api.split('.').last.toLowerCase();
+    final denied = api == 'SYNO.FileStation.DirSize' ? null : nas.denyWrites;
     if (method == 'start') {
+      if (denied == null &&
+          (api == 'SYNO.FileStation.Delete' || p['remove_src'] == 'true')) {
+        removed.addAll((jsonDecode(p['path'] ?? '[]') as List).cast());
+      }
       final id = 'mock-$kind-${++taskCount}';
       tasks[id] = 0;
       return _ok({'taskid': id});
@@ -81,6 +95,18 @@ Handler mockNasHandler(Directory fixtures) {
         if (!finished) 'total_size': (done['total_size'] as int) ~/ 2,
       });
     }
+    // DSM 7.2.1: Fehler einzelner Pfade im erfolgreichen `status`.
+    if (denied != null) {
+      tasks.remove(id);
+      return _ok({
+        'finished': true,
+        'status': 'FAIL',
+        'errors': [
+          {'code': denied, 'path': ''},
+        ],
+        'progress': 1,
+      });
+    }
     return _ok({
       'finished': finished,
       'progress': finished ? 1 : 0.5,
@@ -92,6 +118,7 @@ Handler mockNasHandler(Directory fixtures) {
   Response sharing(String method, Map<String, String> p, Uri url) {
     switch (method) {
       case 'create':
+        if (nas.denyWrites case final code?) return _error(code);
         final created = [
           for (final path in (jsonDecode(p['path']!) as List).cast<String>())
             {
@@ -118,7 +145,18 @@ Handler mockNasHandler(Directory fixtures) {
   }
 
   Response download(Map<String, String> p, String? range) {
-    final data = mockFileBytes();
+    final path = p['path'] ?? '';
+    switch (nas.downloadErrors[path]) {
+      case 502:
+        return Response(
+          502,
+          body: '<html><body>502 Bad Gateway</body></html>',
+          headers: {'content-type': 'text/html'},
+        );
+      case final int code:
+        return _error(code);
+    }
+    final data = nas.files[path] ?? mockFileBytes();
     final start = int.tryParse(
       RegExp(r'bytes=(\d+)-').firstMatch(range ?? '')?.group(1) ?? '',
     );
@@ -142,6 +180,24 @@ Handler mockNasHandler(Directory fixtures) {
         'content-range': 'bytes $start-${data.length - 1}/${data.length}',
       },
     );
+  }
+
+  Future<Response> recycle(String folder) async {
+    switch (_shareOf(folder)) {
+      case '/music':
+        final data =
+            jsonDecode(await read('recycle/music.json'))['data'] as Map;
+        final files = [
+          for (final f in data['files'] as List)
+            if (_parentOf(f['path'] as String) == folder &&
+                !removed.contains(f['path']))
+              f,
+        ];
+        return _ok({'files': files, 'offset': 0, 'total': files.length});
+      case '/photo':
+        return _error(407);
+    }
+    return _error(408);
   }
 
   return (Request request) async {
@@ -178,6 +234,7 @@ Handler mockNasHandler(Directory fixtures) {
       }
       switch (api) {
         case 'SYNO.FileStation.Upload':
+          if (nas.denyWrites case final code?) return _error(code);
           final parts = parseMultipart(type, body);
           final name = parts['file'];
           if (name == null) return _error(401);
@@ -217,6 +274,16 @@ Handler mockNasHandler(Directory fixtures) {
       }
     }
 
+    if (api == 'SYNO.FileStation.List' && method == 'list') {
+      final folder = params['folder_path'] ?? '';
+      if (folder.contains('/#recycle')) {
+        if (!sids.contains(params['_sid'])) {
+          return _json(await read('errors/119.json'));
+        }
+        return recycle(folder);
+      }
+    }
+
     final apiDir = Directory('${fixtures.path}/$api');
     final json = File('${apiDir.path}/$method.json');
     final jpg = File('${apiDir.path}/$method.jpg');
@@ -253,6 +320,34 @@ Handler mockNasHandler(Directory fixtures) {
     return _json(await file.readAsString());
   };
 }
+
+/// Schalter für Fehlerfälle und Testdaten des Mock-NAS (E2E-Tests).
+class MockNasControl {
+  final _sids = <String>{};
+
+  /// Alle Logins scheitern mit 400 (z. B. Passwort auf dem NAS geändert).
+  bool rejectLogin = false;
+
+  /// Fehlercode für schreibende Aktionen (Upload, CopyMove, Delete,
+  /// Sharing create), z. B. 407 wie beim Testkonto ohne Schreibrecht.
+  /// CopyMove/Delete melden ihn wie DSM 7.2.1 im `status` (`FAIL`,
+  /// `errors[0].code`), die anderen als Fehler der Anfrage.
+  int? denyWrites;
+
+  /// Download-Inhalt je NAS-Pfad (sonst [mockFileBytes]).
+  final files = <String, List<int>>{};
+
+  /// Download-Fehler je NAS-Pfad: 502 = HTTP 502 mit HTML-Seite (DSM bei
+  /// fehlender Datei), sonst dieser DSM-Fehlercode als JSON.
+  final downloadErrors = <String, int>{};
+
+  /// Macht alle SIDs ungültig (Session abgelaufen → 119).
+  void expireSessions() => _sids.clear();
+}
+
+String _shareOf(String path) => '/${path.split('/')[1]}';
+
+String _parentOf(String path) => path.substring(0, path.lastIndexOf('/'));
 
 Response _json(String body) =>
     Response.ok(body, headers: {'content-type': 'application/json'});
