@@ -157,3 +157,8 @@ wurde nichts angelegt, verschoben oder gelöscht.
 - **Offen, braucht ein Konto mit Schreib-/Freigaberecht:** Upload (Multipart-Feldnamen, `overwrite`-Werte),
   CopyMove/Delete mit echtem Fortschritt, Rename, CreateFolder mit `force_parent`, Wiederherstellen aus `#recycle`,
   Sharing create/list/delete inkl. URL-Host und `date_expired`.
+
+## Nachtrag M3 (26.09.2026)
+
+- **Download per POST:** `SYNO.FileStation.Download` (v2, `mode=open`) funktioniert auch als POST-Formular, wie der
+  Client alle Aufrufe schickt; Content-Type ist der der Datei (z. B. `audio/mpeg`).

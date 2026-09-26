@@ -1543,6 +1543,228 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Exportieren'**
   String get export;
+
+  /// No description provided for @viewerLoading.
+  ///
+  /// In de, this message translates to:
+  /// **'Wird geladen …'**
+  String get viewerLoading;
+
+  /// No description provided for @downloadProgress.
+  ///
+  /// In de, this message translates to:
+  /// **'{done} von {total}'**
+  String downloadProgress(String done, String total);
+
+  /// No description provided for @openWith.
+  ///
+  /// In de, this message translates to:
+  /// **'Öffnen mit …'**
+  String get openWith;
+
+  /// No description provided for @openWithFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine App zum Öffnen dieser Datei gefunden.'**
+  String get openWithFailed;
+
+  /// No description provided for @openWithHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Für diesen Dateityp gibt es keine Vorschau in der App.'**
+  String get openWithHint;
+
+  /// No description provided for @textTooLarge.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Datei ist größer als 5 MB und wird hier nicht angezeigt.'**
+  String get textTooLarge;
+
+  /// No description provided for @actionShare.
+  ///
+  /// In de, this message translates to:
+  /// **'Teilen'**
+  String get actionShare;
+
+  /// No description provided for @actionSaveToPhotos.
+  ///
+  /// In de, this message translates to:
+  /// **'In Fotos'**
+  String get actionSaveToPhotos;
+
+  /// No description provided for @savedToPhotos.
+  ///
+  /// In de, this message translates to:
+  /// **'In Fotos gespeichert'**
+  String get savedToPhotos;
+
+  /// No description provided for @actionFavorite.
+  ///
+  /// In de, this message translates to:
+  /// **'Favorit'**
+  String get actionFavorite;
+
+  /// No description provided for @imageOf.
+  ///
+  /// In de, this message translates to:
+  /// **'{index} von {total}'**
+  String imageOf(String index, String total);
+
+  /// No description provided for @heicUnavailable.
+  ///
+  /// In de, this message translates to:
+  /// **'HEIC-Vorschau auf dem NAS nicht verfügbar'**
+  String get heicUnavailable;
+
+  /// No description provided for @imageUnavailable.
+  ///
+  /// In de, this message translates to:
+  /// **'Bild kann nicht angezeigt werden'**
+  String get imageUnavailable;
+
+  /// No description provided for @viewRendered.
+  ///
+  /// In de, this message translates to:
+  /// **'Gerendert'**
+  String get viewRendered;
+
+  /// No description provided for @viewRaw.
+  ///
+  /// In de, this message translates to:
+  /// **'Rohtext'**
+  String get viewRaw;
+
+  /// No description provided for @fontSize.
+  ///
+  /// In de, this message translates to:
+  /// **'Schriftgröße'**
+  String get fontSize;
+
+  /// No description provided for @docxBanner.
+  ///
+  /// In de, this message translates to:
+  /// **'Lesemodus: vereinfachte Darstellung. Seitenlayout, Kopfzeilen und Kommentare werden nicht gezeigt.'**
+  String get docxBanner;
+
+  /// No description provided for @docxUnreadable.
+  ///
+  /// In de, this message translates to:
+  /// **'Das Dokument lässt sich im Lesemodus nicht anzeigen. „Öffnen mit …“ übergibt es an eine andere App.'**
+  String get docxUnreadable;
+
+  /// No description provided for @pdfPage.
+  ///
+  /// In de, this message translates to:
+  /// **'Seite'**
+  String get pdfPage;
+
+  /// No description provided for @pdfOfTotal.
+  ///
+  /// In de, this message translates to:
+  /// **'von {total}'**
+  String pdfOfTotal(String total);
+
+  /// No description provided for @pdfPrevious.
+  ///
+  /// In de, this message translates to:
+  /// **'Vorherige Seite'**
+  String get pdfPrevious;
+
+  /// No description provided for @pdfNext.
+  ///
+  /// In de, this message translates to:
+  /// **'Nächste Seite'**
+  String get pdfNext;
+
+  /// No description provided for @searchInDocument.
+  ///
+  /// In de, this message translates to:
+  /// **'Im Dokument suchen'**
+  String get searchInDocument;
+
+  /// No description provided for @noMatches.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Treffer'**
+  String get noMatches;
+
+  /// No description provided for @previousMatch.
+  ///
+  /// In de, this message translates to:
+  /// **'Vorheriger Treffer'**
+  String get previousMatch;
+
+  /// No description provided for @nextMatch.
+  ///
+  /// In de, this message translates to:
+  /// **'Nächster Treffer'**
+  String get nextMatch;
+
+  /// No description provided for @resumeAt.
+  ///
+  /// In de, this message translates to:
+  /// **'Bei {time} fortsetzen?'**
+  String resumeAt(String time);
+
+  /// No description provided for @restart.
+  ///
+  /// In de, this message translates to:
+  /// **'Von vorn'**
+  String get restart;
+
+  /// No description provided for @subtitles.
+  ///
+  /// In de, this message translates to:
+  /// **'Untertitel'**
+  String get subtitles;
+
+  /// No description provided for @speed.
+  ///
+  /// In de, this message translates to:
+  /// **'Geschwindigkeit'**
+  String get speed;
+
+  /// No description provided for @rewind10.
+  ///
+  /// In de, this message translates to:
+  /// **'10 s zurück'**
+  String get rewind10;
+
+  /// No description provided for @forward10.
+  ///
+  /// In de, this message translates to:
+  /// **'10 s vor'**
+  String get forward10;
+
+  /// No description provided for @play.
+  ///
+  /// In de, this message translates to:
+  /// **'Abspielen'**
+  String get play;
+
+  /// No description provided for @volumePercent.
+  ///
+  /// In de, this message translates to:
+  /// **'Lautstärke {percent} %'**
+  String volumePercent(String percent);
+
+  /// No description provided for @brightnessPercent.
+  ///
+  /// In de, this message translates to:
+  /// **'Helligkeit {percent} %'**
+  String brightnessPercent(String percent);
+
+  /// No description provided for @fullscreen.
+  ///
+  /// In de, this message translates to:
+  /// **'Vollbild umschalten'**
+  String get fullscreen;
+
+  /// No description provided for @videoUnavailable.
+  ///
+  /// In de, this message translates to:
+  /// **'Video kann nicht abgespielt werden'**
+  String get videoUnavailable;
 }
 
 class _AppLocalizationsDelegate

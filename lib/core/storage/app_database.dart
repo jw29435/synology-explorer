@@ -69,14 +69,35 @@ class OfflineFiles extends Table {
   Set<Column> get primaryKey => {serverId, remotePath};
 }
 
+/// Wiedergabeposition je Datei (Audio und Video). [mtime] ist die
+/// Änderungszeit der Datei beim Speichern; ändert sich die Datei, gilt die
+/// Position nicht mehr.
+class PlaybackPositions extends Table {
+  IntColumn get serverId => integer()();
+  TextColumn get path => text()();
+  IntColumn get mtime => integer().nullable()();
+  IntColumn get positionMs => integer()();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {serverId, path};
+}
+
 @DriftDatabase(
-  tables: [Servers, Favorites, RecentFiles, Transfers, OfflineFiles],
+  tables: [
+    Servers,
+    Favorites,
+    RecentFiles,
+    Transfers,
+    OfflineFiles,
+    PlaybackPositions,
+  ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -89,6 +110,7 @@ class AppDatabase extends _$AppDatabase {
         await m.createTable(transfers);
         await m.createTable(offlineFiles);
       }
+      if (from < 4) await m.createTable(playbackPositions);
     },
   );
 }

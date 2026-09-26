@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../features/browser/domain/nas_entry.dart';
 import '../features/browser/presentation/folder_screen.dart';
 import '../features/browser/presentation/search_screen.dart';
 import '../features/browser/presentation/start_screen.dart';
@@ -12,18 +13,20 @@ import '../features/servers/presentation/server_providers.dart';
 import '../features/sharing/presentation/share_links_screen.dart';
 import '../features/transfers/presentation/offline_screen.dart';
 import '../features/transfers/presentation/transfers_screen.dart';
+import '../features/viewers/presentation/viewer_screen.dart';
 import '../l10n/app_localizations.dart';
 import 'shell.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final router = GoRouter(
     initialLocation: '/servers',
-    // Dateien (inkl. Suche, Papierkorb) und Freigabelinks nur mit
+    // Dateien (inkl. Suche, Papierkorb), Viewer und Freigabelinks nur mit
     // angemeldetem Server; Offline und Transfers gehen auch ohne.
     redirect: (context, state) {
       final location = state.matchedLocation;
       final needsSession =
           location.startsWith('/files') ||
+          (location.startsWith('/view') && state.extra is! LocalView) ||
           location.startsWith('/settings/shares');
       return needsSession && ref.read(sessionProvider) == null
           ? '/servers'
@@ -45,6 +48,21 @@ final routerProvider = Provider<GoRouter>((ref) {
             ),
           ),
         ],
+      ),
+      // Viewer (15–19) als Vollbild über der Shell; `extra` ist der NasEntry.
+      GoRoute(
+        path: '/view',
+        builder: (context, state) => switch (state.extra) {
+          // Offline-Datei (Screen 21): ohne Session, direkt aus der Datei.
+          final LocalView view => ViewerScreen.viewerFor(
+            view.entry,
+            local: view.local,
+          ),
+          final extra => ViewerScreen(
+            path: state.uri.queryParameters['path']!,
+            entry: extra as NasEntry?,
+          ),
+        },
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>

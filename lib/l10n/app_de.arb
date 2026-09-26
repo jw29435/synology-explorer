@@ -618,5 +618,90 @@
   },
   "actionDeleteShort": "Löschen",
   "noWritePermission": "Keine Schreibrechte – das NAS lässt hier nur Lesen (und ggf. Löschen) zu.",
-  "export": "Exportieren"
+  "export": "Exportieren",
+  "viewerLoading": "Wird geladen …",
+  "downloadProgress": "{done} von {total}",
+  "@downloadProgress": {
+    "placeholders": {
+      "done": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "openWith": "Öffnen mit …",
+  "openWithFailed": "Keine App zum Öffnen dieser Datei gefunden.",
+  "openWithHint": "Für diesen Dateityp gibt es keine Vorschau in der App.",
+  "textTooLarge": "Die Datei ist größer als 5 MB und wird hier nicht angezeigt.",
+  "actionShare": "Teilen",
+  "actionSaveToPhotos": "In Fotos",
+  "savedToPhotos": "In Fotos gespeichert",
+  "actionFavorite": "Favorit",
+  "imageOf": "{index} von {total}",
+  "@imageOf": {
+    "placeholders": {
+      "index": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "heicUnavailable": "HEIC-Vorschau auf dem NAS nicht verfügbar",
+  "imageUnavailable": "Bild kann nicht angezeigt werden",
+  "viewRendered": "Gerendert",
+  "viewRaw": "Rohtext",
+  "fontSize": "Schriftgröße",
+  "docxBanner": "Lesemodus: vereinfachte Darstellung. Seitenlayout, Kopfzeilen und Kommentare werden nicht gezeigt.",
+  "docxUnreadable": "Das Dokument lässt sich im Lesemodus nicht anzeigen. „Öffnen mit …“ übergibt es an eine andere App.",
+  "pdfPage": "Seite",
+  "pdfOfTotal": "von {total}",
+  "@pdfOfTotal": {
+    "placeholders": {
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "pdfPrevious": "Vorherige Seite",
+  "pdfNext": "Nächste Seite",
+  "searchInDocument": "Im Dokument suchen",
+  "noMatches": "Keine Treffer",
+  "previousMatch": "Vorheriger Treffer",
+  "nextMatch": "Nächster Treffer",
+  "resumeAt": "Bei {time} fortsetzen?",
+  "@resumeAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "restart": "Von vorn",
+  "subtitles": "Untertitel",
+  "speed": "Geschwindigkeit",
+  "rewind10": "10 s zurück",
+  "forward10": "10 s vor",
+  "play": "Abspielen",
+  "volumePercent": "Lautstärke {percent} %",
+  "@volumePercent": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "brightnessPercent": "Helligkeit {percent} %",
+  "@brightnessPercent": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "fullscreen": "Vollbild umschalten",
+  "videoUnavailable": "Video kann nicht abgespielt werden"
 }
