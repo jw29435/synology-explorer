@@ -53,3 +53,6 @@ app.*.map.json
 key.properties
 .env
 *.pem
+
+# E2E-Läufe: Screenshots, Dumps, Logcat mit echten Dateinamen – nie committen
+.e2e/
