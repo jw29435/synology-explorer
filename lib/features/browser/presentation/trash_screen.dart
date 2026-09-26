@@ -37,7 +37,10 @@ class _TrashScreenState extends ConsumerState<TrashScreen> {
     };
     final loading =
         sharesValue.isLoading || bins.values.any((b) => b.isLoading);
-    final error = loading ? null : sharesValue.error;
+    final error = loading
+        ? null
+        : sharesValue.error ??
+              bins.values.map((b) => b.error).nonNulls.firstOrNull;
     final available = [
       for (final MapEntry(:key, :value) in bins.entries)
         if (value.value == RecycleBin.available) key.path,
@@ -100,7 +103,9 @@ class _TrashScreenState extends ConsumerState<TrashScreen> {
             if (error != null)
               ErrorPanel(
                 error: error,
-                onRetry: () => ref.invalidate(sharesProvider),
+                onRetry: () => ref
+                  ..invalidate(sharesProvider)
+                  ..invalidate(recycleBinProvider),
               )
             else
               Container(

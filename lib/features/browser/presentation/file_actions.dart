@@ -229,11 +229,11 @@ Future<bool> deleteEntries(
       ),
       content: Consumer(
         builder: (context, ref, _) =>
-            Text(switch (ref.watch(recycleBinProvider(share)).value) {
-              RecycleBin.available => l10n.deleteToRecycle,
-              RecycleBin.missing => l10n.deleteNoRecycle,
-              RecycleBin.unknown => l10n.deleteRecycleUnknown,
-              null => '…',
+            Text(switch (ref.watch(recycleBinProvider(share))) {
+              AsyncData(value: RecycleBin.available) => l10n.deleteToRecycle,
+              AsyncData(value: RecycleBin.missing) => l10n.deleteNoRecycle,
+              AsyncData() || AsyncError() => l10n.deleteRecycleUnknown,
+              _ => '…',
             }),
       ),
       actions: [

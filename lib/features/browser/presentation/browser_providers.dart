@@ -344,6 +344,11 @@ final recycleBinProvider = FutureProvider.autoDispose
         return RecycleBin.available;
       } on SynoNotFound {
         return RecycleBin.missing;
+      } on SynoNetworkError {
+        // Netz/Session sagen nichts über den Papierkorb: als Fehler melden.
+        rethrow;
+      } on SynoSessionExpired {
+        rethrow;
       } on SynoException {
         return RecycleBin.unknown;
       }

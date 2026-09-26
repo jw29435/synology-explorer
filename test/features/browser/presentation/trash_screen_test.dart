@@ -24,6 +24,43 @@ void main() {
     expect(find.text(l10n.errorNetwork), findsNothing);
     expect(find.textContaining(l10n.trashInfo), findsOne);
   });
+
+  testWidgets('24: Netzfehler beim Papierkorb heißt nicht „nur Admins“ '
+      '(E2E-029)', (tester) async {
+    await pumpApp(
+      tester,
+      listApi: _RecycleFails(const SynoNetworkError()),
+      location: '/files/trash',
+    );
+    expect(find.text(l10n.errorNetwork), findsOne);
+    expect(find.textContaining('Admins'), findsNothing);
+  });
+
+  testWidgets('24: 407 beim Papierkorb bleibt „nur Admins“', (tester) async {
+    await pumpApp(
+      tester,
+      listApi: _RecycleFails(const SynoPermissionDenied(407)),
+      location: '/files/trash',
+    );
+    expect(find.text(l10n.errorNetwork), findsNothing);
+    expect(find.textContaining('Admins'), findsOne);
+  });
+}
+
+/// `list` scheitert mit [error], jeder `#recycle` also auch.
+class _RecycleFails extends FakeListApi {
+  _RecycleFails(this.error);
+
+  final Object error;
+
+  @override
+  Future<NasPage> list(
+    String folderPath, {
+    NasSortBy sortBy = NasSortBy.name,
+    bool descending = false,
+    int offset = 0,
+    int limit = 500,
+  }) async => throw error;
 }
 
 /// `list_share` scheitert beim ersten Mal (Netz weg), danach Fixtures;
