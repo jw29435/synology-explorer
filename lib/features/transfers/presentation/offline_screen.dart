@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:open_filex/open_filex.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../../app/theme.dart';
@@ -11,6 +10,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../browser/domain/nas_entry.dart';
 import '../../browser/presentation/entry_widgets.dart';
 import '../../browser/presentation/file_actions.dart';
+import '../../viewers/presentation/viewer_screen.dart';
 import 'transfer_providers.dart';
 
 /// Screen 21: Offline-Dateien nach Ordner gruppiert, Speicherbalken,
@@ -315,8 +315,7 @@ class _FileRow extends ConsumerWidget {
               ],
             ),
       onTap: () async {
-        final result = await OpenFilex.open(file.localPath);
-        if (result.type != ResultType.done && context.mounted) {
+        if (!await openOffline(context, file) && context.mounted) {
           showSnack(context, l10n.openFailed);
         }
       },

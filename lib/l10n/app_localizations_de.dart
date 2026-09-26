@@ -912,4 +912,131 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get export => 'Exportieren';
+
+  @override
+  String get viewerLoading => 'Wird geladen …';
+
+  @override
+  String downloadProgress(String done, String total) {
+    return '$done von $total';
+  }
+
+  @override
+  String get openWith => 'Öffnen mit …';
+
+  @override
+  String get openWithFailed => 'Keine App zum Öffnen dieser Datei gefunden.';
+
+  @override
+  String get openWithHint =>
+      'Für diesen Dateityp gibt es keine Vorschau in der App.';
+
+  @override
+  String get textTooLarge =>
+      'Die Datei ist größer als 5 MB und wird hier nicht angezeigt.';
+
+  @override
+  String get actionShare => 'Teilen';
+
+  @override
+  String get actionSaveToPhotos => 'In Fotos';
+
+  @override
+  String get savedToPhotos => 'In Fotos gespeichert';
+
+  @override
+  String get actionFavorite => 'Favorit';
+
+  @override
+  String imageOf(String index, String total) {
+    return '$index von $total';
+  }
+
+  @override
+  String get heicUnavailable => 'HEIC-Vorschau auf dem NAS nicht verfügbar';
+
+  @override
+  String get imageUnavailable => 'Bild kann nicht angezeigt werden';
+
+  @override
+  String get viewRendered => 'Gerendert';
+
+  @override
+  String get viewRaw => 'Rohtext';
+
+  @override
+  String get fontSize => 'Schriftgröße';
+
+  @override
+  String get docxBanner =>
+      'Lesemodus: vereinfachte Darstellung. Seitenlayout, Kopfzeilen und Kommentare werden nicht gezeigt.';
+
+  @override
+  String get docxUnreadable =>
+      'Das Dokument lässt sich im Lesemodus nicht anzeigen. „Öffnen mit …“ übergibt es an eine andere App.';
+
+  @override
+  String get pdfPage => 'Seite';
+
+  @override
+  String pdfOfTotal(String total) {
+    return 'von $total';
+  }
+
+  @override
+  String get pdfPrevious => 'Vorherige Seite';
+
+  @override
+  String get pdfNext => 'Nächste Seite';
+
+  @override
+  String get searchInDocument => 'Im Dokument suchen';
+
+  @override
+  String get noMatches => 'Keine Treffer';
+
+  @override
+  String get previousMatch => 'Vorheriger Treffer';
+
+  @override
+  String get nextMatch => 'Nächster Treffer';
+
+  @override
+  String resumeAt(String time) {
+    return 'Bei $time fortsetzen?';
+  }
+
+  @override
+  String get restart => 'Von vorn';
+
+  @override
+  String get subtitles => 'Untertitel';
+
+  @override
+  String get speed => 'Geschwindigkeit';
+
+  @override
+  String get rewind10 => '10 s zurück';
+
+  @override
+  String get forward10 => '10 s vor';
+
+  @override
+  String get play => 'Abspielen';
+
+  @override
+  String volumePercent(String percent) {
+    return 'Lautstärke $percent %';
+  }
+
+  @override
+  String brightnessPercent(String percent) {
+    return 'Helligkeit $percent %';
+  }
+
+  @override
+  String get fullscreen => 'Vollbild umschalten';
+
+  @override
+  String get videoUnavailable => 'Video kann nicht abgespielt werden';
 }

@@ -912,4 +912,130 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get export => 'Export';
+
+  @override
+  String get viewerLoading => 'Loading …';
+
+  @override
+  String downloadProgress(String done, String total) {
+    return '$done of $total';
+  }
+
+  @override
+  String get openWith => 'Open with …';
+
+  @override
+  String get openWithFailed => 'No app found to open this file.';
+
+  @override
+  String get openWithHint => 'There is no in-app preview for this file type.';
+
+  @override
+  String get textTooLarge =>
+      'The file is larger than 5 MB and is not shown here.';
+
+  @override
+  String get actionShare => 'Share';
+
+  @override
+  String get actionSaveToPhotos => 'To Photos';
+
+  @override
+  String get savedToPhotos => 'Saved to Photos';
+
+  @override
+  String get actionFavorite => 'Favorite';
+
+  @override
+  String imageOf(String index, String total) {
+    return '$index of $total';
+  }
+
+  @override
+  String get heicUnavailable => 'HEIC preview not available on the NAS';
+
+  @override
+  String get imageUnavailable => 'Image cannot be displayed';
+
+  @override
+  String get viewRendered => 'Rendered';
+
+  @override
+  String get viewRaw => 'Raw text';
+
+  @override
+  String get fontSize => 'Font size';
+
+  @override
+  String get docxBanner =>
+      'Reading mode: simplified view. Page layout, headers and comments are not shown.';
+
+  @override
+  String get docxUnreadable =>
+      'The document cannot be shown in reading mode. “Open with …” hands it to another app.';
+
+  @override
+  String get pdfPage => 'Page';
+
+  @override
+  String pdfOfTotal(String total) {
+    return 'of $total';
+  }
+
+  @override
+  String get pdfPrevious => 'Previous page';
+
+  @override
+  String get pdfNext => 'Next page';
+
+  @override
+  String get searchInDocument => 'Search in document';
+
+  @override
+  String get noMatches => 'No matches';
+
+  @override
+  String get previousMatch => 'Previous match';
+
+  @override
+  String get nextMatch => 'Next match';
+
+  @override
+  String resumeAt(String time) {
+    return 'Resume at $time?';
+  }
+
+  @override
+  String get restart => 'Start over';
+
+  @override
+  String get subtitles => 'Subtitles';
+
+  @override
+  String get speed => 'Speed';
+
+  @override
+  String get rewind10 => 'Back 10 s';
+
+  @override
+  String get forward10 => 'Forward 10 s';
+
+  @override
+  String get play => 'Play';
+
+  @override
+  String volumePercent(String percent) {
+    return 'Volume $percent%';
+  }
+
+  @override
+  String brightnessPercent(String percent) {
+    return 'Brightness $percent%';
+  }
+
+  @override
+  String get fullscreen => 'Toggle full screen';
+
+  @override
+  String get videoUnavailable => 'Video cannot be played';
 }

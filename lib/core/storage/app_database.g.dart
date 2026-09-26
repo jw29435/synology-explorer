@@ -2010,6 +2010,373 @@ class OfflineFilesCompanion extends UpdateCompanion<OfflineFile> {
   }
 }
 
+class $PlaybackPositionsTable extends PlaybackPositions
+    with TableInfo<$PlaybackPositionsTable, PlaybackPosition> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PlaybackPositionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _serverIdMeta = const VerificationMeta(
+    'serverId',
+  );
+  @override
+  late final GeneratedColumn<int> serverId = GeneratedColumn<int>(
+    'server_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _pathMeta = const VerificationMeta('path');
+  @override
+  late final GeneratedColumn<String> path = GeneratedColumn<String>(
+    'path',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _mtimeMeta = const VerificationMeta('mtime');
+  @override
+  late final GeneratedColumn<int> mtime = GeneratedColumn<int>(
+    'mtime',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _positionMsMeta = const VerificationMeta(
+    'positionMs',
+  );
+  @override
+  late final GeneratedColumn<int> positionMs = GeneratedColumn<int>(
+    'position_ms',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    serverId,
+    path,
+    mtime,
+    positionMs,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'playback_positions';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PlaybackPosition> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('server_id')) {
+      context.handle(
+        _serverIdMeta,
+        serverId.isAcceptableOrUnknown(data['server_id']!, _serverIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_serverIdMeta);
+    }
+    if (data.containsKey('path')) {
+      context.handle(
+        _pathMeta,
+        path.isAcceptableOrUnknown(data['path']!, _pathMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_pathMeta);
+    }
+    if (data.containsKey('mtime')) {
+      context.handle(
+        _mtimeMeta,
+        mtime.isAcceptableOrUnknown(data['mtime']!, _mtimeMeta),
+      );
+    }
+    if (data.containsKey('position_ms')) {
+      context.handle(
+        _positionMsMeta,
+        positionMs.isAcceptableOrUnknown(data['position_ms']!, _positionMsMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_positionMsMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {serverId, path};
+  @override
+  PlaybackPosition map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PlaybackPosition(
+      serverId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}server_id'],
+      )!,
+      path: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}path'],
+      )!,
+      mtime: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}mtime'],
+      ),
+      positionMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}position_ms'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $PlaybackPositionsTable createAlias(String alias) {
+    return $PlaybackPositionsTable(attachedDatabase, alias);
+  }
+}
+
+class PlaybackPosition extends DataClass
+    implements Insertable<PlaybackPosition> {
+  final int serverId;
+  final String path;
+  final int? mtime;
+  final int positionMs;
+  final DateTime updatedAt;
+  const PlaybackPosition({
+    required this.serverId,
+    required this.path,
+    this.mtime,
+    required this.positionMs,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['server_id'] = Variable<int>(serverId);
+    map['path'] = Variable<String>(path);
+    if (!nullToAbsent || mtime != null) {
+      map['mtime'] = Variable<int>(mtime);
+    }
+    map['position_ms'] = Variable<int>(positionMs);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  PlaybackPositionsCompanion toCompanion(bool nullToAbsent) {
+    return PlaybackPositionsCompanion(
+      serverId: Value(serverId),
+      path: Value(path),
+      mtime: mtime == null && nullToAbsent
+          ? const Value.absent()
+          : Value(mtime),
+      positionMs: Value(positionMs),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory PlaybackPosition.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PlaybackPosition(
+      serverId: serializer.fromJson<int>(json['serverId']),
+      path: serializer.fromJson<String>(json['path']),
+      mtime: serializer.fromJson<int?>(json['mtime']),
+      positionMs: serializer.fromJson<int>(json['positionMs']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'serverId': serializer.toJson<int>(serverId),
+      'path': serializer.toJson<String>(path),
+      'mtime': serializer.toJson<int?>(mtime),
+      'positionMs': serializer.toJson<int>(positionMs),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  PlaybackPosition copyWith({
+    int? serverId,
+    String? path,
+    Value<int?> mtime = const Value.absent(),
+    int? positionMs,
+    DateTime? updatedAt,
+  }) => PlaybackPosition(
+    serverId: serverId ?? this.serverId,
+    path: path ?? this.path,
+    mtime: mtime.present ? mtime.value : this.mtime,
+    positionMs: positionMs ?? this.positionMs,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  PlaybackPosition copyWithCompanion(PlaybackPositionsCompanion data) {
+    return PlaybackPosition(
+      serverId: data.serverId.present ? data.serverId.value : this.serverId,
+      path: data.path.present ? data.path.value : this.path,
+      mtime: data.mtime.present ? data.mtime.value : this.mtime,
+      positionMs: data.positionMs.present
+          ? data.positionMs.value
+          : this.positionMs,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PlaybackPosition(')
+          ..write('serverId: $serverId, ')
+          ..write('path: $path, ')
+          ..write('mtime: $mtime, ')
+          ..write('positionMs: $positionMs, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(serverId, path, mtime, positionMs, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PlaybackPosition &&
+          other.serverId == this.serverId &&
+          other.path == this.path &&
+          other.mtime == this.mtime &&
+          other.positionMs == this.positionMs &&
+          other.updatedAt == this.updatedAt);
+}
+
+class PlaybackPositionsCompanion extends UpdateCompanion<PlaybackPosition> {
+  final Value<int> serverId;
+  final Value<String> path;
+  final Value<int?> mtime;
+  final Value<int> positionMs;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const PlaybackPositionsCompanion({
+    this.serverId = const Value.absent(),
+    this.path = const Value.absent(),
+    this.mtime = const Value.absent(),
+    this.positionMs = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  PlaybackPositionsCompanion.insert({
+    required int serverId,
+    required String path,
+    this.mtime = const Value.absent(),
+    required int positionMs,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : serverId = Value(serverId),
+       path = Value(path),
+       positionMs = Value(positionMs),
+       updatedAt = Value(updatedAt);
+  static Insertable<PlaybackPosition> custom({
+    Expression<int>? serverId,
+    Expression<String>? path,
+    Expression<int>? mtime,
+    Expression<int>? positionMs,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (serverId != null) 'server_id': serverId,
+      if (path != null) 'path': path,
+      if (mtime != null) 'mtime': mtime,
+      if (positionMs != null) 'position_ms': positionMs,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  PlaybackPositionsCompanion copyWith({
+    Value<int>? serverId,
+    Value<String>? path,
+    Value<int?>? mtime,
+    Value<int>? positionMs,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return PlaybackPositionsCompanion(
+      serverId: serverId ?? this.serverId,
+      path: path ?? this.path,
+      mtime: mtime ?? this.mtime,
+      positionMs: positionMs ?? this.positionMs,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (serverId.present) {
+      map['server_id'] = Variable<int>(serverId.value);
+    }
+    if (path.present) {
+      map['path'] = Variable<String>(path.value);
+    }
+    if (mtime.present) {
+      map['mtime'] = Variable<int>(mtime.value);
+    }
+    if (positionMs.present) {
+      map['position_ms'] = Variable<int>(positionMs.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PlaybackPositionsCompanion(')
+          ..write('serverId: $serverId, ')
+          ..write('path: $path, ')
+          ..write('mtime: $mtime, ')
+          ..write('positionMs: $positionMs, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -2018,6 +2385,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $RecentFilesTable recentFiles = $RecentFilesTable(this);
   late final $TransfersTable transfers = $TransfersTable(this);
   late final $OfflineFilesTable offlineFiles = $OfflineFilesTable(this);
+  late final $PlaybackPositionsTable playbackPositions =
+      $PlaybackPositionsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2028,6 +2397,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     recentFiles,
     transfers,
     offlineFiles,
+    playbackPositions,
   ];
 }
 
@@ -3128,6 +3498,230 @@ typedef $$OfflineFilesTableProcessedTableManager =
       OfflineFile,
       PrefetchHooks Function()
     >;
+typedef $$PlaybackPositionsTableCreateCompanionBuilder =
+    PlaybackPositionsCompanion Function({
+      required int serverId,
+      required String path,
+      Value<int?> mtime,
+      required int positionMs,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$PlaybackPositionsTableUpdateCompanionBuilder =
+    PlaybackPositionsCompanion Function({
+      Value<int> serverId,
+      Value<String> path,
+      Value<int?> mtime,
+      Value<int> positionMs,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$PlaybackPositionsTableFilterComposer
+    extends Composer<_$AppDatabase, $PlaybackPositionsTable> {
+  $$PlaybackPositionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get serverId => $composableBuilder(
+    column: $table.serverId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get path => $composableBuilder(
+    column: $table.path,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get mtime => $composableBuilder(
+    column: $table.mtime,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get positionMs => $composableBuilder(
+    column: $table.positionMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$PlaybackPositionsTableOrderingComposer
+    extends Composer<_$AppDatabase, $PlaybackPositionsTable> {
+  $$PlaybackPositionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get serverId => $composableBuilder(
+    column: $table.serverId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get path => $composableBuilder(
+    column: $table.path,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get mtime => $composableBuilder(
+    column: $table.mtime,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get positionMs => $composableBuilder(
+    column: $table.positionMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$PlaybackPositionsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PlaybackPositionsTable> {
+  $$PlaybackPositionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get serverId =>
+      $composableBuilder(column: $table.serverId, builder: (column) => column);
+
+  GeneratedColumn<String> get path =>
+      $composableBuilder(column: $table.path, builder: (column) => column);
+
+  GeneratedColumn<int> get mtime =>
+      $composableBuilder(column: $table.mtime, builder: (column) => column);
+
+  GeneratedColumn<int> get positionMs => $composableBuilder(
+    column: $table.positionMs,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$PlaybackPositionsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $PlaybackPositionsTable,
+          PlaybackPosition,
+          $$PlaybackPositionsTableFilterComposer,
+          $$PlaybackPositionsTableOrderingComposer,
+          $$PlaybackPositionsTableAnnotationComposer,
+          $$PlaybackPositionsTableCreateCompanionBuilder,
+          $$PlaybackPositionsTableUpdateCompanionBuilder,
+          (
+            PlaybackPosition,
+            BaseReferences<
+              _$AppDatabase,
+              $PlaybackPositionsTable,
+              PlaybackPosition
+            >,
+          ),
+          PlaybackPosition,
+          PrefetchHooks Function()
+        > {
+  $$PlaybackPositionsTableTableManager(
+    _$AppDatabase db,
+    $PlaybackPositionsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PlaybackPositionsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PlaybackPositionsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PlaybackPositionsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> serverId = const Value.absent(),
+                Value<String> path = const Value.absent(),
+                Value<int?> mtime = const Value.absent(),
+                Value<int> positionMs = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => PlaybackPositionsCompanion(
+                serverId: serverId,
+                path: path,
+                mtime: mtime,
+                positionMs: positionMs,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required int serverId,
+                required String path,
+                Value<int?> mtime = const Value.absent(),
+                required int positionMs,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => PlaybackPositionsCompanion.insert(
+                serverId: serverId,
+                path: path,
+                mtime: mtime,
+                positionMs: positionMs,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$PlaybackPositionsTable, PlaybackPosition>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $PlaybackPositionsTable,
+                    PlaybackPosition
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$PlaybackPositionsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $PlaybackPositionsTable,
+      PlaybackPosition,
+      $$PlaybackPositionsTableFilterComposer,
+      $$PlaybackPositionsTableOrderingComposer,
+      $$PlaybackPositionsTableAnnotationComposer,
+      $$PlaybackPositionsTableCreateCompanionBuilder,
+      $$PlaybackPositionsTableUpdateCompanionBuilder,
+      (
+        PlaybackPosition,
+        BaseReferences<
+          _$AppDatabase,
+          $PlaybackPositionsTable,
+          PlaybackPosition
+        >,
+      ),
+      PlaybackPosition,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -3142,4 +3736,6 @@ class $AppDatabaseManager {
       $$TransfersTableTableManager(_db, _db.transfers);
   $$OfflineFilesTableTableManager get offlineFiles =>
       $$OfflineFilesTableTableManager(_db, _db.offlineFiles);
+  $$PlaybackPositionsTableTableManager get playbackPositions =>
+      $$PlaybackPositionsTableTableManager(_db, _db.playbackPositions);
 }

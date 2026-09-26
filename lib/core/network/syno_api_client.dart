@@ -21,10 +21,11 @@ class SynoApiClient {
     this.profile,
     this._pins, {
     @visibleForTesting HttpClientAdapter? adapter,
+    @visibleForTesting Duration receiveTimeout = const Duration(seconds: 30),
   }) : _dio = Dio(
          BaseOptions(
            connectTimeout: const Duration(seconds: 15),
-           receiveTimeout: const Duration(seconds: 30),
+           receiveTimeout: receiveTimeout,
            responseType: ResponseType.plain,
            contentType: Headers.formUrlEncodedContentType,
          ),
@@ -199,12 +200,7 @@ class SynoApiClient {
       );
       final body = res.data!;
       final headers = res.headers;
-      // API-Fehler (z. B. 119) kommen auch hier als JSON.
-      if (headers.value(Headers.contentTypeHeader)?.contains('json') ?? false) {
-        final bytes = await body.stream.expand((c) => c).toList();
-        _parse(utf8.decode(bytes), api);
-        throw SynoException.fromCode(100, api: api);
-      }
+      final data = await _unlessEnvelope(body, headers, api);
       final partial = res.statusCode == 206;
       final range = headers.value('content-range');
       // Teilantwort, die nicht an [offset] anschließt: wie 416 behandeln.
@@ -224,7 +220,7 @@ class SynoApiClient {
         mode: partial ? FileMode.append : FileMode.write,
       );
       try {
-        await for (final chunk in body.stream) {
+        await for (final chunk in data) {
           sink.add(chunk);
           done += chunk.length;
           onProgress?.call(done, total);
@@ -237,6 +233,85 @@ class SynoApiClient {
       throw _networkError(url, e);
     }
   });
+
+  /// Rohinhalt als Stream per GET mit HTTP-Range [start]…[end] (exklusiv),
+  /// für Player über den Loopback-Proxy. DSM antwortet mit `206` und
+  /// `Content-Range`.
+  ///
+  /// Ohne Receive-Timeout: Ein pausierter Player liest per Backpressure
+  /// beliebig lange nichts. Wer den Stream nicht zu Ende liest, muss
+  /// [cancelToken] abbrechen – Abbestellen allein beendet den Transfer nicht.
+  Future<ResponseBody> requestStream(
+    String api,
+    String method,
+    Map<String, Object?> params, {
+    int start = 0,
+    int? end,
+    CancelToken? cancelToken,
+  }) => _withRelogin(api, (base, info) async {
+    final url = _url(base, info.path);
+    try {
+      final res = await _dio.get<ResponseBody>(
+        url.toString(),
+        queryParameters: {
+          'api': api,
+          'version': info.maxVersion,
+          'method': method,
+          for (final MapEntry(:key, :value) in params.entries) key: ?value,
+        },
+        options: Options(
+          responseType: ResponseType.stream,
+          headers: {'range': 'bytes=$start-${end == null ? '' : end - 1}'},
+          // ponytail: auch das Warten auf die Header ist dann ohne Limit;
+          // der Verbindungsaufbau hat weiter connectTimeout.
+          receiveTimeout: Duration.zero,
+        ),
+        cancelToken: cancelToken,
+      );
+      final body = res.data!;
+      final data = await _unlessEnvelope(body, res.headers, api);
+      return identical(data, body.stream)
+          ? body
+          : ResponseBody(data.cast(), body.statusCode, headers: body.headers);
+    } on DioException catch (e) {
+      throw _networkError(url, e);
+    }
+  });
+
+  static const _maxEnvelope = 4096;
+
+  /// DSM meldet API-Fehler (z. B. 119) auch bei Downloads als kleinen
+  /// JSON-Umschlag `{"success": false, …}` – dann wirft das hier. Eine
+  /// heruntergeladene .json-Datei ist keiner und kommt unverändert zurück.
+  static Future<Stream<List<int>>> _unlessEnvelope(
+    ResponseBody body,
+    Headers headers,
+    String api,
+  ) async {
+    final json =
+        headers.value(Headers.contentTypeHeader)?.contains('json') ?? false;
+    if (!json || body.contentLength > _maxEnvelope) return body.stream;
+    final bytes = Uint8List.fromList(
+      await body.stream.expand((c) => c).toList(),
+    );
+    if (_envelope(bytes) == null) return Stream.value(bytes);
+    _parse(utf8.decode(bytes), api);
+    throw SynoException.fromCode(100, api: api);
+  }
+
+  /// DSM-Antwort `{"success": bool, …}` oder `null`, wenn [bytes] kein
+  /// solcher Umschlag ist.
+  static Map<String, dynamic>? _envelope(List<int> bytes) {
+    if (bytes.length > _maxEnvelope) return null;
+    try {
+      final body = jsonDecode(utf8.decode(bytes));
+      return body is Map<String, dynamic> && body['success'] is bool
+          ? body
+          : null;
+    } on FormatException {
+      return null;
+    }
+  }
 
   /// Lädt [file] als Multipart hoch ([fields] vor der Datei, wie DSM es
   /// verlangt). Liefert `data` der Antwort.
@@ -344,7 +419,9 @@ class SynoApiClient {
     final Object raw = res.data!;
     if (raw is List<int>) {
       final type = res.headers.value(Headers.contentTypeHeader) ?? '';
-      if (!type.contains('json')) return Uint8List.fromList(raw);
+      if (!type.contains('json') || _envelope(raw) == null) {
+        return Uint8List.fromList(raw);
+      }
     }
     return _parse(raw is List<int> ? utf8.decode(raw) : raw as String, api);
   }

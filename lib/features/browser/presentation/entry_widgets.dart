@@ -9,6 +9,7 @@ import '../../../app/theme.dart';
 import '../../../core/network/syno_exception.dart';
 import '../../../core/utils/format.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../viewers/presentation/viewer_screen.dart';
 import '../data/thumbnail_cache.dart';
 import '../domain/nas_entry.dart';
 import 'browser_providers.dart';
@@ -20,8 +21,9 @@ String folderLocation(String path) =>
 /// Übergeordneter Ordner, z. B. `/music/Alben` für `/music/Alben/x.flac`.
 String parentPath(String path) => path.substring(0, path.lastIndexOf('/'));
 
-/// Ordner öffnen bzw. Datei als geöffnet merken. Player und Viewer kommen in
-/// M2/M3; bis dahin gibt es nur einen Hinweis.
+/// Ordner öffnen bzw. Datei als geöffnet merken und nach Typ öffnen:
+/// Audio im Player (M2), alles andere im passenden Viewer (15–19) bzw.
+/// „Öffnen mit“.
 void openEntry(BuildContext context, WidgetRef ref, NasEntry entry) {
   if (entry.isDir) {
     context.push(folderLocation(entry.path));
@@ -30,11 +32,17 @@ void openEntry(BuildContext context, WidgetRef ref, NasEntry entry) {
   ref
       .read(localLibraryProvider)
       .addRecent(ref.read(serverIdProvider), entry.path);
-  ScaffoldMessenger.of(context)
-    ..hideCurrentSnackBar()
-    ..showSnackBar(
-      SnackBar(content: Text(AppLocalizations.of(context).openLater)),
-    );
+  switch (entry.type) {
+    case NasFileType.audio:
+      // Der Player kommt mit M2; bis dahin nur ein Hinweis.
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context).openLater)),
+        );
+    default:
+      context.push(viewerLocation(entry.path), extra: entry);
+  }
 }
 
 IconData typeIcon(NasFileType type) => switch (type) {
