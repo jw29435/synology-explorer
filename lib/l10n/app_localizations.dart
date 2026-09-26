@@ -1436,6 +1436,24 @@ abstract class AppLocalizations {
   /// **'Aufräumen'**
   String get cleanUp;
 
+  /// No description provided for @shareLinkDeleteConfirm.
+  ///
+  /// In de, this message translates to:
+  /// **'Freigabelink für „{name}“ löschen?'**
+  String shareLinkDeleteConfirm(String name);
+
+  /// No description provided for @shareLinksCleanUpConfirm.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 abgelaufenen Link löschen?} other{{count} abgelaufene Links löschen?}}'**
+  String shareLinksCleanUpConfirm(int count);
+
+  /// No description provided for @shareLinkDeleteHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Link funktioniert danach nicht mehr. Die Dateien auf dem NAS bleiben erhalten.'**
+  String get shareLinkDeleteHint;
+
   /// No description provided for @trashTitle.
   ///
   /// In de, this message translates to:

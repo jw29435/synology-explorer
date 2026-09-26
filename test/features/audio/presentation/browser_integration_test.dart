@@ -147,6 +147,33 @@ void main() {
     semantics.dispose();
   });
 
+  testWidgets('06: Chip „Abspielen“ passt auf 360 dp (E2E-065)', (
+    tester,
+  ) async {
+    await pumpApp(
+      tester,
+      location: folderLocation(album),
+      overrides: audioOverrides(FakeAudioController(const AudioState())),
+    );
+    tester.view.physicalSize = const Size(1080, 2340);
+    await tester.pumpAndSettle();
+    final chip = find.byKey(const Key('play-folder'));
+    for (final owner in [chip, find.text('7 Elemente')]) {
+      final paragraph = tester.renderObject<RenderParagraph>(
+        find.descendant(of: owner, matching: find.byType(RichText)).last,
+      );
+      expect(paragraph.didExceedMaxLines, isFalse);
+      expect(
+        paragraph.size.width,
+        greaterThanOrEqualTo(
+          paragraph.getMaxIntrinsicWidth(double.infinity) - 0.5,
+        ),
+      );
+    }
+    expect(tester.getSize(chip).height, greaterThanOrEqualTo(44));
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets(
     '„Ordner abspielen“ ohne Audio meldet das, auch wenn etwas läuft',
     (tester) async {

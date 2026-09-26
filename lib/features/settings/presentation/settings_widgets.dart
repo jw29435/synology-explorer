@@ -38,7 +38,8 @@ class SettingsGroup extends StatelessWidget {
   );
 }
 
-/// Wert rechts in einer Zeile (grau, bei Zahlen/Größen in Mono).
+/// Wert rechts in einer Zeile (grau, bei Zahlen/Größen in Mono). Bricht bis
+/// zu dreimal um, damit auf 360 dp nichts gekürzt wird.
 class SettingsValue extends StatelessWidget {
   const SettingsValue(this.text, {super.key, this.mono = false, this.color});
 
@@ -58,7 +59,7 @@ class SettingsValue extends StatelessWidget {
             style: mono ? AppTheme.mono(style) : style,
             textAlign: TextAlign.end,
             overflow: TextOverflow.ellipsis,
-            maxLines: 2,
+            maxLines: 3,
           ),
         ),
         const SizedBox(width: 8),
