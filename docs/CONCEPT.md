@@ -24,7 +24,8 @@ Die wichtigste Randbedingung ist der deaktivierte Home-Dienst: Es gibt keinen pe
 **Konsequenzen ohne Home-Dienst**
 
 - Einstiegsseite zeigt die Liste der Shared Folders, keinen „Home"-Eintrag.
-- Favoriten, Wiedergabepositionen, Zuletzt-geöffnet und Playlists werden lokal auf dem Gerät gespeichert (SQLite), nicht auf dem NAS. Die File-Station-Favoriten-API existiert zwar, hängt aber an Benutzereinstellungen, die auch ohne Home funktionieren – das ist in Meilenstein 1 zu prüfen; Fallback ist rein lokal.
+- Wiedergabepositionen, Zuletzt-geöffnet und Playlists werden lokal auf dem Gerät gespeichert (SQLite), nicht auf dem NAS.
+- Ordner-Favoriten kommen vom NAS (`SYNO.FileStation.Favorite`, funktioniert ohne Home-Dienst, siehe SPIKE.md) – dieselben wie in DS File. Die App spiegelt sie in SQLite (Sofort-Anzeige und offline) und lädt sie beim Öffnen von 05, per Pull-to-Refresh und nach jeder Änderung neu. Datei-Favoriten bleiben lokal: DSM nimmt Dateien zwar an, führt sie aber sofort als `broken`.
 - Auto-Foto-Upload braucht einen vom Nutzer gewählten Zielordner in einem Shared Folder (z. B. `photo/Handy-Johann`).
 - Papierkorb ist der Ordner `#recycle` je Shared Folder. Ob er sichtbar ist, entscheidet die Freigabe-Einstellung „Zugriff auf Papierkorb nur für Administratoren". Die App zeigt ihn nur, wenn das Listing erfolgreich ist.
 
@@ -59,7 +60,7 @@ v1 deckt den vollen DS-File-Umfang ab, priorisiert aber Audio; die Reihenfolge d
 | Server | Mehrere Server-Profile, je zwei Adressen (LAN/extern), Auto-Fallback, 2FA, Zertifikat-Pinning, Logout | Single Sign-on, LDAP-Besonderheiten |
 | Browsen | Shared Folders, Ordnernavigation mit Breadcrumb, Liste/Grid, Sortierung (Name, Datum, Größe, Typ), Pull-to-Refresh, Ordnergröße abfragen, Datei-Infos | Ansicht nach Dateityp über alle Ordner |
 | Suche | Name-Suche innerhalb des aktuellen Ordners (rekursiv), Filter nach Typ | Volltextsuche |
-| Favoriten / Zuletzt | Ordner und Dateien lokal markieren, Zuletzt geöffnet (letzte 50) | Sync über Geräte |
+| Favoriten / Zuletzt | Ordner-Favoriten des NAS-Kontos (wie DS File), Datei-Favoriten lokal, Zuletzt geöffnet (letzte 50) | Sync von Datei-Favoriten über Geräte |
 | Audio | Ordner-Player mit Queue, Shuffle, Repeat, Hintergrundwiedergabe, Sperrbildschirm-/Bluetooth-Steuerung, Resume-Position pro Datei, Sleep-Timer, Cover aus ID3 oder `folder.jpg` | Bibliothek nach Artist/Album, Gapless, Equalizer, Crossfade |
 | Bilder | Galerie-Swipe durch den Ordner, Pinch-Zoom, HEIC über NAS-Thumbnail, Teilen/Speichern in Fotos | Bearbeitung, RAW |
 | Video | Streaming mit Seek, Landscape, Untertitel-Spur falls eingebettet | Transcoding, Chromecast |
@@ -95,7 +96,7 @@ Alles läuft über `/webapi/entry.cgi` mit `api`, `version`, `method` und der `_
 | Papierkorb | `SYNO.FileStation.List` / `CopyMove` | `list`, `start` | `#recycle` listen; Wiederherstellen = Verschieben zurück. Endgültig löschen = `Delete` im `#recycle` |
 | Ordnergröße | `SYNO.FileStation.DirSize` | `start`, `status` | Asynchron |
 | Freigabelinks | `SYNO.FileStation.Sharing` | `create`, `list`, `delete`, `getinfo` | `expire_times`, `password`, `date_expired` |
-| Favoriten (NAS-seitig) | `SYNO.FileStation.Favorite` | `list`, `add`, `delete` | Nur wenn ohne Home nutzbar, sonst lokal (siehe Abschnitt 2) |
+| Favoriten (NAS-seitig) | `SYNO.FileStation.Favorite` | `list`, `add`, `delete` | Nur Ordner. `list` mit `status_filter=all` (`status` valid/broken). Vor `add`/`delete` immer `list`: `delete` entfernt auch fremde Favoriten, `add` auf Vorhandenes liefert 800 (= Erfolg). 105/verweigert → Meldung, Cache unverändert |
 | Prüfsumme | `SYNO.FileStation.MD5` | `start`, `status` | Optional für Download-Verifikation |
 
 **Fehlerbehandlung**
