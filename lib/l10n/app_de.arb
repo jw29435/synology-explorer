@@ -798,5 +798,6 @@
   "audiobookModeHint": "Merkt sich Titel und Position im Ordner",
   "settingsWifiOnly": "Streaming nur im WLAN",
   "settingsWifiOnlyHint": "Über Mobilfunk wird nicht gestreamt.",
-  "errorStreamFailed": "Datei konnte nicht geladen werden – Verbindung zum NAS prüfen."
+  "errorStreamFailed": "Datei konnte nicht geladen werden – Verbindung zum NAS prüfen.",
+  "playFolderShort": "Abspielen"
 }

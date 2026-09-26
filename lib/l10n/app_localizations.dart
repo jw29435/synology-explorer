@@ -2023,6 +2023,12 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Datei konnte nicht geladen werden – Verbindung zum NAS prüfen.'**
   String get errorStreamFailed;
+
+  /// No description provided for @playFolderShort.
+  ///
+  /// In de, this message translates to:
+  /// **'Abspielen'**
+  String get playFolderShort;
 }
 
 class _AppLocalizationsDelegate

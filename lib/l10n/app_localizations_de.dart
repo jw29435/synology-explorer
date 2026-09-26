@@ -1200,4 +1200,7 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get errorStreamFailed =>
       'Datei konnte nicht geladen werden – Verbindung zum NAS prüfen.';
+
+  @override
+  String get playFolderShort => 'Abspielen';
 }

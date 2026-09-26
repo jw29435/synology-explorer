@@ -354,7 +354,14 @@ class PlayFolderChip extends ConsumerWidget {
         shape: const StadiumBorder(),
       ),
       icon: const Icon(Icons.play_arrow),
-      label: Text(l10n.playFolder, overflow: TextOverflow.ellipsis),
+      // Kurz, damit Sortierung, Chip und Anzahl auf 390 dp nebeneinander
+      // passen; Screenreader hören den vollen Text.
+      label: Text(
+        l10n.playFolderShort,
+        semanticsLabel: l10n.playFolder,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
       onPressed: () => startPlayback(context, path),
     );
   }

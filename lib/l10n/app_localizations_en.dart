@@ -1199,4 +1199,7 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get errorStreamFailed =>
       'Could not load the file – check the connection to the NAS.';
+
+  @override
+  String get playFolderShort => 'Play all';
 }

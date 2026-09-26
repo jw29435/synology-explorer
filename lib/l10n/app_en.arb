@@ -320,5 +320,6 @@
   "audiobookModeHint": "Remembers track and position in this folder",
   "settingsWifiOnly": "Stream on Wi-Fi only",
   "settingsWifiOnlyHint": "No streaming over mobile data.",
-  "errorStreamFailed": "Could not load the file – check the connection to the NAS."
+  "errorStreamFailed": "Could not load the file – check the connection to the NAS.",
+  "playFolderShort": "Play all"
 }

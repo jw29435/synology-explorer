@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:synology_explorer/features/audio/presentation/playback_providers.dart';
 import 'package:synology_explorer/features/browser/presentation/entry_widgets.dart';
@@ -117,5 +118,32 @@ void main() {
     await tester.pump(const Duration(seconds: 10));
     await tester.pumpAndSettle();
     expect(find.text('Bei 1:40 fortsetzen?'), findsNothing);
+  });
+
+  testWidgets('06: Chip „Abspielen“ passt auf 390 dp, nichts abgeschnitten', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    await pumpApp(
+      tester,
+      location: folderLocation(album),
+      overrides: audioOverrides(FakeAudioController(const AudioState())),
+    );
+    final chip = find.byKey(const Key('play-folder'));
+    for (final owner in [chip, find.text('7 Elemente')]) {
+      final paragraph = tester.renderObject<RenderParagraph>(
+        find.descendant(of: owner, matching: find.byType(RichText)).last,
+      );
+      expect(paragraph.didExceedMaxLines, isFalse);
+      // Volle Breite = nicht per Ellipse gekürzt.
+      expect(
+        paragraph.size.width,
+        greaterThanOrEqualTo(
+          paragraph.getMaxIntrinsicWidth(double.infinity) - 0.5,
+        ),
+      );
+    }
+    expect(tester.getSemantics(chip).label, contains('Ordner abspielen'));
+    semantics.dispose();
   });
 }
