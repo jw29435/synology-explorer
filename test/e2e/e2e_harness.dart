@@ -77,7 +77,9 @@ class E2E {
     });
     addTearDown(() => messenger.setMockMethodCallHandler(pathChannel, null));
 
-    final nas = (await tester.runAsync(MockNasServer.start))!;
+    final nas = (await tester.runAsync(
+      () => MockNasServer.start(searchTotalLate: true),
+    ))!;
     addTearDown(() => tester.runAsync(nas.close));
     final db = AppDatabase(NativeDatabase.memory());
     final audio = FakeAudioController(const AudioState());
@@ -87,6 +89,7 @@ class E2E {
         appDatabaseProvider.overrideWithValue(db),
         transferNotificationsProvider.overrideWithValue(NoNotifications()),
         audioControllerProvider.overrideWith(() => audio),
+        positionProvider.overrideWith((ref) => Stream.value(Duration.zero)),
         ...settingsOverrides(),
         ...overrides,
       ],
@@ -144,6 +147,28 @@ class E2E {
     await tester.pump();
   }
 
+  /// Wie [waitFor], bis [condition] gilt ([what] für die Fehlermeldung).
+  Future<void> waitUntil(bool Function() condition, String what) async {
+    final deadline = DateTime.now().add(const Duration(seconds: 10));
+    while (!condition()) {
+      if (DateTime.now().isAfter(deadline)) {
+        fail('Nicht eingetreten: $what (Route: $location)');
+      }
+      await tester.pump(const Duration(milliseconds: 50));
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 20)),
+      );
+    }
+    await tester.pump();
+  }
+
+  /// Bis beim Mock mindestens [count] Anfragen [api]/[method] angekommen
+  /// sind (z. B. `stop` beim Verlassen).
+  Future<void> waitForCalls(String api, String method, int count) => waitUntil(
+    () => nas.calls(api, method).length >= count,
+    '$count× $api/$method, bisher ${nas.calls(api, method).length}',
+  );
+
   /// Einige Runden Frames + echte Zeit, dann Animationen auslaufen lassen.
   Future<void> settle({int rounds = 10}) async {
     for (var i = 0; i < rounds; i++) {
@@ -162,6 +187,14 @@ class E2E {
   }
 
   Future<void> tapText(String text) => tap(find.text(text).first);
+
+  /// Tippen ohne [settle] – wenn danach ein Spinner läuft (Polling, Paging),
+  /// der `pumpAndSettle` nie enden ließe. Weiter mit [waitFor].
+  Future<void> press(Finder finder) async {
+    await tester.ensureVisible(finder);
+    await tester.tap(finder);
+    await tester.pump();
+  }
 
   /// Text eingeben und einen Frame bauen (Buttons hängen an `onChanged`).
   Future<void> type(Finder field, String text) async {
@@ -187,6 +220,8 @@ class E2E {
       find.byType(CloseButton),
       find.byTooltip('Zurück'),
       find.byTooltip('Schließen'),
+      // Now Playing (12) und Queue (13) klappen nach unten weg.
+      find.byTooltip(l10n.collapse),
     ]) {
       if (f.hitTestable().evaluate().isNotEmpty) return f.hitTestable().first;
     }
