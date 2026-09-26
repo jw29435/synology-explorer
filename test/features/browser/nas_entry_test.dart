@@ -38,6 +38,44 @@ void main() {
     );
   });
 
+  test('Schreibrecht: ACL entscheidet, share_right RO sperrt', () {
+    NasPerm? perm(Map<String, Object?> p) => NasEntry.fromSyno({
+      'isdir': true,
+      'name': 'x',
+      'path': '/x',
+      'additional': {'perm': p},
+    }).perm;
+    // DSM 7.2.1: share_right RW, ACL write:false → CreateFolder/Upload 407.
+    expect(
+      perm({
+        'share_right': 'RW',
+        'acl': {'write': false, 'del': true},
+      }),
+      NasPerm.readOnly,
+    );
+    expect(
+      perm({
+        'share_right': 'RW',
+        'acl': {'write': true},
+      }),
+      NasPerm.readWrite,
+    );
+    expect(perm({'share_right': 'RW'}), NasPerm.readWrite);
+    expect(
+      perm({
+        'acl': {'write': true},
+      }),
+      NasPerm.readWrite,
+    );
+    expect(
+      perm({
+        'share_right': 'RO',
+        'acl': {'write': true},
+      }),
+      NasPerm.readOnly,
+    );
+  });
+
   test('Datei ohne additional', () {
     final e = NasEntry.fromSyno({
       'isdir': false,

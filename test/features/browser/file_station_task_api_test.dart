@@ -64,15 +64,18 @@ void main() {
     }
   });
 
-  test('DirSize: start und status', () async {
+  test('DirSize: start und status (fertig beim zweiten Poll)', () async {
     final api = FileStationDirSizeApi(client);
     final task = await api.start('/music');
+    expect((await api.status(task)).finished, isFalse);
     final size = await api.status(task);
     expect(size, (finished: true, files: 14, dirs: 2, bytes: 163577856));
     expect(
-      nas.calls('SYNO.FileStation.DirSize', 'status').single,
+      nas.calls('SYNO.FileStation.DirSize', 'status').first,
       containsPair('taskid', '"mock-dirsize-1"'),
     );
+    // Danach ist der Task weg (wie DSM: 599).
+    await expectLater(api.status(task), throwsA(isA<SynoNotFound>()));
   });
 
   test('getinfo liefert Besitzer, Erstellzeit und POSIX-Rechte', () async {

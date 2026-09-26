@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:shelf/shelf.dart';
@@ -6,7 +7,8 @@ import 'package:shelf/shelf_io.dart' as io;
 import '../../tool/mock_nas/mock_nas.dart';
 
 /// Mock-NAS auf einem freien Loopback-Port; merkt sich alle Parameter
-/// (Query + Formular) jeder Anfrage.
+/// (Query, Formular bzw. Multipart-Felder – bei Dateien der Dateiname –,
+/// bei Range-Anfragen auch `range`) jeder Anfrage.
 class MockNasServer {
   MockNasServer._(this._server, this.requests);
 
@@ -15,10 +17,15 @@ class MockNasServer {
     final handler = mockNasHandler(Directory('test/fixtures'));
     final server = await io.serve(
       (Request request) async {
-        final body = await request.readAsString();
+        final body = await request.read().expand((c) => c).toList();
+        final type = request.headers['content-type'] ?? '';
+        final multipart = type.startsWith('multipart/');
         requests.add({
           ...request.url.queryParameters,
-          if (body.isNotEmpty) ...Uri.splitQueryString(body),
+          if (multipart) ...parseMultipart(type, body),
+          if (body.isNotEmpty && !multipart)
+            ...Uri.splitQueryString(utf8.decode(body)),
+          'range': ?request.headers['range'],
         });
         return handler(request.change(body: body));
       },

@@ -127,3 +127,33 @@ Beim Bau von Screen 07 und 11 erneut gegen das NAS geprüft (curl und App auf be
   die öffentliche ISRG Root X2 (`lib/core/network/trusted_roots.dart`, Fingerprint gegen letsencrypt.org geprüft)
   und fügt sie dem `SecurityContext` **zusätzlich** zu den System-Roots hinzu. Nach Löschen der App-Daten erscheint
   auf dem A40 kein Zertifikat-Dialog mehr.
+
+## Nachtrag M4 (26.09.2026)
+
+Für Screens 08/09/14/20–24 per curl gegen das NAS geprüft. Das Testkonto darf auf dem einzigen sichtbaren Share
+(`/Daten`) **nicht schreiben**; schreibende Aktionen ließen sich deshalb nur bis zur Ablehnung prüfen. Auf dem NAS
+wurde nichts angelegt, verschoben oder gelöscht.
+
+- **ACL `write: false` ist echt.** `CreateFolder` (im Share und in einem Unterordner) und `Upload` scheitern mit 407
+  (`CreateFolder`: `{"code": 1100, "errors": [{"code": 407, "path": …}]}`), obwohl der Share `share_right: "RW"`
+  meldet. `NasPerm` wird jetzt aus der ACL abgeleitet; `share_right` kann nur noch einschränken (RO). `del: true`
+  steht trotzdem in der ACL – Löschen könnte also gehen, wurde aber nicht an echten Dateien probiert.
+- **Fehlercodes stecken bei Datei-Operationen in `error.errors[0].code`** (1100 CreateFolder, 1200 Rename, …). Der
+  Client mappt jetzt diesen inneren Code (407 → keine Berechtigung, 408 → nicht gefunden, 414 → existiert schon).
+  Bei `SYNO.API.Auth` ist `errors` eine Map (OTP-Typen) und wird ignoriert.
+- **CopyMove/Delete-Status:** Fehler einzelner Pfade kommen in einem *erfolgreichen* `status` als
+  `{"finished": true, "status": "FAIL", "errors": [{"code": 408, …}], "progress": 1}`; der Client wirft dann. Wie bei
+  DirSize liefert `status` nach `finished` 599. `dest_folder_path` als JSON-String wird angenommen. `Delete` auf einen
+  fehlenden Pfad meldet einfach `finished: true` ohne Fehler.
+- **`getinfo` mit mehreren Pfaden** liefert für fehlende Pfade `{"code": 408, "path": …}` statt eines Fehlers – damit
+  sucht der Upload ohne „Überschreiben“ in einem Aufruf den ersten freien Namen `name (1).ext` … `name (9).ext`.
+- **Download:** fehlender Pfad → HTTP 502 mit HTML-Seite (kein JSON); ungültige SID → HTTP 200 mit JSON 119 und
+  Header `x-request-error: unauth`. Der Download-Stream prüft deshalb den Content-Type.
+- **`#recycle`:** `list` auf `/Daten/#recycle` → 407 (Papierkorb nur für Administratoren sichtbar). Screen 24 zeigt
+  den Share deshalb nicht; der Lösch-Dialog sagt „nicht prüfbar“.
+- **Sharing:** `list` → leer, `create` → 407 (Konto ohne Freigabe-Recht), auch mit `path` als JSON-Array.
+  `delete` mit unbekannter ID → 401. `clear_invalid` → success (lief einmal bei 0 Links, ohne Wirkung). Format von
+  `date_expired` in `list`-Antworten und die Frage, ob ein Link am Ablauftag noch gilt, sind damit **offen**.
+- **Offen, braucht ein Konto mit Schreib-/Freigaberecht:** Upload (Multipart-Feldnamen, `overwrite`-Werte),
+  CopyMove/Delete mit echtem Fortschritt, Rename, CreateFolder mit `force_parent`, Wiederherstellen aus `#recycle`,
+  Sharing create/list/delete inkl. URL-Host und `date_expired`.

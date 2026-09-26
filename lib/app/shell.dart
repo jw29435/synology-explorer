@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../features/audio/presentation/playback_providers.dart';
+import '../features/transfers/presentation/transfer_providers.dart';
 import '../l10n/app_localizations.dart';
 
 /// Rahmen mit Tab-Leiste; darüber der Slot für den Mini-Player.
@@ -14,6 +15,8 @@ class AppShell extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
+    // Transfer-Worker läuft, solange die Shell steht (auch nach Neustart).
+    ref.watch(transferQueueProvider);
     return Scaffold(
       body: navigationShell,
       bottomNavigationBar: Column(

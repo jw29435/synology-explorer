@@ -2,7 +2,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/auth/session_manager.dart';
 import '../../../core/network/certificate_pinning.dart';
+import '../../../core/network/syno_api_client.dart';
 import '../../../core/storage/storage_providers.dart';
+import '../../transfers/presentation/transfer_providers.dart';
 import '../data/server_repository.dart';
 import '../domain/server_profile.dart';
 
@@ -37,6 +39,7 @@ class SessionNotifier extends Notifier<SessionManager?> {
   /// nächsten App-Start.
   Future<void> activate(SessionManager session) async {
     final old = state;
+    if (old != null && !identical(old, session)) await _suspendTransfers();
     state = session;
     if (old != null && !identical(old, session)) old.client.close();
     await ref
@@ -48,6 +51,7 @@ class SessionNotifier extends Notifier<SessionManager?> {
   Future<void> logout() async {
     final session = state;
     if (session == null) return;
+    await _suspendTransfers();
     state = null;
     await ref.read(secureStorageProvider).delete(key: _lastServerKey);
     await session.logout();
@@ -55,9 +59,22 @@ class SessionNotifier extends Notifier<SessionManager?> {
   }
 
   /// Verwirft die Session lokal, ohne Secrets zu löschen.
-  void close() {
-    state?.client.close();
+  Future<void> close() async {
+    final session = state;
+    if (session == null) return;
+    await _suspendTransfers();
     state = null;
+    session.client.close();
+  }
+
+  /// Laufende Transfers pausieren, bevor ihr Client geschlossen wird – sonst
+  /// scheitern sie mit Netzwerkfehlern oder laufen gegen den falschen Server.
+  Future<void> _suspendTransfers() async {
+    try {
+      await ref.read(transferQueueProvider).suspend();
+    } catch (_) {
+      // Transfers sind Zusatz; der Serverwechsel geht vor.
+    }
   }
 
   /// Verbindet beim App-Start still mit dem zuletzt genutzten Server, wenn
@@ -84,6 +101,10 @@ class SessionNotifier extends Notifier<SessionManager?> {
     }
   }
 }
+
+/// Client der aktiven Session; wirft ohne Session.
+SynoApiClient sessionClient(Ref ref) =>
+    (ref.watch(sessionProvider) ?? (throw StateError('Keine Session'))).client;
 
 /// Einmal pro App-Start: [SessionNotifier.resumeLast].
 final startupProvider = FutureProvider<bool>(

@@ -29,6 +29,7 @@ sealed class SynoException implements Exception {
       105 || 407 => SynoPermissionDenied(code),
       106 || 107 || 119 => SynoSessionExpired(code),
       408 || 599 => SynoNotFound(code),
+      414 => SynoAlreadyExists(code),
       _ => SynoUnknown(code),
     };
   }
@@ -67,6 +68,11 @@ final class SynoPermissionDenied extends SynoException {
 
 final class SynoNotFound extends SynoException {
   const SynoNotFound([super.code]);
+}
+
+/// Ziel existiert schon (Umbenennen, Kopieren, Ordner anlegen).
+final class SynoAlreadyExists extends SynoException {
+  const SynoAlreadyExists([super.code]);
 }
 
 /// NAS nicht erreichbar (Timeout, Verbindungsfehler) oder HTTP-Fehler;

@@ -25,6 +25,7 @@ void main() {
     expect(fs(408), isA<SynoNotFound>());
     expect(fs(400), isA<SynoUnknown>());
     expect(fs(403), isA<SynoUnknown>());
-    expect(fs(414), isA<SynoUnknown>().having((e) => e.code, 'code', 414));
+    expect(fs(414), isA<SynoAlreadyExists>());
+    expect(fs(415), isA<SynoUnknown>().having((e) => e.code, 'code', 415));
   });
 }

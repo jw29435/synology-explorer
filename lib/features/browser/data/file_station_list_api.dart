@@ -50,6 +50,19 @@ class FileStationListApi {
     return _entries(data['files']).single;
   }
 
+  /// Änderungszeiten für [paths] in einem Aufruf; Pfade, die es nicht mehr
+  /// gibt (Code 408), fehlen in der Map.
+  Future<Map<String, DateTime?>> mtimes(List<String> paths) async {
+    final data = await _client.request(_api, 'getinfo', {
+      'path': jsonEncode(paths),
+      'additional': jsonEncode(['time']),
+    }) as Map;
+    return {
+      for (final f in (data['files'] as List).cast<Map<String, dynamic>>())
+        if (f['code'] == null) f['path'] as String: NasEntry.fromSyno(f).mtime,
+    };
+  }
+
   static List<NasEntry> _entries(Object? list) => [
     for (final e in list as List) NasEntry.fromSyno(e as Map<String, dynamic>),
   ];

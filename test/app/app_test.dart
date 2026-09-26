@@ -26,7 +26,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(
       find.descendant(
-        of: find.byType(Center),
+        of: find.byType(AppBar),
         matching: find.text('Einstellungen'),
       ),
       findsOne,

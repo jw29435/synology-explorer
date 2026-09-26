@@ -66,5 +66,9 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Fotos und Videos auswählen, um sie auf das NAS hochzuladen.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Ein Foto aufnehmen und direkt auf das NAS hochladen.</string>
 </dict>
 </plist>

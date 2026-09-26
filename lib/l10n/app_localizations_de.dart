@@ -301,9 +301,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get viewList => 'Listenansicht';
 
   @override
-  String get fabLater => 'Hochladen und neue Ordner kommen mit M4.';
-
-  @override
   String get openLater =>
       'Dateien öffnen kommt mit M2 (Audio) und M3 (Viewer).';
 
@@ -453,4 +450,466 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get searchFooter =>
       'Suche nach Dateiname. Filter schränken auf Dateiendungen ein; beim Verlassen wird der Search-Task gestoppt und aufgeräumt.';
+
+  @override
+  String get selectAll => 'Alle';
+
+  @override
+  String selectionSize(String size) {
+    return 'Auswahl: $size';
+  }
+
+  @override
+  String get actionDownloadShort => 'Download';
+
+  @override
+  String get actionMoveShort => 'Verschieben';
+
+  @override
+  String get actionCopyShort => 'Kopieren';
+
+  @override
+  String get actionShareShort => 'Teilen';
+
+  @override
+  String get back => 'Zurück';
+
+  @override
+  String get create => 'Anlegen';
+
+  @override
+  String get edit => 'Bearbeiten';
+
+  @override
+  String get copy => 'Kopieren';
+
+  @override
+  String get share => 'Teilen';
+
+  @override
+  String get pause => 'Pausieren';
+
+  @override
+  String get resume => 'Fortsetzen';
+
+  @override
+  String get validationName => 'Ungültiger Name (kein „/“).';
+
+  @override
+  String get newFolder => 'Neuer Ordner';
+
+  @override
+  String get newFolderHint => 'Im aktuellen Verzeichnis';
+
+  @override
+  String get moveTo => 'Verschieben nach …';
+
+  @override
+  String get copyTo => 'Kopieren nach …';
+
+  @override
+  String get moveHere => 'Hierher verschieben';
+
+  @override
+  String get copyHere => 'Hierher kopieren';
+
+  @override
+  String get noSubfolders => 'Keine Unterordner.';
+
+  @override
+  String moving(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Verschiebe $count Elemente …',
+      one: 'Verschiebe 1 Element …',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String copying(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Kopiere $count Elemente …',
+      one: 'Kopiere 1 Element …',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String deleting(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Lösche $count Elemente …',
+      one: 'Lösche 1 Element …',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String deleteConfirmOne(String name) {
+    return '„$name“ löschen?';
+  }
+
+  @override
+  String deleteConfirmMany(int count) {
+    return '$count Elemente löschen?';
+  }
+
+  @override
+  String get deleteToRecycle =>
+      'Die Freigabe hat einen Papierkorb: Gelöschtes lässt sich dort wiederherstellen.';
+
+  @override
+  String get deleteNoRecycle =>
+      'Die Freigabe hat keinen Papierkorb: Löschen ist endgültig.';
+
+  @override
+  String get deleteRecycleUnknown =>
+      'Ob die Freigabe einen Papierkorb hat, ist nicht prüfbar (evtl. nur für Administratoren sichtbar). Im Zweifel ist Löschen endgültig.';
+
+  @override
+  String downloadsQueued(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Downloads eingereiht.',
+      one: '1 Download eingereiht.',
+      zero: 'Nichts herunterzuladen.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String uploadsQueued(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Uploads eingereiht.',
+      one: '1 Upload eingereiht.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get uploadTitle => 'Hinzufügen';
+
+  @override
+  String uploadTarget(String path) {
+    return 'Ziel: $path';
+  }
+
+  @override
+  String get uploadFiles => 'Dateien';
+
+  @override
+  String get uploadFilesHint => 'Aus dem System-Dateipicker';
+
+  @override
+  String get uploadMedia => 'Fotos & Videos';
+
+  @override
+  String get uploadMediaHint => 'Aus der Kamera-Rolle';
+
+  @override
+  String get uploadCamera => 'Kamera';
+
+  @override
+  String get uploadCameraHint => 'Aufnehmen und direkt hochladen';
+
+  @override
+  String get uploadOverwrite => 'Vorhandene Dateien überschreiben';
+
+  @override
+  String get uploadOverwriteHint => 'Sonst wird „ (1)“ angehängt';
+
+  @override
+  String get pauseAll => 'Alle pausieren';
+
+  @override
+  String get clearList => 'Liste leeren';
+
+  @override
+  String transfersActive(int count) {
+    return 'Aktiv ($count)';
+  }
+
+  @override
+  String transfersDone(int count) {
+    return 'Fertig ($count)';
+  }
+
+  @override
+  String get transfersNone => 'Keine laufenden Transfers.';
+
+  @override
+  String get transfersNoneDone => 'Noch nichts fertig.';
+
+  @override
+  String get transfersFooter =>
+      'Die Queue überlebt einen App-Neustart. Downloads werden per HTTP-Range fortgesetzt, Uploads starten auf Datei-Ebene neu.';
+
+  @override
+  String get transferToOffline => 'Download → Offline';
+
+  @override
+  String transferToFolder(String folder) {
+    return 'Upload → $folder';
+  }
+
+  @override
+  String get transferQueued => 'wartet';
+
+  @override
+  String get transferPaused => 'Pausiert';
+
+  @override
+  String transferFailed(String reason) {
+    return 'Fehlgeschlagen: $reason';
+  }
+
+  @override
+  String bytesOf(String done, String total) {
+    return '$done von $total';
+  }
+
+  @override
+  String remaining(String time) {
+    return 'noch $time';
+  }
+
+  @override
+  String durationSeconds(int n) {
+    return '$n s';
+  }
+
+  @override
+  String durationMinutes(int n) {
+    return '$n min';
+  }
+
+  @override
+  String durationHours(int n) {
+    return '$n h';
+  }
+
+  @override
+  String get resumesWithRange => 'wird fortgesetzt (Range)';
+
+  @override
+  String notificationTransfers(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Transfers laufen',
+      one: '1 Transfer läuft',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get errorExists => 'Ein Element mit diesem Namen gibt es dort schon.';
+
+  @override
+  String get errorLocalFile => 'Lokale Datei nicht lesbar oder schreibbar.';
+
+  @override
+  String get storageUsed => 'Belegt auf diesem Gerät';
+
+  @override
+  String storageOffline(String size) {
+    return 'Offline-Dateien $size';
+  }
+
+  @override
+  String storageCache(String size) {
+    return 'Cache $size';
+  }
+
+  @override
+  String get offlineInfo =>
+      'Alles hier ist ohne Verbindung nutzbar. Änderungen auf dem NAS werden beim nächsten Kontakt geprüft (mtime).';
+
+  @override
+  String get offlineEmpty =>
+      'Noch keine Offline-Dateien. „Offline verfügbar halten“ im Datei-Menü lädt Dateien hierher.';
+
+  @override
+  String get offlineChanged => 'Auf dem NAS geändert – aktualisieren?';
+
+  @override
+  String get offlineRemove => 'Entfernen';
+
+  @override
+  String moreItems(int count) {
+    return '+ $count weitere';
+  }
+
+  @override
+  String get openFailed => 'Keine App zum Öffnen gefunden.';
+
+  @override
+  String get shareLinkTitle => 'Freigabelink';
+
+  @override
+  String get shareValidUntil => 'Gültig bis';
+
+  @override
+  String get expiryDay1 => '1 Tag';
+
+  @override
+  String expiryDays(int count) {
+    return '$count Tage';
+  }
+
+  @override
+  String get expiryNever => 'Nie';
+
+  @override
+  String get expiryNone => 'Kein Ablauf';
+
+  @override
+  String expiresOn(String date) {
+    return 'Läuft ab am $date';
+  }
+
+  @override
+  String get expiresToday => 'Läuft heute ab';
+
+  @override
+  String expiresInDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Läuft ab in $count Tagen',
+      one: 'Läuft morgen ab',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String expiredOn(String date) {
+    return 'Abgelaufen am $date';
+  }
+
+  @override
+  String get sharePassword => 'Passwort (optional)';
+
+  @override
+  String get generate => 'Generieren';
+
+  @override
+  String get shareCreate => 'Link erstellen';
+
+  @override
+  String get shareCreated => 'Link erstellt';
+
+  @override
+  String get linkCopied => 'Link kopiert.';
+
+  @override
+  String get shareExternalHint =>
+      'Der Link zeigt auf die externe Adresse. Verwaltung aller Links unter Einstellungen › Freigabelinks.';
+
+  @override
+  String get shareNoExternal =>
+      'Für diesen Server ist keine externe Adresse hinterlegt: Der Link nutzt die Adresse, die DSM meldet, und ist evtl. nur im LAN erreichbar.';
+
+  @override
+  String get shareLinksTitle => 'Freigabelinks';
+
+  @override
+  String shareLinksCount(int active, int expired) {
+    return '$active aktiv · $expired abgelaufen';
+  }
+
+  @override
+  String get shareLinksEmpty => 'Keine Freigabelinks.';
+
+  @override
+  String get shareLinksFooter =>
+      'Quelle: SYNO.FileStation.Sharing list. Ablauf oder Passwort ändern geht über Link neu erstellen.';
+
+  @override
+  String get passwordBadge => 'Passwort';
+
+  @override
+  String get cleanUp => 'Aufräumen';
+
+  @override
+  String get trashTitle => 'Papierkorb';
+
+  @override
+  String get trashEmptyAction => 'Leeren';
+
+  @override
+  String get trashChecking => 'Prüfe Papierkörbe …';
+
+  @override
+  String get trashInfo => 'Zeigt #recycle der Freigabe.';
+
+  @override
+  String get trashNone => 'Kein Papierkorb sichtbar.';
+
+  @override
+  String trashHidden(String shares) {
+    return 'Fehlt: $shares – dort ist der Papierkorb nur für Admins sichtbar.';
+  }
+
+  @override
+  String get trashIsEmpty => 'Der Papierkorb ist leer.';
+
+  @override
+  String get trashFooter =>
+      'Wiederherstellen = Verschieben zurück an den Ursprungspfad (aus dem Papierkorb-Pfad abgeleitet). Endgültiges Löschen braucht eine zweite, rote Bestätigung.';
+
+  @override
+  String trashFrom(String folder) {
+    return 'aus $folder';
+  }
+
+  @override
+  String trashDeleted(String when) {
+    return 'gelöscht $when';
+  }
+
+  @override
+  String get restore => 'Wiederherstellen';
+
+  @override
+  String get restoring => 'Stelle wieder her …';
+
+  @override
+  String restored(String path) {
+    return 'Wiederhergestellt nach $path';
+  }
+
+  @override
+  String get deleteForever => 'Endgültig löschen';
+
+  @override
+  String get deleteForeverTitle => 'Endgültig löschen?';
+
+  @override
+  String deleteForeverOne(String name) {
+    return '„$name“ wird aus dem Papierkorb entfernt. Das kann nur noch ein Snapshot rückgängig machen.';
+  }
+
+  @override
+  String deleteForeverMany(int count) {
+    return '$count Elemente werden aus dem Papierkorb entfernt. Das kann nur noch ein Snapshot rückgängig machen.';
+  }
+
+  @override
+  String get actionDeleteShort => 'Löschen';
+
+  @override
+  String get noWritePermission =>
+      'Keine Schreibrechte – das NAS lässt hier nur Lesen (und ggf. Löschen) zu.';
+
+  @override
+  String get export => 'Exportieren';
 }
