@@ -161,8 +161,8 @@ class StartScreen extends ConsumerWidget {
                     '${formatRelative(openedAt, l10n)}',
                     overflow: TextOverflow.ellipsis,
                   ),
-                  onTap: () =>
-                      context.push(folderLocation(parentPath(entry.path))),
+                  // Die Datei selbst öffnen (Viewer bzw. Ordner abspielen).
+                  onTap: () => openEntry(context, ref, entry),
                 ),
             ],
           ],
