@@ -10,6 +10,8 @@ import '../../../l10n/app_localizations.dart';
 import '../../audio/presentation/audio_widgets.dart';
 import '../../audio/presentation/playback_providers.dart';
 import '../../sharing/presentation/share_link_sheet.dart';
+import '../../transfers/domain/transfer.dart';
+import '../../transfers/presentation/transfer_providers.dart';
 import '../data/file_station_list_api.dart';
 import '../domain/nas_entry.dart';
 import 'browser_providers.dart';
@@ -38,6 +40,26 @@ class FolderScreen extends ConsumerWidget {
     final readOnly =
         ref.watch(entryInfoProvider(path)).value?.perm == NasPerm.readOnly;
     void clearSelection() => ref.read(selectionProvider(path).notifier).clear();
+
+    // Fertiger Upload in diesen Ordner: neu laden, damit die Datei erscheint.
+    ref.listen(transfersProvider, (prev, next) {
+      final before = prev?.value;
+      if (before == null) return;
+      final done = {
+        for (final t in before)
+          if (t.state == TransferState.done) t.id,
+      };
+      if (next.value?.any(
+            (t) =>
+                t.kind == TransferKind.upload &&
+                t.state == TransferState.done &&
+                !done.contains(t.id) &&
+                parentPath(t.remotePath) == path,
+          ) ??
+          false) {
+        ref.invalidate(folderProvider(path));
+      }
+    });
 
     return PopScope(
       canPop: !selecting,

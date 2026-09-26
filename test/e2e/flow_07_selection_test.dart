@@ -282,6 +282,11 @@ void main() {
 
     testWidgets('Erfolg: Datei landet im Ordner', (tester) async {
       final app = await startUpload(tester);
+      int listings() => app.nas
+          .calls('SYNO.FileStation.List', 'list')
+          .where((c) => c['folder_path'] == '/music')
+          .length;
+      final before = listings();
       await app.tapThen(
         inSheet(l10n.uploadFiles),
         inSnackBar(l10n.uploadsQueued(1)),
@@ -292,6 +297,8 @@ void main() {
       expect(upload['file'], 'notiz.txt');
       // Der FAB-Ordner ist `/music` (der Mock zeigt darin das Album).
       expect(upload['path'], '/music');
+      // Nach dem Upload lädt der Ordner neu (E2E-036).
+      await app.waitUntil(() => listings() > before, 'Ordner neu geladen');
 
       await app.backButton();
       expect(app.location, '/files');
