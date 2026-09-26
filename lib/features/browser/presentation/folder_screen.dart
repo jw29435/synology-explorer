@@ -33,6 +33,8 @@ class FolderScreen extends ConsumerWidget {
     final text = Theme.of(context).textTheme;
 
     final selecting = selection.isNotEmpty;
+    final readOnly =
+        ref.watch(entryInfoProvider(path)).value?.perm == NasPerm.readOnly;
     void clearSelection() => ref.read(selectionProvider(path).notifier).clear();
 
     return PopScope(
@@ -103,9 +105,14 @@ class FolderScreen extends ConsumerWidget {
               ),
         floatingActionButton: selecting
             ? null
+            // Ohne Schreibrecht im Ordner (ACL) gedämpft; Tippen erklärt es.
             : FloatingActionButton(
                 tooltip: l10n.uploadTitle,
-                onPressed: () => showUploadSheet(context, ref, path),
+                backgroundColor: readOnly ? AppColors.surfaceRaised : null,
+                foregroundColor: readOnly ? AppColors.textMuted : null,
+                onPressed: () => readOnly
+                    ? showSnack(context, l10n.noWritePermission)
+                    : showUploadSheet(context, ref, path),
                 child: const Icon(Icons.add),
               ),
         bottomNavigationBar: selecting
@@ -187,24 +194,35 @@ class _SelectionBar extends ConsumerWidget {
       }
     }
 
+    // Verschieben braucht Schreibrecht auf den Elementen (ACL).
+    final readOnly = selected.any((e) => e.perm == NasPerm.readOnly);
+
     Widget action(
       IconData icon,
       String label,
       Future<bool> Function() onTap, {
       Color? color,
+      String? disabled,
     }) => Expanded(
       child: InkResponse(
-        onTap: selected.isEmpty ? null : () async => done(await onTap()),
+        onTap: selected.isEmpty
+            ? null
+            : disabled != null
+            ? () => showSnack(context, disabled)
+            : () async => done(await onTap()),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 10),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, color: color),
+              Icon(icon, color: disabled == null ? color : AppColors.textMuted),
               const SizedBox(height: 6),
               Text(
                 label,
-                style: TextStyle(color: color, fontWeight: FontWeight.w600),
+                style: TextStyle(
+                  color: disabled == null ? color : AppColors.textMuted,
+                  fontWeight: FontWeight.w600,
+                ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -248,6 +266,7 @@ class _SelectionBar extends ConsumerWidget {
                   Icons.drive_file_move_outline,
                   l10n.actionMoveShort,
                   () => copyMoveEntries(context, ref, selected, move: true),
+                  disabled: readOnly ? l10n.noWritePermission : null,
                 ),
                 action(
                   Icons.copy_outlined,

@@ -616,5 +616,7 @@
       }
     }
   },
-  "actionDeleteShort": "Löschen"
+  "actionDeleteShort": "Löschen",
+  "noWritePermission": "Keine Schreibrechte – das NAS lässt hier nur Lesen (und ggf. Löschen) zu.",
+  "export": "Exportieren"
 }

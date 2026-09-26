@@ -238,5 +238,7 @@
   "deleteForeverTitle": "Delete permanently?",
   "deleteForeverOne": "“{name}” will be removed from the recycle bin. Only a snapshot can undo this.",
   "deleteForeverMany": "{count} items will be removed from the recycle bin. Only a snapshot can undo this.",
-  "actionDeleteShort": "Delete"
+  "actionDeleteShort": "Delete",
+  "noWritePermission": "No write permission – the NAS only allows reading (and possibly deleting) here.",
+  "export": "Export"
 }

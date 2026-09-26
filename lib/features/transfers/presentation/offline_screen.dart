@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:open_filex/open_filex.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../../app/theme.dart';
 import '../../../core/storage/app_database.dart';
@@ -267,7 +268,7 @@ class _FileRow extends ConsumerWidget {
     final type = NasFileType.fromName(name);
     final changed = this.changed;
     return ListTile(
-      contentPadding: const EdgeInsets.only(left: 24),
+      contentPadding: const EdgeInsets.only(left: 24, right: 0),
       leading: Icon(typeIcon(type), color: typeColor(type)),
       title: Text(name, overflow: TextOverflow.ellipsis),
       subtitle: changed == null
@@ -288,11 +289,24 @@ class _FileRow extends ConsumerWidget {
               ),
               onPressed: onRemove,
             )
-          : Text(
-              formatSize(file.size, l10n.localeName),
-              style: AppTheme.mono(
-                const TextStyle(color: AppColors.textSecondary),
-              ),
+          : Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  formatSize(file.size, l10n.localeName),
+                  style: AppTheme.mono(
+                    const TextStyle(color: AppColors.textSecondary),
+                  ),
+                ),
+                // System-Share-Sheet: „In Dateien sichern“, Downloads usw.
+                IconButton(
+                  tooltip: l10n.export,
+                  icon: const Icon(Icons.ios_share),
+                  onPressed: () => SharePlus.instance.share(
+                    ShareParams(files: [XFile(file.localPath)]),
+                  ),
+                ),
+              ],
             ),
       onTap: () async {
         final result = await OpenFilex.open(file.localPath);

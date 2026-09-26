@@ -905,4 +905,11 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get actionDeleteShort => 'Löschen';
+
+  @override
+  String get noWritePermission =>
+      'Keine Schreibrechte – das NAS lässt hier nur Lesen (und ggf. Löschen) zu.';
+
+  @override
+  String get export => 'Exportieren';
 }

@@ -1531,6 +1531,18 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Löschen'**
   String get actionDeleteShort;
+
+  /// No description provided for @noWritePermission.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Schreibrechte – das NAS lässt hier nur Lesen (und ggf. Löschen) zu.'**
+  String get noWritePermission;
+
+  /// No description provided for @export.
+  ///
+  /// In de, this message translates to:
+  /// **'Exportieren'**
+  String get export;
 }
 
 class _AppLocalizationsDelegate

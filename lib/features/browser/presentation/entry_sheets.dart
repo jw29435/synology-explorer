@@ -45,6 +45,11 @@ class _EntryActionsSheet extends ConsumerWidget {
     final audio = entry.type == NasFileType.audio;
     // Shared Folder selbst: nicht laden, umbenennen, verschieben, löschen.
     final share = entry.path.lastIndexOf('/') == 0;
+    // ACL ohne Schreibrecht: Umbenennen/Verschieben scheitern sonst mit 407.
+    // Löschen bleibt, weil DSM das eigene ACL-Recht `del` prüft.
+    final readOnly = entry.perm == NasPerm.readOnly
+        ? l10n.noWritePermission
+        : null;
     final offline =
         !entry.isDir &&
         (ref.watch(isOfflineProvider(entry.path)).value ?? false);
@@ -59,20 +64,21 @@ class _EntryActionsSheet extends ConsumerWidget {
       }
     }
 
+    /// [disabled]: Grund, warum der Eintrag nicht geht (Tooltip beim Tippen).
     Widget item(
       IconData icon,
       String label, {
       VoidCallback? onTap,
-      String? later,
+      String? disabled,
       Color? color,
       Widget? trailing,
     }) {
       final tile = ListTile(
-        enabled: later == null,
-        leading: Icon(icon, color: later == null ? color : null),
+        enabled: disabled == null,
+        leading: Icon(icon, color: disabled == null ? color : null),
         title: Text(
           label,
-          style: later == null && color != null
+          style: disabled == null && color != null
               ? TextStyle(color: color)
               : null,
         ),
@@ -84,9 +90,9 @@ class _EntryActionsSheet extends ConsumerWidget {
                 onTap();
               },
       );
-      if (later == null) return tile;
+      if (disabled == null) return tile;
       return Tooltip(
-        message: l10n.availableFrom(later),
+        message: disabled,
         triggerMode: TooltipTriggerMode.tap,
         child: tile,
       );
@@ -105,10 +111,23 @@ class _EntryActionsSheet extends ConsumerWidget {
               onTap: () => openEntry(outer, outerRef, entry),
             ),
             if (audio)
-              item(Icons.play_arrow, l10n.actionPlayFromHere, later: 'M2'),
+              item(
+                Icons.play_arrow,
+                l10n.actionPlayFromHere,
+                disabled: l10n.availableFrom('M2'),
+              ),
             if (audio || entry.isDir)
-              item(Icons.playlist_play, l10n.actionPlayFolder, later: 'M2'),
-            if (audio) item(Icons.playlist_add, l10n.actionQueue, later: 'M2'),
+              item(
+                Icons.playlist_play,
+                l10n.actionPlayFolder,
+                disabled: l10n.availableFrom('M2'),
+              ),
+            if (audio)
+              item(
+                Icons.playlist_add,
+                l10n.actionQueue,
+                disabled: l10n.availableFrom('M2'),
+              ),
             const Divider(indent: 20, endIndent: 20),
             // Ganze Shares nicht versehentlich komplett laden.
             if (!share) ...[
@@ -152,11 +171,13 @@ class _EntryActionsSheet extends ConsumerWidget {
               item(
                 Icons.edit_outlined,
                 l10n.actionRename,
+                disabled: readOnly,
                 onTap: () => renameEntry(outer, outerRef, entry),
               ),
               item(
                 Icons.drive_file_move_outline,
                 l10n.actionMove,
+                disabled: readOnly,
                 onTap: () =>
                     copyMoveEntries(outer, outerRef, [entry], move: true),
               ),

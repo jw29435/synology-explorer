@@ -391,6 +391,9 @@ class _FolderPickerSheetState extends ConsumerState<_FolderPickerSheet> {
   /// `null` = Liste der Shares.
   late String? _path = widget.start;
 
+  /// Rechte des aktuellen Ordners, sobald bekannt (aus der Liste darüber).
+  NasPerm? _perm;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -400,7 +403,9 @@ class _FolderPickerSheetState extends ConsumerState<_FolderPickerSheet> {
         : ref
               .watch(folderProvider(path))
               .whenData((s) => [...s.entries.where((e) => e.isDir)]);
-    final valid = path != null && isValidDestination(path, widget.sources);
+    final writable = _perm != NasPerm.readOnly;
+    final valid =
+        path != null && writable && isValidDestination(path, widget.sources);
     return SafeArea(
       child: SizedBox(
         height: MediaQuery.sizeOf(context).height * 0.75,
@@ -414,11 +419,12 @@ class _FolderPickerSheetState extends ConsumerState<_FolderPickerSheet> {
                 icon: const Icon(Icons.arrow_back),
                 onPressed: path == null
                     ? null
-                    : () => setState(
-                        () => _path = path.lastIndexOf('/') == 0
+                    : () => setState(() {
+                        _path = path.lastIndexOf('/') == 0
                             ? null
-                            : parentPath(path),
-                      ),
+                            : parentPath(path);
+                        _perm = null;
+                      }),
               ),
               title: Text(
                 widget.title,
@@ -454,7 +460,10 @@ class _FolderPickerSheetState extends ConsumerState<_FolderPickerSheet> {
                         title: Text(f.name),
                         trailing: const Icon(Icons.chevron_right),
                         enabled: !widget.sources.contains(f.path),
-                        onTap: () => setState(() => _path = f.path),
+                        onTap: () => setState(() {
+                          _path = f.path;
+                          _perm = f.perm;
+                        }),
                       ),
                   ],
                 ),
@@ -464,6 +473,14 @@ class _FolderPickerSheetState extends ConsumerState<_FolderPickerSheet> {
                 _ => const Center(child: CircularProgressIndicator()),
               },
             ),
+            if (!writable)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                child: Text(
+                  l10n.noWritePermission,
+                  style: const TextStyle(color: AppColors.errorSoft),
+                ),
+              ),
             Padding(
               padding: const EdgeInsets.all(16),
               child: FilledButton(
