@@ -228,6 +228,9 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('johann · users'), findsOne);
     expect(find.text('rwxrwxr-x · ACL: Lesen/Schreiben'), findsOne);
+    // Zeile „Typ“ (Katalog 10, E2E-050).
+    expect(find.text('Typ'), findsOne);
+    expect(find.text('FLAC-Audio'), findsOne);
   });
 
   testWidgets('06: Anmeldefehler → „Anmelden“ statt „Erneut versuchen“', (

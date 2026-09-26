@@ -383,6 +383,21 @@ class AppLocalizationsDe extends AppLocalizations {
   String get infoFolder => 'Ordner';
 
   @override
+  String get infoType => 'Typ';
+
+  @override
+  String infoTypeValue(String ext, String kind) {
+    String _temp0 = intl.Intl.selectLogic(kind, {
+      'audio': 'Audio',
+      'image': 'Bild',
+      'video': 'Video',
+      'document': 'Dokument',
+      'other': 'Datei',
+    });
+    return '$ext-$_temp0';
+  }
+
+  @override
   String get computeSize => 'Größe berechnen';
 
   @override

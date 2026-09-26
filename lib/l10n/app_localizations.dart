@@ -758,6 +758,18 @@ abstract class AppLocalizations {
   /// **'Ordner'**
   String get infoFolder;
 
+  /// No description provided for @infoType.
+  ///
+  /// In de, this message translates to:
+  /// **'Typ'**
+  String get infoType;
+
+  /// Zeile „Typ“ im Info-Sheet, z. B. FLAC-Audio.
+  ///
+  /// In de, this message translates to:
+  /// **'{ext}-{kind, select, audio{Audio} image{Bild} video{Video} document{Dokument} other{Datei}}'**
+  String infoTypeValue(String ext, String kind);
+
   /// No description provided for @computeSize.
   ///
   /// In de, this message translates to:

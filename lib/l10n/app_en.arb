@@ -110,6 +110,8 @@
   "infoOwner": "Owner",
   "infoPerm": "Permissions",
   "infoFolder": "Folder",
+  "infoType": "Type",
+  "infoTypeValue": "{ext} {kind, select, audio{audio} image{image} video{video} document{document} other{file}}",
   "computeSize": "Calculate size",
   "dirSizeResult": "{size} · {files} files · {dirs} folders",
   "copyPath": "Copy path",
