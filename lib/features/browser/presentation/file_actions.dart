@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/theme.dart';
+import '../../../core/network/syno_exception.dart';
 import '../../../core/utils/format.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../transfers/presentation/transfer_providers.dart';
@@ -24,6 +25,36 @@ void showSnack(BuildContext context, String text, {SnackBarAction? action}) =>
       ..showSnackBar(
         SnackBar(content: Text(text), action: action, persist: false),
       );
+
+/// Favorit umschalten: Ordner auf dem NAS (dieselben wie in DS File),
+/// Dateien nur lokal – DSM führt Datei-Favoriten nur als `broken`.
+Future<void> toggleFavorite(
+  BuildContext context,
+  WidgetRef ref,
+  NasEntry entry,
+  bool favorite,
+) async {
+  final serverId = ref.read(serverIdProvider);
+  final library = ref.read(localLibraryProvider);
+  if (!entry.isDir) return library.setFavorite(serverId, entry, favorite);
+  final l10n = AppLocalizations.of(context);
+  try {
+    await library.setFolderFavorite(
+      serverId,
+      ref.read(favoriteApiProvider),
+      entry,
+      favorite,
+    );
+  } on SynoException catch (e) {
+    if (!context.mounted) return;
+    showSnack(
+      context,
+      e is SynoPermissionDenied || e is SynoUnknown
+          ? l10n.favoritesUnavailable
+          : describeError(e, l10n),
+    );
+  }
+}
 
 /// Lädt die Ordner neu, die sich durch eine Aktion geändert haben.
 void refreshFolders(WidgetRef ref, Iterable<String> folders) {

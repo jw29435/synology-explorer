@@ -20,6 +20,16 @@ class Favorites extends Table {
   BoolColumn get isDir => boolean()();
   DateTimeColumn get addedAt => dateTime()();
 
+  /// Anzeigename vom NAS (DS File erlaubt eigene Namen); `null` = Dateiname.
+  TextColumn get name => text().nullable()();
+
+  /// Vom NAS gespiegelt (Cache von `SYNO.FileStation.Favorite list`); sonst
+  /// ein nur lokaler Datei-Favorit.
+  BoolColumn get remote => boolean().withDefault(const Constant(false))();
+
+  /// NAS meldet den Favoriten als `broken` (Ziel fehlt).
+  BoolColumn get broken => boolean().withDefault(const Constant(false))();
+
   @override
   Set<Column> get primaryKey => {serverId, path};
 }
@@ -138,7 +148,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -157,6 +167,11 @@ class AppDatabase extends _$AppDatabase {
         await m.createTable(settings);
       }
       if (from < 6) await m.createTable(autoUploadRuns);
+      if (from < 7 && from >= 2) {
+        await m.addColumn(favorites, favorites.name);
+        await m.addColumn(favorites, favorites.remote);
+        await m.addColumn(favorites, favorites.broken);
+      }
     },
   );
 }

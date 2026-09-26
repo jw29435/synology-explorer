@@ -1,0 +1,21 @@
+{
+  "data": {
+    "favorites": [
+      {
+        "isdir": true,
+        "name": "Hörbücher",
+        "path": "/music/Hörbücher",
+        "status": "valid"
+      },
+      {
+        "isdir": true,
+        "name": "Alt-Urlaub",
+        "path": "/photo/Urlaub 2019",
+        "status": "broken"
+      }
+    ],
+    "offset": 0,
+    "total": 2
+  },
+  "success": true
+}

@@ -186,6 +186,56 @@ Handler mockNasHandler(
     });
   }
 
+  /// Favoriten wie DSM: `add` auf Vorhandenes → 800, `delete` auf Fehlendes
+  /// → Erfolg; Dateien und fehlende Pfade gelten als `broken`.
+  List<Map<String, Object?>>? favorites;
+  Future<Response> favorite(String method, Map<String, String> p) async {
+    favorites ??= [
+      for (final f
+          in (jsonDecode(
+                    await read('SYNO.FileStation.Favorite/list.json'),
+                  )['data']['favorites']
+                  as List)
+              .cast<Map<String, Object?>>())
+        f,
+    ];
+    final list = favorites!;
+    final path = p['path'] ?? '';
+    switch (method) {
+      case 'list':
+        return _ok({'favorites': list, 'offset': 0, 'total': list.length});
+      case 'add':
+        if (list.any((f) => f['path'] == path)) {
+          return _json(
+            jsonEncode({
+              'success': false,
+              'error': {
+                'code': 800,
+                'errors': [
+                  {'code': 800, 'name': p['name'], 'path': path},
+                ],
+              },
+            }),
+          );
+        }
+        final dir = !path.split('/').last.contains('.');
+        list.add({
+          'isdir': dir,
+          'name': p['name'] ?? path.split('/').last,
+          'path': path,
+          'status': dir ? 'valid' : 'broken',
+        });
+        return _ok(null);
+      case 'delete':
+        list.removeWhere((f) => f['path'] == path);
+        return _ok(null);
+    }
+    return _error(103);
+  }
+
+  nas._favoriteAdd = (path, name) =>
+      favorite('add', {'path': path, 'name': name});
+
   Response sharing(String method, Map<String, String> p, Uri url) {
     switch (method) {
       case 'create':
@@ -306,6 +356,7 @@ Handler mockNasHandler(
       'SYNO.FileStation.Upload',
       'SYNO.FileStation.Sharing',
       'SYNO.FileStation.Download',
+      'SYNO.FileStation.Favorite',
     };
     final paths = api == 'SYNO.FileStation.List' && method == 'getinfo'
         ? (jsonDecode(params['path'] ?? '[]') as List).cast<String>()
@@ -315,6 +366,9 @@ Handler mockNasHandler(
         return _json(await read('errors/119.json'));
       }
       switch (api) {
+        case 'SYNO.FileStation.Favorite':
+          if (nas.denyFavorites case final code?) return _error(code);
+          return favorite(method, params);
         case 'SYNO.FileStation.Upload':
           if (nas.denyWrites case final code?) return _error(code);
           final parts = parseMultipart(type, body);
@@ -433,6 +487,14 @@ class MockNasControl {
   /// Download-Fehler je NAS-Pfad: 502 = HTTP 502 mit HTML-Seite (DSM bei
   /// fehlender Datei), sonst dieser DSM-Fehlercode als JSON.
   final downloadErrors = <String, int>{};
+
+  /// Fehlercode für alle `SYNO.FileStation.Favorite`-Aufrufe (z. B. 105).
+  int? denyFavorites;
+
+  /// Legt einen Favoriten an wie DS File auf einem anderen Gerät.
+  Future<void> favoritesAdd(String path, String name) async =>
+      _favoriteAdd?.call(path, name);
+  Future<void> Function(String path, String name)? _favoriteAdd;
 
   /// Macht alle SIDs ungültig (Session abgelaufen → 119).
   void expireSessions() => _sids.clear();

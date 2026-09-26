@@ -397,8 +397,51 @@ class $FavoritesTable extends Favorites
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
-  List<GeneratedColumn> get $columns => [serverId, path, isDir, addedAt];
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _remoteMeta = const VerificationMeta('remote');
+  @override
+  late final GeneratedColumn<bool> remote = GeneratedColumn<bool>(
+    'remote',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("remote" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _brokenMeta = const VerificationMeta('broken');
+  @override
+  late final GeneratedColumn<bool> broken = GeneratedColumn<bool>(
+    'broken',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("broken" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    serverId,
+    path,
+    isDir,
+    addedAt,
+    name,
+    remote,
+    broken,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -443,6 +486,24 @@ class $FavoritesTable extends Favorites
     } else if (isInserting) {
       context.missing(_addedAtMeta);
     }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    }
+    if (data.containsKey('remote')) {
+      context.handle(
+        _remoteMeta,
+        remote.isAcceptableOrUnknown(data['remote']!, _remoteMeta),
+      );
+    }
+    if (data.containsKey('broken')) {
+      context.handle(
+        _brokenMeta,
+        broken.isAcceptableOrUnknown(data['broken']!, _brokenMeta),
+      );
+    }
     return context;
   }
 
@@ -468,6 +529,18 @@ class $FavoritesTable extends Favorites
         DriftSqlType.dateTime,
         data['${effectivePrefix}added_at'],
       )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      ),
+      remote: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}remote'],
+      )!,
+      broken: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}broken'],
+      )!,
     );
   }
 
@@ -482,11 +555,24 @@ class Favorite extends DataClass implements Insertable<Favorite> {
   final String path;
   final bool isDir;
   final DateTime addedAt;
+
+  /// Anzeigename vom NAS (DS File erlaubt eigene Namen); `null` = Dateiname.
+  final String? name;
+
+  /// Vom NAS gespiegelt (Cache von `SYNO.FileStation.Favorite list`); sonst
+  /// ein nur lokaler Datei-Favorit.
+  final bool remote;
+
+  /// NAS meldet den Favoriten als `broken` (Ziel fehlt).
+  final bool broken;
   const Favorite({
     required this.serverId,
     required this.path,
     required this.isDir,
     required this.addedAt,
+    this.name,
+    required this.remote,
+    required this.broken,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -495,6 +581,11 @@ class Favorite extends DataClass implements Insertable<Favorite> {
     map['path'] = Variable<String>(path);
     map['is_dir'] = Variable<bool>(isDir);
     map['added_at'] = Variable<DateTime>(addedAt);
+    if (!nullToAbsent || name != null) {
+      map['name'] = Variable<String>(name);
+    }
+    map['remote'] = Variable<bool>(remote);
+    map['broken'] = Variable<bool>(broken);
     return map;
   }
 
@@ -504,6 +595,9 @@ class Favorite extends DataClass implements Insertable<Favorite> {
       path: Value(path),
       isDir: Value(isDir),
       addedAt: Value(addedAt),
+      name: name == null && nullToAbsent ? const Value.absent() : Value(name),
+      remote: Value(remote),
+      broken: Value(broken),
     );
   }
 
@@ -517,6 +611,9 @@ class Favorite extends DataClass implements Insertable<Favorite> {
       path: serializer.fromJson<String>(json['path']),
       isDir: serializer.fromJson<bool>(json['isDir']),
       addedAt: serializer.fromJson<DateTime>(json['addedAt']),
+      name: serializer.fromJson<String?>(json['name']),
+      remote: serializer.fromJson<bool>(json['remote']),
+      broken: serializer.fromJson<bool>(json['broken']),
     );
   }
   @override
@@ -527,6 +624,9 @@ class Favorite extends DataClass implements Insertable<Favorite> {
       'path': serializer.toJson<String>(path),
       'isDir': serializer.toJson<bool>(isDir),
       'addedAt': serializer.toJson<DateTime>(addedAt),
+      'name': serializer.toJson<String?>(name),
+      'remote': serializer.toJson<bool>(remote),
+      'broken': serializer.toJson<bool>(broken),
     };
   }
 
@@ -535,11 +635,17 @@ class Favorite extends DataClass implements Insertable<Favorite> {
     String? path,
     bool? isDir,
     DateTime? addedAt,
+    Value<String?> name = const Value.absent(),
+    bool? remote,
+    bool? broken,
   }) => Favorite(
     serverId: serverId ?? this.serverId,
     path: path ?? this.path,
     isDir: isDir ?? this.isDir,
     addedAt: addedAt ?? this.addedAt,
+    name: name.present ? name.value : this.name,
+    remote: remote ?? this.remote,
+    broken: broken ?? this.broken,
   );
   Favorite copyWithCompanion(FavoritesCompanion data) {
     return Favorite(
@@ -547,6 +653,9 @@ class Favorite extends DataClass implements Insertable<Favorite> {
       path: data.path.present ? data.path.value : this.path,
       isDir: data.isDir.present ? data.isDir.value : this.isDir,
       addedAt: data.addedAt.present ? data.addedAt.value : this.addedAt,
+      name: data.name.present ? data.name.value : this.name,
+      remote: data.remote.present ? data.remote.value : this.remote,
+      broken: data.broken.present ? data.broken.value : this.broken,
     );
   }
 
@@ -556,13 +665,17 @@ class Favorite extends DataClass implements Insertable<Favorite> {
           ..write('serverId: $serverId, ')
           ..write('path: $path, ')
           ..write('isDir: $isDir, ')
-          ..write('addedAt: $addedAt')
+          ..write('addedAt: $addedAt, ')
+          ..write('name: $name, ')
+          ..write('remote: $remote, ')
+          ..write('broken: $broken')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(serverId, path, isDir, addedAt);
+  int get hashCode =>
+      Object.hash(serverId, path, isDir, addedAt, name, remote, broken);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -570,7 +683,10 @@ class Favorite extends DataClass implements Insertable<Favorite> {
           other.serverId == this.serverId &&
           other.path == this.path &&
           other.isDir == this.isDir &&
-          other.addedAt == this.addedAt);
+          other.addedAt == this.addedAt &&
+          other.name == this.name &&
+          other.remote == this.remote &&
+          other.broken == this.broken);
 }
 
 class FavoritesCompanion extends UpdateCompanion<Favorite> {
@@ -578,12 +694,18 @@ class FavoritesCompanion extends UpdateCompanion<Favorite> {
   final Value<String> path;
   final Value<bool> isDir;
   final Value<DateTime> addedAt;
+  final Value<String?> name;
+  final Value<bool> remote;
+  final Value<bool> broken;
   final Value<int> rowid;
   const FavoritesCompanion({
     this.serverId = const Value.absent(),
     this.path = const Value.absent(),
     this.isDir = const Value.absent(),
     this.addedAt = const Value.absent(),
+    this.name = const Value.absent(),
+    this.remote = const Value.absent(),
+    this.broken = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   FavoritesCompanion.insert({
@@ -591,6 +713,9 @@ class FavoritesCompanion extends UpdateCompanion<Favorite> {
     required String path,
     required bool isDir,
     required DateTime addedAt,
+    this.name = const Value.absent(),
+    this.remote = const Value.absent(),
+    this.broken = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : serverId = Value(serverId),
        path = Value(path),
@@ -601,6 +726,9 @@ class FavoritesCompanion extends UpdateCompanion<Favorite> {
     Expression<String>? path,
     Expression<bool>? isDir,
     Expression<DateTime>? addedAt,
+    Expression<String>? name,
+    Expression<bool>? remote,
+    Expression<bool>? broken,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -608,6 +736,9 @@ class FavoritesCompanion extends UpdateCompanion<Favorite> {
       if (path != null) 'path': path,
       if (isDir != null) 'is_dir': isDir,
       if (addedAt != null) 'added_at': addedAt,
+      if (name != null) 'name': name,
+      if (remote != null) 'remote': remote,
+      if (broken != null) 'broken': broken,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -617,6 +748,9 @@ class FavoritesCompanion extends UpdateCompanion<Favorite> {
     Value<String>? path,
     Value<bool>? isDir,
     Value<DateTime>? addedAt,
+    Value<String?>? name,
+    Value<bool>? remote,
+    Value<bool>? broken,
     Value<int>? rowid,
   }) {
     return FavoritesCompanion(
@@ -624,6 +758,9 @@ class FavoritesCompanion extends UpdateCompanion<Favorite> {
       path: path ?? this.path,
       isDir: isDir ?? this.isDir,
       addedAt: addedAt ?? this.addedAt,
+      name: name ?? this.name,
+      remote: remote ?? this.remote,
+      broken: broken ?? this.broken,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -643,6 +780,15 @@ class FavoritesCompanion extends UpdateCompanion<Favorite> {
     if (addedAt.present) {
       map['added_at'] = Variable<DateTime>(addedAt.value);
     }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (remote.present) {
+      map['remote'] = Variable<bool>(remote.value);
+    }
+    if (broken.present) {
+      map['broken'] = Variable<bool>(broken.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -656,6 +802,9 @@ class FavoritesCompanion extends UpdateCompanion<Favorite> {
           ..write('path: $path, ')
           ..write('isDir: $isDir, ')
           ..write('addedAt: $addedAt, ')
+          ..write('name: $name, ')
+          ..write('remote: $remote, ')
+          ..write('broken: $broken, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -3520,6 +3669,9 @@ typedef $$FavoritesTableCreateCompanionBuilder = FavoritesCompanion Function({
   required String path,
   required bool isDir,
   required DateTime addedAt,
+  Value<String?> name,
+  Value<bool> remote,
+  Value<bool> broken,
   Value<int> rowid,
 });
 typedef $$FavoritesTableUpdateCompanionBuilder = FavoritesCompanion Function({
@@ -3527,6 +3679,9 @@ typedef $$FavoritesTableUpdateCompanionBuilder = FavoritesCompanion Function({
   Value<String> path,
   Value<bool> isDir,
   Value<DateTime> addedAt,
+  Value<String?> name,
+  Value<bool> remote,
+  Value<bool> broken,
   Value<int> rowid,
 });
 
@@ -3556,6 +3711,21 @@ class $$FavoritesTableFilterComposer
 
   ColumnFilters<DateTime> get addedAt => $composableBuilder(
     column: $table.addedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get remote => $composableBuilder(
+    column: $table.remote,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get broken => $composableBuilder(
+    column: $table.broken,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -3588,6 +3758,21 @@ class $$FavoritesTableOrderingComposer
     column: $table.addedAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get remote => $composableBuilder(
+    column: $table.remote,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get broken => $composableBuilder(
+    column: $table.broken,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$FavoritesTableAnnotationComposer
@@ -3610,6 +3795,15 @@ class $$FavoritesTableAnnotationComposer
 
   GeneratedColumn<DateTime> get addedAt =>
       $composableBuilder(column: $table.addedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<bool> get remote =>
+      $composableBuilder(column: $table.remote, builder: (column) => column);
+
+  GeneratedColumn<bool> get broken =>
+      $composableBuilder(column: $table.broken, builder: (column) => column);
 }
 
 class $$FavoritesTableTableManager
@@ -3644,12 +3838,18 @@ class $$FavoritesTableTableManager
                 Value<String> path = const Value.absent(),
                 Value<bool> isDir = const Value.absent(),
                 Value<DateTime> addedAt = const Value.absent(),
+                Value<String?> name = const Value.absent(),
+                Value<bool> remote = const Value.absent(),
+                Value<bool> broken = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => FavoritesCompanion(
                 serverId: serverId,
                 path: path,
                 isDir: isDir,
                 addedAt: addedAt,
+                name: name,
+                remote: remote,
+                broken: broken,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -3658,12 +3858,18 @@ class $$FavoritesTableTableManager
                 required String path,
                 required bool isDir,
                 required DateTime addedAt,
+                Value<String?> name = const Value.absent(),
+                Value<bool> remote = const Value.absent(),
+                Value<bool> broken = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => FavoritesCompanion.insert(
                 serverId: serverId,
                 path: path,
                 isDir: isDir,
                 addedAt: addedAt,
+                name: name,
+                remote: remote,
+                broken: broken,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

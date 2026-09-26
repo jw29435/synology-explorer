@@ -24,6 +24,8 @@ class StartScreen extends ConsumerWidget {
     final viaLan = session.client.activeUrl == Uri.parse(profile.lanUrl);
     final shares = ref.watch(sharesProvider);
     final favorites = ref.watch(favoritesProvider).value ?? const [];
+    // Favoriten des NAS-Kontos nachladen, solange 05 offen ist.
+    ref.watch(favoritesSyncProvider);
     final recent = ref.watch(recentProvider).value ?? const [];
     final text = Theme.of(context).textTheme;
 
@@ -81,7 +83,11 @@ class StartScreen extends ConsumerWidget {
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: () => ref.refresh(sharesProvider.future),
+        onRefresh: () => Future.wait([
+          ref.refresh(sharesProvider.future),
+          // Ohne NAS bleiben die Favoriten aus dem Cache stehen.
+          ref.refresh(favoritesSyncProvider.future).catchError((_) {}),
+        ]),
         child: ListView(
           padding: const EdgeInsets.only(bottom: 24),
           children: [
@@ -146,14 +152,21 @@ class StartScreen extends ConsumerWidget {
                   itemCount: favorites.length,
                   separatorBuilder: (_, _) => const SizedBox(width: 10),
                   itemBuilder: (context, i) {
-                    final fav = favorites[i];
-                    return ActionChip(
-                      avatar: const Icon(Icons.star, color: AppColors.accent),
-                      label: Text(fav.name),
-                      onPressed: () => fav.isDir
-                          ? openEntry(context, ref, fav)
-                          : context.push(folderLocation(parentPath(fav.path))),
+                    final (:entry, :name, :broken) = favorites[i];
+                    final chip = ActionChip(
+                      avatar: Icon(
+                        Icons.star,
+                        color: broken ? AppColors.textMuted : AppColors.accent,
+                      ),
+                      label: Text(name),
+                      // Ordner öffnen 06, Dateien Viewer bzw. Player.
+                      onPressed: broken
+                          ? null
+                          : () => openEntry(context, ref, entry),
                     );
+                    return broken
+                        ? Tooltip(message: l10n.favoriteBroken, child: chip)
+                        : chip;
                   },
                 ),
               ),

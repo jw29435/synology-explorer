@@ -168,9 +168,7 @@ class _EntryActionsSheet extends ConsumerWidget {
               favorite ? Icons.star : Icons.star_border,
               favorite ? l10n.actionFavoriteRemove : l10n.actionFavoriteAdd,
               color: favorite ? AppColors.accent : null,
-              onTap: () => ref
-                  .read(localLibraryProvider)
-                  .setFavorite(ref.read(serverIdProvider), entry, !favorite),
+              onTap: () => toggleFavorite(outer, outerRef, entry, !favorite),
             ),
             item(
               Icons.link,

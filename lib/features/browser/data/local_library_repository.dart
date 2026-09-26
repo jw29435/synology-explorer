@@ -1,9 +1,18 @@
 import 'package:drift/drift.dart';
 
+import '../../../core/network/syno_exception.dart';
 import '../../../core/storage/app_database.dart';
 import '../domain/nas_entry.dart';
+import 'favorite_api.dart';
 
-/// Favoriten und „Zuletzt geöffnet“ – nur lokal auf dem Gerät (drift).
+/// Ein Favorit für Screen 05: Ordner vom NAS (wie in DS File) oder lokal
+/// markierte Datei; [broken], wenn das NAS das Ziel nicht (mehr) findet.
+typedef FavoriteItem = ({NasEntry entry, String name, bool broken});
+
+/// Favoriten und „Zuletzt geöffnet“ in drift. Ordner-Favoriten kommen vom NAS
+/// (`SYNO.FileStation.Favorite`, hier nur gespiegelt – Offline und sofortige
+/// Anzeige); Datei-Favoriten bleiben lokal, weil DSM Dateien als Favorit nur
+/// als `broken` führt. „Zuletzt geöffnet“ ist rein lokal.
 class LocalLibraryRepository {
   LocalLibraryRepository(this._db);
 
@@ -11,12 +20,77 @@ class LocalLibraryRepository {
 
   final AppDatabase _db;
 
-  Stream<List<NasEntry>> favorites(int serverId) =>
+  Stream<List<FavoriteItem>> favorites(int serverId) =>
       (_db.select(_db.favorites)
             ..where((f) => f.serverId.equals(serverId))
             ..orderBy([(f) => OrderingTerm.asc(f.addedAt)]))
           .watch()
-          .map((rows) => [for (final r in rows) _entry(r.path, r.isDir)]);
+          .map(
+            (rows) => [
+              for (final r in rows)
+                (
+                  entry: _entry(r.path, r.isDir),
+                  name: r.name ?? _entry(r.path, r.isDir).name,
+                  broken: r.broken,
+                ),
+            ],
+          );
+
+  /// Spiegelt die Favoriten des NAS-Kontos ([nas], sonst frisch per `list`)
+  /// in den Cache. Ersetzt dabei auch frühere lokale Ordner-Favoriten.
+  Future<void> syncFavorites(
+    int serverId,
+    FileStationFavoriteApi api, [
+    List<NasFavorite>? nas,
+  ]) async {
+    final list = nas ?? await api.list();
+    final now = DateTime.now();
+    await _db.transaction(() async {
+      await (_db.delete(
+        _db.favorites,
+      )..where((f) => f.serverId.equals(serverId) & (f.remote | f.isDir))).go();
+      for (final (i, f) in list.indexed) {
+        await _db
+            .into(_db.favorites)
+            .insertOnConflictUpdate(
+              FavoritesCompanion.insert(
+                serverId: serverId,
+                path: f.path,
+                isDir: f.isDir,
+                // Reihenfolge wie auf dem NAS.
+                addedAt: now.add(Duration(seconds: i)),
+                name: Value(f.name),
+                remote: const Value(true),
+                broken: Value(f.broken),
+              ),
+            );
+      }
+    });
+  }
+
+  /// Ordner-Favorit auf dem NAS setzen bzw. entfernen. Erst `list`, dann nur
+  /// `add`, wenn er fehlt, bzw. `delete`, wenn er da ist – `delete` entfernt
+  /// sonst auch einen Favoriten, den DS File angelegt hat (SPIKE.md). Fehler
+  /// 800 („schon vorhanden“) gilt als Erfolg. Scheitert der Aufruf (z. B.
+  /// 105), bleibt der Cache unverändert und der Fehler geht raus.
+  Future<void> setFolderFavorite(
+    int serverId,
+    FileStationFavoriteApi api,
+    NasEntry folder,
+    bool favorite,
+  ) async {
+    final exists = (await api.list()).any((f) => f.path == folder.path);
+    if (favorite && !exists) {
+      try {
+        await api.add(folder.path, folder.name);
+      } on SynoUnknown catch (e) {
+        if (e.code != 800) rethrow;
+      }
+    } else if (!favorite && exists) {
+      await api.delete(folder.path);
+    }
+    await syncFavorites(serverId, api);
+  }
 
   Stream<bool> isFavorite(int serverId, String path) =>
       (_db.select(_db.favorites)

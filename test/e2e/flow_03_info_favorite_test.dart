@@ -92,7 +92,11 @@ void main() {
     expect(await app.systemBack(), isTrue);
     expect(app.location, '/files');
     expect(chip, findsNothing);
-    expect(find.text(l10n.sectionFavorites.toUpperCase()), findsNothing);
+    // Die übrigen Favoriten des NAS-Kontos bleiben (Phase 6).
+    expect(find.widgetWithText(ActionChip, 'Hörbücher'), findsOneWidget);
+    const fav = 'SYNO.FileStation.Favorite';
+    expect(app.nas.calls(fav, 'add'), hasLength(1));
+    expect(app.nas.calls(fav, 'delete'), hasLength(1));
     expect(await app.systemBack(), isFalse);
     await app.dispose();
   });

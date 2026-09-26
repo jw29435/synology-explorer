@@ -530,6 +530,18 @@ abstract class AppLocalizations {
   /// **'Zuletzt geöffnet'**
   String get sectionRecent;
 
+  /// No description provided for @favoriteBroken.
+  ///
+  /// In de, this message translates to:
+  /// **'Auf dem NAS nicht mehr vorhanden'**
+  String get favoriteBroken;
+
+  /// No description provided for @favoritesUnavailable.
+  ///
+  /// In de, this message translates to:
+  /// **'Favoriten sind für dieses Konto nicht verfügbar.'**
+  String get favoritesUnavailable;
+
   /// No description provided for @permReadWrite.
   ///
   /// In de, this message translates to:

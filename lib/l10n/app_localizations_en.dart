@@ -253,6 +253,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sectionRecent => 'Recently opened';
 
   @override
+  String get favoriteBroken => 'No longer on the NAS';
+
+  @override
+  String get favoritesUnavailable =>
+      'Favorites are not available for this account.';
+
+  @override
   String get permReadWrite => 'Read/write';
 
   @override
