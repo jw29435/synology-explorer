@@ -69,4 +69,26 @@ void main() {
     expect(app.location, '/settings');
     await app.dispose();
   });
+
+  testWidgets('E2E-022: Verwalten per Long-Press ist angekündigt', (
+    tester,
+  ) async {
+    final app = await E2E.start(tester);
+    await app.addServerAndLogin();
+    await app.tap(find.byTooltip(l10n.switchServer));
+    expect(find.textContaining(l10n.serverManageHint), findsOneWidget);
+    expect(
+      find.byWidgetPredicate(
+        (w) =>
+            w is Semantics &&
+            w.properties.hintOverrides?.onLongPressHint ==
+                l10n.serverManageAction,
+      ),
+      findsOneWidget,
+    );
+    await tester.longPress(find.text('Heim-NAS'));
+    await app.settle();
+    expect(find.text(l10n.serverLogout), findsOneWidget);
+    await app.dispose();
+  });
 }

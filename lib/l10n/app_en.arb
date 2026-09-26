@@ -20,6 +20,8 @@
   "viaExternal": "external",
   "serverNotConnected": "Not connected",
   "serverInfo": "The LAN address is tried first, then the external one. QuickConnect is not supported.",
+  "serverManageHint": "Press and hold to edit, sign out or delete.",
+  "serverManageAction": "Edit, sign out, delete",
   "serverEdit": "Edit",
   "serverLogout": "Sign out",
   "serverDelete": "Delete",

@@ -73,6 +73,12 @@ class AppLocalizationsEn extends AppLocalizations {
       'The LAN address is tried first, then the external one. QuickConnect is not supported.';
 
   @override
+  String get serverManageHint => 'Press and hold to edit, sign out or delete.';
+
+  @override
+  String get serverManageAction => 'Edit, sign out, delete';
+
+  @override
   String get serverEdit => 'Edit';
 
   @override

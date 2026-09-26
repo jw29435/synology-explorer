@@ -218,6 +218,18 @@ abstract class AppLocalizations {
   /// **'Beim Start wird zuerst die LAN-Adresse probiert, dann die externe. QuickConnect wird nicht unterstützt.'**
   String get serverInfo;
 
+  /// No description provided for @serverManageHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Gedrückt halten zum Bearbeiten, Abmelden oder Löschen.'**
+  String get serverManageHint;
+
+  /// No description provided for @serverManageAction.
+  ///
+  /// In de, this message translates to:
+  /// **'Bearbeiten, Abmelden, Löschen'**
+  String get serverManageAction;
+
   /// No description provided for @serverEdit.
   ///
   /// In de, this message translates to:

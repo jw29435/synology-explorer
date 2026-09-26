@@ -214,7 +214,9 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
                 const SizedBox(width: 14),
                 Expanded(
                   child: Text(
-                    l10n.serverInfo,
+                    servers.isEmpty
+                        ? l10n.serverInfo
+                        : '${l10n.serverInfo} ${l10n.serverManageHint}',
                     style: TextStyle(color: AppColors.textSecondary),
                   ),
                 ),
@@ -270,92 +272,96 @@ class _ServerCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
         ),
         clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
-          onLongPress: onLongPress,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: active
-                            ? AppColors.accentSurface
-                            : AppColors.surfaceRaised,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        Icons.dns_outlined,
-                        color: active
-                            ? AppColors.accent
-                            : AppColors.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            profile.name,
-                            style: text.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          Text(
-                            profile.user,
-                            style: TextStyle(color: AppColors.textSecondary),
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (connecting)
-                      const SizedBox.square(
-                        dimension: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    else
-                      const Icon(Icons.chevron_right),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.circle,
-                      size: 8,
-                      color: active ? AppColors.success : AppColors.textMuted,
-                    ),
-                    const SizedBox(width: 8),
-                    if (url != null) ...[
-                      Text(
-                        l10n.serverConnectedVia(
-                          viaLan ? l10n.viaLan : l10n.viaExternal,
+        // TalkBack: „doppeltippen und halten, um … zu …“.
+        child: Semantics(
+          onLongPressHint: l10n.serverManageAction,
+          child: InkWell(
+            onTap: onTap,
+            onLongPress: onLongPress,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: active
+                              ? AppColors.accentSurface
+                              : AppColors.surfaceRaised,
+                          borderRadius: BorderRadius.circular(12),
                         ),
+                        child: Icon(
+                          Icons.dns_outlined,
+                          color: active
+                              ? AppColors.accent
+                              : AppColors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              profile.name,
+                              style: text.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            Text(
+                              profile.user,
+                              style: TextStyle(color: AppColors.textSecondary),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (connecting)
+                        const SizedBox.square(
+                          dimension: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      else
+                        const Icon(Icons.chevron_right),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.circle,
+                        size: 8,
+                        color: active ? AppColors.success : AppColors.textMuted,
                       ),
                       const SizedBox(width: 8),
-                      Flexible(
-                        child: Text(
-                          url.hasPort ? '${url.host}:${url.port}' : url.host,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTheme.mono(
-                            TextStyle(color: AppColors.textSecondary),
+                      if (url != null) ...[
+                        Text(
+                          l10n.serverConnectedVia(
+                            viaLan ? l10n.viaLan : l10n.viaExternal,
                           ),
                         ),
-                      ),
-                    ] else
-                      Text(
-                        l10n.serverNotConnected,
-                        style: TextStyle(color: AppColors.textSecondary),
-                      ),
-                  ],
-                ),
-              ],
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: Text(
+                            url.hasPort ? '${url.host}:${url.port}' : url.host,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTheme.mono(
+                              TextStyle(color: AppColors.textSecondary),
+                            ),
+                          ),
+                        ),
+                      ] else
+                        Text(
+                          l10n.serverNotConnected,
+                          style: TextStyle(color: AppColors.textSecondary),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),

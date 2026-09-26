@@ -27,6 +27,8 @@
   "viaExternal": "extern",
   "serverNotConnected": "Nicht verbunden",
   "serverInfo": "Beim Start wird zuerst die LAN-Adresse probiert, dann die externe. QuickConnect wird nicht unterstützt.",
+  "serverManageHint": "Gedrückt halten zum Bearbeiten, Abmelden oder Löschen.",
+  "serverManageAction": "Bearbeiten, Abmelden, Löschen",
   "serverEdit": "Bearbeiten",
   "serverLogout": "Abmelden",
   "serverDelete": "Löschen",

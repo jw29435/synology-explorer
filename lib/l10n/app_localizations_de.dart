@@ -73,6 +73,13 @@ class AppLocalizationsDe extends AppLocalizations {
       'Beim Start wird zuerst die LAN-Adresse probiert, dann die externe. QuickConnect wird nicht unterstützt.';
 
   @override
+  String get serverManageHint =>
+      'Gedrückt halten zum Bearbeiten, Abmelden oder Löschen.';
+
+  @override
+  String get serverManageAction => 'Bearbeiten, Abmelden, Löschen';
+
+  @override
   String get serverEdit => 'Bearbeiten';
 
   @override
