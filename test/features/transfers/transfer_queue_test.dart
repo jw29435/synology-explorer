@@ -158,7 +158,12 @@ void main() {
     }
     await until(() => api.running == 2);
     await settle();
-    expect(api.downloads.map((d) => d.path), ['/music/a', '/music/b']);
+    // Beide laufen parallel; wer zuerst beim NAS ankommt, hängt am Datei-IO
+    // davor (.part anlegen/prüfen) – garantiert ist nur: die ersten zwei.
+    expect(
+      api.downloads.map((d) => d.path),
+      unorderedEquals(['/music/a', '/music/b']),
+    );
     expect((await rows()).map((t) => t.state), [
       TransferState.running,
       TransferState.running,

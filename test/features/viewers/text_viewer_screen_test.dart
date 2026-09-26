@@ -31,7 +31,11 @@ Future<FakeMediaRepository> _open(WidgetTester tester, NasEntry entry) async {
     overrides: [mediaRepositoryProvider.overrideWithValue(media)],
   );
   routerOf(app.container).push(viewerLocation(entry.path), extra: entry);
-  await pumpWithIo(tester);
+  // Bis die Datei gelesen ist (Spinner weg), nicht nur eine feste Zeit.
+  await pumpWithIo(
+    tester,
+    until: () => find.byType(CircularProgressIndicator).evaluate().isEmpty,
+  );
   await tester.pumpAndSettle();
   return media;
 }
@@ -81,7 +85,10 @@ void main() {
         LocalFile(File('test/fixtures/text/README.md'), 1),
       ),
     );
-    await pumpWithIo(tester);
+    await pumpWithIo(
+      tester,
+      until: () => find.byType(CircularProgressIndicator).evaluate().isEmpty,
+    );
     await tester.pumpAndSettle();
     expect(find.text('NAS-Setup Heim'), findsOne);
     expect(find.byTooltip('Teilen'), findsOne);
