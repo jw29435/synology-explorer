@@ -32,7 +32,8 @@ void main() {
         name: 'music',
         isDir: true,
         type: NasFileType.folder,
-        perm: NasPerm.readWrite,
+        // share_right RW, aber ACL write:false – Schreiben scheitert mit 407.
+        perm: NasPerm.readOnly,
         owner: 'admin',
         group: 'administrators',
         posix: 555,

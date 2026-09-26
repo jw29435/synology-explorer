@@ -1,0 +1,12 @@
+{
+    "data": {
+        "files": [
+            {
+                "isdir": false,
+                "name": "neu.flac",
+                "path": "/music/neu.flac"
+            }
+        ]
+    },
+    "success": true
+}

@@ -85,6 +85,9 @@ abstract class NasEntry with _$NasEntry {
 
     /// Nur bei `getinfo` (Info-Sheet) befüllt.
     DateTime? crtime,
+
+    /// Letzte Statusänderung; im Papierkorb ungefähr der Löschzeitpunkt.
+    DateTime? ctime,
     String? owner,
     String? group,
     int? posix,
@@ -98,10 +101,14 @@ abstract class NasEntry with _$NasEntry {
     final time = additional['time'] as Map?;
     final owner = additional['owner'] as Map?;
     final perm = additional['perm'] as Map?;
-    // Shares melden share_right, Dateien/Ordner eine ACL.
+    // Shares melden share_right und ACL, Dateien/Ordner nur die ACL. Die
+    // ACL entscheidet: DSM lehnt Schreiben bei `write: false` trotz
+    // `share_right: RW` mit 407 ab (docs/SPIKE.md, Nachtrag M4).
+    final shareRight = perm?['share_right'];
+    final acl = perm?['acl'] as Map?;
     final writable =
-        perm?['share_right'] == 'RW' ||
-        (perm?['acl'] as Map?)?['write'] == true;
+        (shareRight == null || shareRight == 'RW') &&
+        (acl == null ? shareRight == 'RW' : acl['write'] == true);
     return NasEntry(
       path: json['path'] as String,
       name: name,
@@ -113,6 +120,7 @@ abstract class NasEntry with _$NasEntry {
           ? null
           : (writable ? NasPerm.readWrite : NasPerm.readOnly),
       crtime: _time(time?['crtime']),
+      ctime: _time(time?['ctime']),
       owner: owner?['user'] as String?,
       group: owner?['group'] as String?,
       posix: perm?['posix'] as int?,

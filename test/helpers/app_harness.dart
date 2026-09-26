@@ -68,6 +68,9 @@ class FakeListApi implements FileStationListApi {
   @override
   Future<NasEntry> getInfo(String path) async =>
       fixtureEntries('SYNO.FileStation.List/getinfo.json', 'files').single;
+
+  @override
+  Future<Map<String, DateTime?>> mtimes(List<String> paths) async => {};
 }
 
 /// Liefert nie ein Vorschaubild – das Grid zeigt Typ-Icons.
