@@ -83,9 +83,18 @@ final class SynoNetworkError extends SynoException {
   final int? statusCode;
   final Object? cause;
 
+  /// Ohne Session-ID: dart:io-Fehler nennen die URL samt `_sid`, und
+  /// unbehandelte Fehler landen im Log.
   @override
-  String toString() => 'SynoNetworkError(status: $statusCode, cause: $cause)';
+  String toString() =>
+      'SynoNetworkError(status: $statusCode, cause: ${redactSecrets('$cause')})';
 }
+
+/// Ersetzt Session-ID und Passwort in URLs/Formularen durch `***`.
+String redactSecrets(String text) => text.replaceAllMapped(
+  RegExp(r'(_sid|passwd|synotoken)=[^&\s,)]+'),
+  (m) => '${m[1]}=***',
+);
 
 final class SynoUnknown extends SynoException {
   const SynoUnknown(int super.code);
