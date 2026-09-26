@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,15 +16,26 @@ import '../domain/server_profile.dart';
 import 'certificate_sheet.dart';
 import 'server_providers.dart';
 
-/// Ergänzt `https://`, wenn das Schema fehlt; `null` bei ungültiger Adresse.
+/// Ergänzt `https://`, wenn das Schema fehlt, und den DSM-Port (5001/5000),
+/// wenn er bei IP-Adresse, `*.local` oder Hostname ohne Punkt fehlt; Domains
+/// bleiben unverändert. `null` bei ungültiger Adresse.
 String? normalizeServerUrl(String input) {
   final raw = input.trim();
   if (raw.contains(RegExp(r'\s'))) return null;
-  final uri = Uri.tryParse(raw.contains('://') ? raw : 'https://$raw');
+  var uri = Uri.tryParse(raw.contains('://') ? raw : 'https://$raw');
   if (uri == null ||
       !(uri.scheme == 'https' || uri.scheme == 'http') ||
       uri.host.isEmpty) {
     return null;
+  }
+  // Uri verschluckt Standardports (`:443`), daher die Eingabe selbst prüfen.
+  final authority = raw.split('://').last.split(RegExp('[/?#]')).first;
+  final host = uri.host;
+  if (!authority.contains(RegExp(r':\d+$')) &&
+      (InternetAddress.tryParse(host) != null ||
+          !host.contains('.') ||
+          host.endsWith('.local'))) {
+    uri = uri.replace(port: uri.scheme == 'https' ? 5001 : 5000);
   }
   return uri.toString().replaceFirst(RegExp(r'/+$'), '');
 }

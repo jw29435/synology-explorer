@@ -116,6 +116,29 @@ void main() {
     expect(normalizeServerUrl('ftp://nas'), isNull);
   });
 
+  test('02: DSM-Port wird nur bei IP, *.local und Namen ohne Punkt ergänzt', () {
+    for (final (input, expected) in [
+      // IP-Adressen, *.local, Namen ohne Punkt: 5001 (https) bzw. 5000 (http).
+      ('192.168.1.20', 'https://192.168.1.20:5001'),
+      ('http://192.168.1.20', 'http://192.168.1.20:5000'),
+      ('https://100.101.102.103/', 'https://100.101.102.103:5001'),
+      ('[fd00::20]', 'https://[fd00::20]:5001'),
+      ('diskstation.local', 'https://diskstation.local:5001'),
+      ('http://diskstation.local', 'http://diskstation.local:5000'),
+      ('diskstation', 'https://diskstation:5001'),
+      // Expliziter Port bleibt, auch der Standardport.
+      ('192.168.1.20:5443', 'https://192.168.1.20:5443'),
+      ('https://192.168.1.20:443', 'https://192.168.1.20'),
+      ('diskstation:8080/', 'https://diskstation:8080'),
+      // Domains bleiben unverändert.
+      ('nas.example.de', 'https://nas.example.de'),
+      ('http://nas.example.de', 'http://nas.example.de'),
+      ('nas.tailnet.ts.net', 'https://nas.tailnet.ts.net'),
+    ]) {
+      expect(normalizeServerUrl(input), expected, reason: input);
+    }
+  });
+
   testWidgets('02: Standardansicht ohne zweite Adresse, aufklappbar', (
     tester,
   ) async {

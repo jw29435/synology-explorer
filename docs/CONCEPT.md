@@ -37,7 +37,7 @@ Die wichtigste Randbedingung ist der deaktivierte Home-Dienst: Es gibt keinen pe
 | DDNS / Reverse Proxy | `https://nas.example.de` | Let's Encrypt, gültig | Standardweg unterwegs. Port 443, WebSocket nicht nötig |
 | VPN / Tailscale | `https://100.x.y.z:5001` oder MagicDNS-Name | Meist selbstsigniert | Aus App-Sicht identisch mit LAN; Tunnel wird außerhalb der App aufgebaut |
 
-Die primäre Adresse kann jeder der drei Wege sein (LAN-IP, DDNS-Domain oder Tailscale-Adresse); für die meisten Nutzer reicht sie allein. Die App probiert beim Start die primäre Adresse mit kurzem Timeout (2 s) und fällt auf die optionale zweite zurück. Welche Adresse aktiv ist (LAN/extern), zeigt die Statusleiste nur, wenn eine zweite Adresse hinterlegt ist. QuickConnect wird bewusst nicht unterstützt: Es gibt keine öffentliche API, die Relay-Auflösung müsste nachgebaut werden und bricht bei jedem DSM-Update.
+Die primäre Adresse kann jeder der drei Wege sein (LAN-IP, DDNS-Domain oder Tailscale-Adresse); für die meisten Nutzer reicht sie allein. Die App probiert beim Start die primäre Adresse mit kurzem Timeout (2 s) und fällt auf die optionale zweite zurück. Welche Adresse aktiv ist (LAN/extern), zeigt die Statusleiste nur, wenn eine zweite Adresse hinterlegt ist. Fehlt beim Eingeben der Port und ist der Host eine IP-Adresse, ein `*.local`-Name oder ein Hostname ohne Punkt, ergänzt die App den DSM-Standardport (`:5001` bei HTTPS, `:5000` bei HTTP); Domains bleiben unverändert. QuickConnect wird bewusst nicht unterstützt: Es gibt keine öffentliche API, die Relay-Auflösung müsste nachgebaut werden und bricht bei jedem DSM-Update.
 
 **Anmeldung**
 
