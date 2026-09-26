@@ -15,16 +15,12 @@ void main() {
     final app = await E2E.start(tester);
     await app.addServerAndLogin();
     final valid = find.widgetWithText(ActionChip, 'Hörbücher');
-    final broken = find.widgetWithText(ActionChip, 'Alt-Urlaub');
+    final broken = find.widgetWithText(InputChip, 'Alt-Urlaub');
     await app.waitFor(valid);
     expect(app.nas.calls(fav, 'list'), isNotEmpty);
 
-    // broken: nicht antippbar, mit Tooltip.
-    expect(tester.widget<ActionChip>(broken).onPressed, isNull);
-    expect(
-      find.ancestor(of: broken, matching: find.byType(Tooltip)),
-      findsOneWidget,
-    );
+    // broken: gedämpft, nicht zu öffnen, mit Tooltip.
+    expect(tester.widget<InputChip>(broken).onPressed, isNull);
     expect(find.byTooltip(l10n.favoriteBroken), findsOneWidget);
 
     // Ordner-Favorit öffnet 06.
@@ -53,6 +49,18 @@ void main() {
     await app.waitFor(find.text(l10n.favoritesUnavailable));
     await app.backButton();
     expect(find.widgetWithText(ActionChip, 'Bonus'), findsNothing);
+    expect(valid, findsOneWidget);
+
+    // Kaputten Favoriten entfernen (Review R-07).
+    app.nas.control.denyFavorites = null;
+    await app.tap(
+      find.descendant(
+        of: broken,
+        matching: find.byTooltip(l10n.actionFavoriteRemove),
+      ),
+    );
+    await app.waitFor(broken, gone: true);
+    expect(app.nas.calls(fav, 'delete').last['path'], '/photo/Urlaub 2019');
     expect(valid, findsOneWidget);
     await app.dispose();
   });

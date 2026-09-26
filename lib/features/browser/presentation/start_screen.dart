@@ -10,6 +10,7 @@ import '../domain/nas_entry.dart';
 import 'browser_providers.dart';
 import 'entry_sheets.dart';
 import 'entry_widgets.dart';
+import 'file_actions.dart';
 
 /// Screen 05: Shared Folders, Favoriten, Zuletzt geöffnet.
 class StartScreen extends ConsumerWidget {
@@ -153,20 +154,31 @@ class StartScreen extends ConsumerWidget {
                   separatorBuilder: (_, _) => const SizedBox(width: 10),
                   itemBuilder: (context, i) {
                     final (:entry, :name, :broken) = favorites[i];
-                    final chip = ActionChip(
-                      avatar: Icon(
-                        Icons.star,
-                        color: broken ? AppColors.textMuted : AppColors.accent,
-                      ),
+                    if (broken) {
+                      // Gedämpft, nicht zu öffnen, aber entfernbar.
+                      return Tooltip(
+                        message: l10n.favoriteBroken,
+                        child: InputChip(
+                          avatar: Icon(
+                            Icons.star_border,
+                            color: AppColors.textMuted,
+                          ),
+                          label: Text(
+                            name,
+                            style: TextStyle(color: AppColors.textMuted),
+                          ),
+                          deleteButtonTooltipMessage: l10n.actionFavoriteRemove,
+                          onDeleted: () =>
+                              setNasFavorite(context, ref, entry, false),
+                        ),
+                      );
+                    }
+                    return ActionChip(
+                      avatar: const Icon(Icons.star, color: AppColors.accent),
                       label: Text(name),
                       // Ordner öffnen 06, Dateien Viewer bzw. Player.
-                      onPressed: broken
-                          ? null
-                          : () => openEntry(context, ref, entry),
+                      onPressed: () => openEntry(context, ref, entry),
                     );
-                    return broken
-                        ? Tooltip(message: l10n.favoriteBroken, child: chip)
-                        : chip;
                   },
                 ),
               ),

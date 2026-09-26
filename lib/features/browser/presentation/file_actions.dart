@@ -34,22 +34,37 @@ Future<void> toggleFavorite(
   NasEntry entry,
   bool favorite,
 ) async {
-  final serverId = ref.read(serverIdProvider);
-  final library = ref.read(localLibraryProvider);
-  if (!entry.isDir) return library.setFavorite(serverId, entry, favorite);
+  if (!entry.isDir) {
+    return ref
+        .read(localLibraryProvider)
+        .setFavorite(ref.read(serverIdProvider), entry, favorite);
+  }
+  return setNasFavorite(context, ref, entry, favorite);
+}
+
+/// Favorit auf dem NAS setzen bzw. entfernen – auch einen kaputten, dessen
+/// Ziel fehlt. Fehler als Snackbar; der Cache bleibt dann, wie er war.
+Future<void> setNasFavorite(
+  BuildContext context,
+  WidgetRef ref,
+  NasEntry entry,
+  bool favorite,
+) async {
   final l10n = AppLocalizations.of(context);
   try {
-    await library.setFolderFavorite(
-      serverId,
-      ref.read(favoriteApiProvider),
-      entry,
-      favorite,
-    );
+    await ref
+        .read(localLibraryProvider)
+        .setFolderFavorite(
+          ref.read(serverIdProvider),
+          ref.read(favoriteApiProvider),
+          entry,
+          favorite,
+        );
   } on SynoException catch (e) {
     if (!context.mounted) return;
     showSnack(
       context,
-      e is SynoPermissionDenied || e is SynoUnknown
+      e is SynoPermissionDenied
           ? l10n.favoritesUnavailable
           : describeError(e, l10n),
     );
