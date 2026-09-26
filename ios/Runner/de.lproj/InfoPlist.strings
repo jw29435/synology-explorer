@@ -1,0 +1,4 @@
+/* Texte der iOS-Berechtigungsdialoge (Deutsch). */
+"NSPhotoLibraryUsageDescription" = "Fotos und Videos zum Hochladen auswählen und – wenn du den Auto-Upload einschaltest – neue Aufnahmen auf dein NAS sichern.";
+"NSPhotoLibraryAddUsageDescription" = "Bilder vom NAS in der Fotomediathek speichern.";
+"NSCameraUsageDescription" = "Ein Foto aufnehmen und direkt auf das NAS hochladen.";
