@@ -125,10 +125,8 @@ void main() {
     }
 
     await app.tapThen(find.text('booklet.pdf'), find.text(l10n.retry));
-    // E2E-Finding: E2E-026 – DSM meldet eine fehlende Datei mit HTTP 502;
-    // die App zeigt „Server antwortet mit HTTP 502.“ statt „Nicht gefunden.“
-    // expect(find.text(l10n.errorNotFound), findsOneWidget);
-    expect(find.text(l10n.errorHttp(502)), findsOneWidget);
+    // E2E-026: DSM meldet eine fehlende Datei mit HTTP 502 (HTML).
+    expect(find.text(l10n.errorNotFound), findsOneWidget);
     expect(find.byType(LinearProgressIndicator), findsNothing);
     expect(await app.systemBack(), isTrue);
     expect(app.location, startsWith('/files/folder'));

@@ -309,7 +309,7 @@ class SynoApiClient {
       }
       return total;
     } on DioException catch (e) {
-      throw _networkError(url, e);
+      throw _downloadError(url, e);
     }
   });
 
@@ -353,7 +353,7 @@ class SynoApiClient {
           ? body
           : ResponseBody(data.cast(), body.statusCode, headers: body.headers);
     } on DioException catch (e) {
-      throw _networkError(url, e);
+      throw _downloadError(url, e);
     }
   });
 
@@ -450,6 +450,13 @@ class SynoApiClient {
       api: api,
     );
   }
+
+  /// Wie [_networkError], für `SYNO.FileStation.Download`: DSM meldet eine
+  /// fehlende Datei dort mit HTTP 502 und HTML statt JSON (SPIKE M4).
+  Exception _downloadError(Uri url, DioException e) =>
+      e.response?.statusCode == 502
+      ? const SynoNotFound(502)
+      : _networkError(url, e);
 
   Exception _networkError(Uri url, DioException e) {
     final cert = _rejected.remove('${url.host}:${url.port}');
