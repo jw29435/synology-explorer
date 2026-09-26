@@ -171,6 +171,8 @@ void main() {
         await app.waitFor(inSnackBar(l10n.errorPermission));
         expect(find.text(l10n.selectedCount(2)), findsOneWidget);
         expect(app.location, startsWith('/files/folder'));
+        // Die Meldung verdeckt die Aktionsleiste, verschwindet aber von selbst.
+        await app.waitFor(find.byType(SnackBar), gone: true);
       }
 
       await app.tapThen(
@@ -191,10 +193,6 @@ void main() {
       expect(app.location, '/files');
       await app.dispose();
     },
-    // E2E-Finding: H-001 – scheitert ein Task (status FAIL), schließt der
-    // Fortschrittsdialog zweimal (onError und onDone): der zweite `pop`
-    // entfernt die Shell-Seite, go_router meldet „popped the last page“.
-    skip: true,
   );
 
   testWidgets('Auswahl: Teilen und Download verweigert (407) → Meldung', (

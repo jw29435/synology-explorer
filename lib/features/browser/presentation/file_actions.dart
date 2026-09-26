@@ -296,6 +296,10 @@ class _TaskDialogState extends State<_TaskDialog> {
   late final StreamSubscription<double?> _sub;
   double? _progress;
 
+  /// Nach einem Fehler meldet der Stream noch `done`; der Dialog bleibt
+  /// während der Schließ-Animation `mounted` – nur einmal poppen.
+  bool _closed = false;
+
   @override
   void initState() {
     super.initState();
@@ -307,7 +311,9 @@ class _TaskDialogState extends State<_TaskDialog> {
   }
 
   void _close(Object result) {
-    if (mounted) Navigator.of(context).pop(result);
+    if (_closed || !mounted) return;
+    _closed = true;
+    Navigator.of(context).pop(result);
   }
 
   @override
