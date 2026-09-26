@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:synology_explorer/features/browser/data/file_station_list_api.dart';
+import 'package:synology_explorer/features/browser/data/file_station_ops_api.dart';
 import 'package:synology_explorer/features/browser/domain/nas_entry.dart';
+import 'package:synology_explorer/features/browser/presentation/browser_providers.dart';
 import 'package:synology_explorer/features/browser/presentation/entry_widgets.dart';
 import 'package:synology_explorer/features/viewers/presentation/viewer_providers.dart';
 import 'package:synology_explorer/features/viewers/presentation/viewer_screen.dart';
@@ -33,12 +35,53 @@ class _PhotoFolder extends FakeListApi {
     int limit = 500,
   }) async {
     final entries = [
-      _file('IMG_1.jpg', NasFileType.image),
-      _file('clip.mp4', NasFileType.video),
-      _file('IMG_2.HEIC', NasFileType.image),
+      for (final e in [
+        _file('IMG_1.jpg', NasFileType.image),
+        _file('clip.mp4', NasFileType.video),
+        _file('IMG_2.HEIC', NasFileType.image),
+      ])
+        if (!deleted.contains(e.path)) e,
     ];
     return (entries: entries, total: entries.length);
   }
+
+  final deleted = <String>{};
+}
+
+/// Löschen-Task, der sofort fertig ist und die Datei aus [folder] nimmt.
+class _Ops implements FileStationOpsApi {
+  _Ops(this.folder);
+
+  final _PhotoFolder folder;
+
+  @override
+  Future<String> deleteStart(List<String> paths) async {
+    folder.deleted.addAll(paths);
+    return 'task';
+  }
+
+  @override
+  Future<TaskProgress> deleteStatus(String taskId) async =>
+      (finished: true, progress: 1.0);
+
+  @override
+  Future<void> deleteStop(String taskId) async {}
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+Future<void> _confirmDelete(WidgetTester tester) async {
+  await tester.tap(find.text('Löschen'));
+  await tester.pumpAndSettle();
+  await tester.tap(
+    find.descendant(
+      of: find.byType(AlertDialog),
+      matching: find.text('Löschen'),
+    ),
+  );
+  await pumpWithIo(tester);
+  await tester.pumpAndSettle();
 }
 
 /// Der Ordner lädt nie fertig (langsames Netz).
@@ -116,5 +159,39 @@ void main() {
     final favorites = await app.db.select(app.db.favorites).get();
     expect(favorites.single.path, '$_folder/IMG_2.HEIC');
     expect(find.byIcon(Icons.star), findsOne);
+  });
+
+  testWidgets('E2E-003: Löschen mit Bestätigung, dann nächstes Bild', (
+    tester,
+  ) async {
+    final folder = _PhotoFolder();
+    await pumpApp(
+      tester,
+      listApi: folder,
+      location: folderLocation(_folder),
+      overrides: [
+        mediaRepositoryProvider.overrideWithValue(
+          FakeMediaRepository({
+            'IMG_1.jpg': 'test/fixtures/SYNO.FileStation.Thumb/get.jpg',
+            'IMG_2.HEIC': 'test/fixtures/SYNO.FileStation.Thumb/get.jpg',
+          }),
+        ),
+        fileOpsApiProvider.overrideWithValue(_Ops(folder)),
+      ],
+    );
+    await tester.tap(find.text('IMG_1.jpg'));
+    await pumpWithIo(tester);
+    expect(find.text('1 von 2'), findsOne);
+
+    await _confirmDelete(tester);
+    expect(folder.deleted, {'$_folder/IMG_1.jpg'});
+    expect(find.text('IMG_2.HEIC'), findsOne);
+    expect(find.text('1 von 1'), findsOne);
+
+    // Das letzte Bild gelöscht: zurück im Ordner.
+    await _confirmDelete(tester);
+    expect(find.text('1 von 1'), findsNothing);
+    expect(find.text('clip.mp4'), findsOne);
+    expect(find.text('IMG_2.HEIC'), findsNothing);
   });
 }

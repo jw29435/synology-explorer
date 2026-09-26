@@ -11,6 +11,7 @@ import '../../browser/domain/nas_entry.dart';
 import '../../browser/presentation/browser_providers.dart';
 import '../../browser/presentation/entry_sheets.dart';
 import '../../browser/presentation/entry_widgets.dart';
+import '../../browser/presentation/file_actions.dart';
 import 'nas_image.dart';
 import 'viewer_common.dart';
 import 'viewer_providers.dart';
@@ -97,11 +98,32 @@ class _ImageViewerScreenState extends ConsumerState<ImageViewerScreen> {
     if (folder.isLoading && !folder.hasValue) return null;
     final images = [
       for (final e in folder.value?.entries ?? const <NasEntry>[])
-        if (e.type == NasFileType.image) e,
+        if (e.type == NasFileType.image && !_deleted.contains(e.path)) e,
     ];
-    return images.any((e) => e.path == widget.entry.path)
-        ? images
-        : [widget.entry];
+    return images.any((e) => e.path == _current.path) ? images : [_current];
+  }
+
+  /// Gelöschte Bilder; der Ordner lädt nach dem Löschen erst neu.
+  final _deleted = <String>{};
+
+  /// Löschen wie in Sheet 09 (mit Bestätigung), danach das nächste Bild
+  /// bzw. das vorige; war es das letzte, schließt der Viewer.
+  Future<void> _delete(List<NasEntry> images, int index) async {
+    final entry = images[index];
+    if (!await deleteEntries(context, ref, [entry]) || !mounted) return;
+    final rest = [...images]..removeAt(index);
+    if (rest.isEmpty) {
+      Navigator.of(context).pop();
+      return;
+    }
+    final next = rest[index.clamp(0, rest.length - 1)];
+    setState(() {
+      _deleted.add(entry.path);
+      _current = next;
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _pages?.jumpToPage(rest.indexOf(next));
+    });
   }
 
   void _onPage(List<NasEntry> images, int index) {
@@ -193,6 +215,7 @@ class _ImageViewerScreenState extends ConsumerState<ImageViewerScreen> {
                 strip: _strip,
                 thumbExtent: _thumbExtent,
                 onSelect: (i) => _pages!.jumpToPage(i),
+                onDelete: () => _delete(images, index),
                 local: widget.local,
               ),
             ),
@@ -255,6 +278,7 @@ class _BottomBar extends ConsumerWidget {
     required this.strip,
     required this.thumbExtent,
     required this.onSelect,
+    required this.onDelete,
     this.local,
   });
 
@@ -265,6 +289,7 @@ class _BottomBar extends ConsumerWidget {
   final ScrollController strip;
   final double thumbExtent;
   final ValueChanged<int> onSelect;
+  final VoidCallback onDelete;
   final LocalFile? local;
 
   @override
@@ -390,26 +415,13 @@ class _BottomBar extends ConsumerWidget {
                           ),
                       color: favorite ? AppColors.accent : null,
                     ),
-                  // Löschen kommt mit M4 (Verwaltung).
-                  Expanded(
-                    child: Tooltip(
-                      message: l10n.availableFrom('M4'),
-                      triggerMode: TooltipTriggerMode.tap,
-                      child: Opacity(
-                        opacity: 0.5,
-                        child: Row(
-                          children: [
-                            action(
-                              Icons.delete_outline,
-                              l10n.actionDeleteShort,
-                              null,
-                              color: AppColors.errorSoft,
-                            ),
-                          ],
-                        ),
-                      ),
+                  if (local == null)
+                    action(
+                      Icons.delete_outline,
+                      l10n.actionDeleteShort,
+                      onDelete,
+                      color: AppColors.errorSoft,
                     ),
-                  ),
                 ],
               ),
             ),
