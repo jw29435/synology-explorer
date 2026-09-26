@@ -330,28 +330,32 @@ class _TaskDialogState extends State<_TaskDialog> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return AlertDialog(
-      title: Text(widget.title),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          LinearProgressIndicator(value: _progress),
-          if (_progress case final p?) ...[
-            const SizedBox(height: 8),
-            Text('${(p * 100).round()} %', style: AppTheme.mono()),
+    // Zurück bräche den Task still (ggf. halb) ab: nur über „Abbrechen“.
+    return PopScope(
+      canPop: false,
+      child: AlertDialog(
+        title: Text(widget.title),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            LinearProgressIndicator(value: _progress),
+            if (_progress case final p?) ...[
+              const SizedBox(height: 8),
+              Text('${(p * 100).round()} %', style: AppTheme.mono()),
+            ],
           ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              unawaited(_sub.cancel());
+              _close(false);
+            },
+            child: Text(l10n.cancel),
+          ),
         ],
       ),
-      actions: [
-        TextButton(
-          onPressed: () {
-            unawaited(_sub.cancel());
-            _close(false);
-          },
-          child: Text(l10n.cancel),
-        ),
-      ],
     );
   }
 }
