@@ -1,0 +1,4 @@
+/* Texts of the iOS permission dialogs (English). */
+"NSPhotoLibraryUsageDescription" = "Choose photos and videos to upload and – if you turn on auto upload – back up new shots to your NAS.";
+"NSPhotoLibraryAddUsageDescription" = "Save images from your NAS to the photo library.";
+"NSCameraUsageDescription" = "Take a photo and upload it straight to your NAS.";

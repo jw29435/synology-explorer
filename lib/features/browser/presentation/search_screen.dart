@@ -157,7 +157,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                   Expanded(
                     child: Text(
                       describeError(error, l10n),
-                      style: const TextStyle(color: AppColors.errorSoft),
+                      style: TextStyle(color: AppColors.errorSoft),
                     ),
                   )
                 else if (search.total case final total?)

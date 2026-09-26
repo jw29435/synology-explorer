@@ -279,7 +279,7 @@ class PlayPauseButton extends StatelessWidget {
             dimension: 76,
             child: Center(
               child: IconTheme.merge(
-                data: const IconThemeData(color: AppColors.text),
+                data: IconThemeData(color: AppColors.text),
                 child: icon,
               ),
             ),

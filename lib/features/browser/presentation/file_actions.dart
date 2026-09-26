@@ -345,13 +345,14 @@ class _TaskDialogState extends State<_TaskDialog> {
   }
 }
 
-/// Ordner-Picker als Sheet: Shares → Unterordner. Nicht wählbar sind die
-/// Share-Ebene, die Quellen selbst, Ordner darin und ihr bisheriger Ordner.
+/// Ordner-Picker als Sheet: Shares → Unterordner, ab [start] (`null` = Liste
+/// der Shares). Nicht wählbar sind die Share-Ebene, die Quellen selbst,
+/// Ordner darin und ihr bisheriger Ordner sowie Ordner ohne Schreibrecht.
 Future<String?> pickFolder(
   BuildContext context, {
   required String title,
   required String confirm,
-  required String start,
+  required String? start,
   List<String> sources = const [],
 }) => showModalBottomSheet<String>(
   context: context,
@@ -380,7 +381,7 @@ class _FolderPickerSheet extends ConsumerStatefulWidget {
 
   final String title;
   final String confirm;
-  final String start;
+  final String? start;
   final List<String> sources;
 
   @override
@@ -432,9 +433,7 @@ class _FolderPickerSheetState extends ConsumerState<_FolderPickerSheet> {
               ),
               subtitle: Text(
                 path?.substring(1) ?? l10n.sectionShares,
-                style: AppTheme.mono(
-                  const TextStyle(color: AppColors.textSecondary),
-                ),
+                style: AppTheme.mono(TextStyle(color: AppColors.textSecondary)),
                 overflow: TextOverflow.ellipsis,
               ),
               trailing: IconButton(
@@ -478,7 +477,7 @@ class _FolderPickerSheetState extends ConsumerState<_FolderPickerSheet> {
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
                 child: Text(
                   l10n.noWritePermission,
-                  style: const TextStyle(color: AppColors.errorSoft),
+                  style: TextStyle(color: AppColors.errorSoft),
                 ),
               ),
             Padding(

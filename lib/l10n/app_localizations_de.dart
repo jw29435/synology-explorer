@@ -1203,4 +1203,306 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get playFolderShort => 'Abspielen';
+
+  @override
+  String get settingsSectionConnection => 'Verbindung';
+
+  @override
+  String get settingsServers => 'Server verwalten';
+
+  @override
+  String settingsLinksActive(int count) {
+    return '$count aktiv';
+  }
+
+  @override
+  String get settingsNeedsServer => 'Dafür zuerst mit einem Server verbinden.';
+
+  @override
+  String get settingsSectionMedia => 'Medien & Speicher';
+
+  @override
+  String get settingsOn => 'An';
+
+  @override
+  String get settingsOff => 'Aus';
+
+  @override
+  String get settingsPlayback => 'Wiedergabe';
+
+  @override
+  String get settingsPlaybackHint => 'Resume, Sleep-Timer';
+
+  @override
+  String get playbackInfo =>
+      'Die App merkt sich die Position jeder Audio- und Videodatei und bietet beim nächsten Öffnen „Fortsetzen“ an. Sleep-Timer und Geschwindigkeit stellst du im Player ein.';
+
+  @override
+  String playbackClearPositions(int count) {
+    return 'Gemerkte Positionen löschen ($count)';
+  }
+
+  @override
+  String get playbackPositionsCleared => 'Positionen gelöscht.';
+
+  @override
+  String get settingsCacheLimit => 'Cache-Limit';
+
+  @override
+  String settingsCacheValue(String limit, String used) {
+    return '$limit · $used belegt';
+  }
+
+  @override
+  String get settingsCacheHint =>
+      'Gilt für gestreamte Medien, Dokumente und Vorschaubilder. Am längsten nicht Genutztes wird zuerst verdrängt.';
+
+  @override
+  String get cacheClear => 'Cache leeren';
+
+  @override
+  String get cacheCleared => 'Cache geleert.';
+
+  @override
+  String get settingsOfflineStorage => 'Offline-Speicher';
+
+  @override
+  String get settingsSectionApp => 'App';
+
+  @override
+  String get settingsDesign => 'Design';
+
+  @override
+  String get themeSystem => 'System';
+
+  @override
+  String get themeLight => 'Hell';
+
+  @override
+  String get themeDark => 'Dunkel';
+
+  @override
+  String get settingsLanguage => 'Sprache';
+
+  @override
+  String languageSystem(String language) {
+    return '$language (System)';
+  }
+
+  @override
+  String get languageSystemOption => 'Systemsprache';
+
+  @override
+  String get languageGerman => 'Deutsch';
+
+  @override
+  String get languageEnglish => 'English';
+
+  @override
+  String get settingsAbout => 'Über & Lizenzen';
+
+  @override
+  String get aboutLegalese =>
+      'Freie Software (CC0), kein Produkt der Synology Inc. Die App sendet keine Daten an Dritte. Die Videowiedergabe nutzt media_kit mit libmpv und FFmpeg (LGPL 2.1 oder neuer); Quelltext und Lizenzen unter github.com/media-kit/media-kit.';
+
+  @override
+  String get settingsClearAll => 'Alle lokalen Daten löschen';
+
+  @override
+  String get settingsClearAllHint => 'Cache, Offline, Tokens';
+
+  @override
+  String get settingsClearAllConfirm => 'Alle lokalen Daten löschen?';
+
+  @override
+  String get settingsClearAllBody =>
+      'Gelöscht werden Cache, Offline-Dateien und Transfers sowie Anmeldungen, Geräte-Token, gemerkte Passwörter und bestätigte Zertifikate. Server-Profile und Einstellungen bleiben; danach meldest du dich neu an.';
+
+  @override
+  String get settingsClearAllAction => 'Alles löschen';
+
+  @override
+  String get settingsCleared => 'Lokale Daten gelöscht.';
+
+  @override
+  String get autoUploadTitle => 'Auto-Upload';
+
+  @override
+  String get autoUploadHeroTitle => 'Fotos & Videos sichern';
+
+  @override
+  String get autoUploadHeroSubtitle => 'Neue Aufnahmen aus der Kamera-Rolle';
+
+  @override
+  String get autoUploadEnabled => 'Neue Aufnahmen werden ab jetzt gesichert.';
+
+  @override
+  String get autoUploadTarget => 'Zielordner';
+
+  @override
+  String get autoUploadTargetNone => 'Nicht gewählt';
+
+  @override
+  String get autoUploadPickConfirm => 'Hier sichern';
+
+  @override
+  String get autoUploadNeedsSession =>
+      'Zum Wählen des Zielordners zuerst mit dem Server verbinden.';
+
+  @override
+  String get autoUploadScheme => 'Ordnerschema';
+
+  @override
+  String get schemeYearMonth => 'Jahr / Monat';
+
+  @override
+  String get schemeYear => 'Jahr';
+
+  @override
+  String get schemeFlat => 'Keine Unterordner';
+
+  @override
+  String get autoUploadWifiOnly => 'Nur im WLAN';
+
+  @override
+  String get autoUploadWifiOnlyHint =>
+      'Auch bei aktivem VPN über Mobilfunk pausieren';
+
+  @override
+  String get autoUploadVideos => 'Videos einschließen';
+
+  @override
+  String get autoUploadVideosHint => 'Kann viel Volumen erzeugen';
+
+  @override
+  String get autoUploadCharging => 'Nur beim Laden';
+
+  @override
+  String get autoUploadChargingHint => 'Schont Akku bei großen Rückständen';
+
+  @override
+  String get autoUploadPermissionDenied =>
+      'Ohne Zugriff auf alle Fotos kann der Auto-Upload nichts sichern. Du kannst den Zugriff in den Systemeinstellungen erlauben.';
+
+  @override
+  String get openSystemSettings => 'Einstellungen öffnen';
+
+  @override
+  String get autoUploadStatus => 'Status';
+
+  @override
+  String autoUploadLastRun(String when, int files, int failed) {
+    String _temp0 = intl.Intl.pluralLogic(
+      files,
+      locale: localeName,
+      other: '$files Dateien',
+      one: '1 Datei',
+    );
+    return 'Letzter Lauf $when · $_temp0 · $failed Fehler';
+  }
+
+  @override
+  String get autoUploadNeverRun => 'Noch nichts gesichert';
+
+  @override
+  String get autoUploadRunning => 'Läuft …';
+
+  @override
+  String autoUploadLastCheck(String when) {
+    return 'Zuletzt geprüft $when';
+  }
+
+  @override
+  String autoUploadTotal(String files, String size) {
+    return 'Gesamt gesichert: $files Dateien · $size';
+  }
+
+  @override
+  String get autoUploadRunNow => 'Jetzt ausführen';
+
+  @override
+  String get autoUploadLog => 'Protokoll';
+
+  @override
+  String get autoUploadLogEmpty => 'Noch keine Einträge.';
+
+  @override
+  String autoUploadRunSummary(int files, int failed, String size) {
+    String _temp0 = intl.Intl.pluralLogic(
+      files,
+      locale: localeName,
+      other: '$files Dateien',
+      one: '1 Datei',
+    );
+    return '$_temp0 · $failed Fehler · $size';
+  }
+
+  @override
+  String autoUploadWaitingWifi(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Dateien warten',
+      one: '1 Datei wartet',
+    );
+    return '$_temp0 auf WLAN';
+  }
+
+  @override
+  String autoUploadWaitingCharging(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Dateien warten',
+      one: '1 Datei wartet',
+    );
+    return '$_temp0 aufs Laden';
+  }
+
+  @override
+  String autoUploadNoteUnreachable(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Dateien warten',
+      one: '1 Datei wartet',
+    );
+    return 'NAS nicht erreichbar – $_temp0';
+  }
+
+  @override
+  String autoUploadNoteOtherServer(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Dateien warten',
+      one: '1 Datei wartet',
+    );
+    return 'Anderer Server angemeldet – $_temp0';
+  }
+
+  @override
+  String get autoUploadNoteSession =>
+      'Anmeldung abgelaufen – bitte in der App neu anmelden';
+
+  @override
+  String get autoUploadNoteWrite =>
+      'Keine Schreibrechte im Zielordner – anderen Ordner wählen oder Rechte in DSM anpassen';
+
+  @override
+  String get autoUploadNoteTarget => 'Zielordner nicht gefunden';
+
+  @override
+  String get autoUploadNotePermission =>
+      'Kein Zugriff auf Fotos – in den Systemeinstellungen erlauben';
+
+  @override
+  String get autoUploadNoteError => 'Fehler beim letzten Lauf';
+
+  @override
+  String get autoUploadIosHint =>
+      'Auf dem iPhone läuft der Upload im Hintergrund nur, wenn das System es zulässt; beim Öffnen der App wird nachgeholt.';
+
+  @override
+  String get autoUploadNotification => 'Auto-Upload';
 }

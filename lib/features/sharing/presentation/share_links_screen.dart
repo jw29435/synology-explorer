@@ -56,7 +56,7 @@ class ShareLinksScreen extends ConsumerWidget {
               child: Center(
                 child: Text(
                   l10n.shareLinksCount(active.length, expired.length),
-                  style: const TextStyle(color: AppColors.textSecondary),
+                  style: TextStyle(color: AppColors.textSecondary),
                 ),
               ),
             ),
@@ -91,7 +91,7 @@ class ShareLinksScreen extends ConsumerWidget {
                 padding: const EdgeInsets.all(8),
                 child: Text(
                   l10n.shareLinksFooter,
-                  style: const TextStyle(color: AppColors.textSecondary),
+                  style: TextStyle(color: AppColors.textSecondary),
                 ),
               ),
             ],
@@ -163,7 +163,7 @@ class _LinkCard extends StatelessWidget {
                           if (folder.length > 1) folder.substring(1),
                           if (link.isFolder) l10n.infoFolder,
                         ].join(' · '),
-                        style: const TextStyle(color: AppColors.textSecondary),
+                        style: TextStyle(color: AppColors.textSecondary),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ],
@@ -194,9 +194,9 @@ class _LinkCard extends StatelessWidget {
                     color: AppColors.accent,
                   ),
                 Text(
-                  '…/sharing/${link.id}',
+                  '…/sharing/${link.id}', // l10n-ignore: URL-Pfad
                   style: AppTheme.mono(
-                    const TextStyle(color: AppColors.textSecondary),
+                    TextStyle(color: AppColors.textSecondary),
                   ),
                 ),
               ],
@@ -267,7 +267,7 @@ class _ExpiredCard extends StatelessWidget {
                     child: Text.rich(
                       TextSpan(
                         text: l.name,
-                        style: const TextStyle(color: AppColors.textMuted),
+                        style: TextStyle(color: AppColors.textMuted),
                         children: [
                           if (l.expiresAt case final at?)
                             TextSpan(

@@ -15,7 +15,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>synology_explorer</string>
+	<string>Synology Explorer</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -69,12 +69,23 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Fotos und Videos auswählen, um sie auf das NAS hochzuladen.</string>
+	<string>Fotos und Videos zum Hochladen auswählen und – wenn du den Auto-Upload einschaltest – neue Aufnahmen auf dein NAS sichern.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Ein Foto aufnehmen und direkt auf das NAS hochladen.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>audio</string>
+		<string>fetch</string>
+	</array>
+	<!-- Auto-Upload (workmanager, BGAppRefreshTask); gleiche ID wie in Dart. -->
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>de.jw29435.synologyExplorer.autoUpload</string>
+	</array>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>de</string>
+		<string>en</string>
 	</array>
 	<key>NSAppTransportSecurity</key>
 	<dict>

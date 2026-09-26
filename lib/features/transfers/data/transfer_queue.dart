@@ -19,7 +19,18 @@ import 'transfer_api.dart';
 /// „Wiederholen“ tippt. Nach einem Auth-Fehler startet der Worker nichts mehr
 /// (DSM-Auto-Block, siehe SessionManager).
 class TransferQueue {
-  TransferQueue(this._db, {this.api, this.serverId, this.maxParallel = 2});
+  TransferQueue(
+    this._db, {
+    this.api,
+    this.serverId,
+    this.maxParallel = 2,
+    bool heartbeat = false,
+  }) {
+    if (heartbeat) {
+      unawaited(_beat());
+      _heartbeat = Timer.periodic(heartbeatInterval, (_) => unawaited(_beat()));
+    }
+  }
 
   final AppDatabase _db;
   final TransferApi? api;
@@ -32,6 +43,37 @@ class TransferQueue {
   bool _again = false;
   bool _halted = false;
   bool _disposed = false;
+
+  /// Eine Queue neben der App (Auto-Upload im Hintergrund, eigene Engine)
+  /// schreibt regelmäßig diesen Zeitstempel. Solange er frisch ist, gehören
+  /// `running`-Zeilen ihr: [start] reiht sie nicht neu ein (sonst lüde die
+  /// App dieselbe Datei ein zweites Mal hoch, als „ (1)“).
+  static const heartbeatKey = 'transferWorkerHeartbeat';
+  static const heartbeatInterval = Duration(seconds: 20);
+  static const heartbeatStale = Duration(seconds: 90);
+
+  Timer? _heartbeat;
+  Timer? _retryStart;
+
+  Future<void> _beat() => _db
+      .into(_db.settings)
+      .insertOnConflictUpdate(
+        SettingsCompanion.insert(
+          key: heartbeatKey,
+          value: '${DateTime.now().millisecondsSinceEpoch}',
+        ),
+      );
+
+  /// Alter des Heartbeats einer anderen Queue; `null` = keiner.
+  Future<Duration?> _heartbeatAge() async {
+    final row = await (_db.select(
+      _db.settings,
+    )..where((s) => s.key.equals(heartbeatKey))).getSingleOrNull();
+    final ms = int.tryParse(row?.value ?? '');
+    return ms == null
+        ? null
+        : DateTime.now().difference(DateTime.fromMillisecondsSinceEpoch(ms));
+  }
 
   /// Wie oft Fortschritt höchstens in die DB geschrieben wird.
   static const progressInterval = Duration(milliseconds: 500);
@@ -49,13 +91,26 @@ class TransferQueue {
   /// Aktuelle Geschwindigkeit in Byte/s, solange der Transfer läuft.
   double? speedOf(int id) => _speed[id];
 
-  /// Nach einem App-Neustart: Was beim Beenden lief, wieder einreihen.
+  /// Nach einem App-Neustart: Was beim Beenden lief, wieder einreihen –
+  /// außer eine Hintergrund-Queue lebt noch (frischer Heartbeat). Dann erst,
+  /// wenn ihr Heartbeat veraltet ist.
   Future<void> start() async {
+    final age = await _heartbeatAge();
+    if (_disposed) return;
+    if (age != null && age < heartbeatStale) {
+      _retryStart = Timer(heartbeatStale - age, () => unawaited(start()));
+      _pump();
+      return;
+    }
     await (_db.update(_t)
           ..where((t) => t.state.equalsValue(TransferState.running)))
         .write(const TransfersCompanion(state: Value(TransferState.queued)));
     _pump();
   }
+
+  /// Wartende Transfers abarbeiten, ohne Laufendes neu einzureihen (Queue
+  /// neben der App, siehe [heartbeatKey]).
+  void kick() => _pump();
 
   /// Reiht einen Download nach [localPath] ein, außer derselbe Pfad wartet
   /// oder läuft schon.
@@ -93,28 +148,36 @@ class TransferQueue {
     _pump();
   }
 
-  /// Reiht den Upload von [localPath] als [remotePath] (Ordner/Name) ein.
-  Future<void> enqueueUpload({
+  /// Reiht den Upload von [localPath] als [remotePath] (Ordner/Name) ein und
+  /// liefert die ID des Transfers. [alsoWrite] läuft in derselben
+  /// Transaktion (Auto-Upload: Fortschritt der Kamera-Rolle).
+  Future<int> enqueueUpload({
     required String localPath,
     required String remotePath,
     required bool overwrite,
     int? size,
+    Future<void> Function()? alsoWrite,
   }) async {
-    await _db
-        .into(_t)
-        .insert(
-          TransfersCompanion.insert(
-            serverId: serverId ?? (throw StateError('Kein Server')),
-            kind: TransferKind.upload,
-            remotePath: remotePath,
-            localPath: localPath,
-            bytesTotal: Value(size),
-            overwrite: Value(overwrite),
-            state: TransferState.queued,
-            createdAt: DateTime.now(),
-          ),
-        );
+    final id = await _db.transaction(() async {
+      final id = await _db
+          .into(_t)
+          .insert(
+            TransfersCompanion.insert(
+              serverId: serverId ?? (throw StateError('Kein Server')),
+              kind: TransferKind.upload,
+              remotePath: remotePath,
+              localPath: localPath,
+              bytesTotal: Value(size),
+              overwrite: Value(overwrite),
+              state: TransferState.queued,
+              createdAt: DateTime.now(),
+            ),
+          );
+      await alsoWrite?.call();
+      return id;
+    });
     _pump();
+    return id;
   }
 
   /// Pausiert [id]. Reihenfolge wie [pauseAll]: erst den wartenden Zustand
@@ -199,13 +262,30 @@ class TransferQueue {
 
   /// Bricht laufende Transfers ab (Zustand bleibt `running` und wird beim
   /// nächsten [start] wieder eingereiht) und wartet, bis sie beendet sind.
-  Future<void> dispose() async {
+  /// Mit [requeue] werden sie gleich wieder `queued` – für eine Queue, die
+  /// neben der App läuft (Auto-Upload im Hintergrund) und deshalb nie
+  /// [start] aufruft.
+  Future<void> dispose({bool requeue = false}) async {
     _disposed = true;
+    _retryStart?.cancel();
+    final ids = [..._running.keys];
     final runs = [..._running.values];
     for (final r in runs) {
       r.token.cancel();
     }
     await Future.wait([for (final r in runs) r.done]);
+    if (requeue) {
+      await (_db.update(_t)..where(
+            (t) => t.id.isIn(ids) & t.state.equalsValue(TransferState.running),
+          ))
+          .write(const TransfersCompanion(state: Value(TransferState.queued)));
+    }
+    if (_heartbeat case final timer?) {
+      timer.cancel();
+      await (_db.delete(
+        _db.settings,
+      )..where((s) => s.key.equals(heartbeatKey))).go();
+    }
   }
 
   Future<void> _stop(int id) async {

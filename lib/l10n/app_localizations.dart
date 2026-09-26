@@ -2029,6 +2029,468 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Abspielen'**
   String get playFolderShort;
+
+  /// No description provided for @settingsSectionConnection.
+  ///
+  /// In de, this message translates to:
+  /// **'Verbindung'**
+  String get settingsSectionConnection;
+
+  /// No description provided for @settingsServers.
+  ///
+  /// In de, this message translates to:
+  /// **'Server verwalten'**
+  String get settingsServers;
+
+  /// No description provided for @settingsLinksActive.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} aktiv'**
+  String settingsLinksActive(int count);
+
+  /// No description provided for @settingsNeedsServer.
+  ///
+  /// In de, this message translates to:
+  /// **'Dafür zuerst mit einem Server verbinden.'**
+  String get settingsNeedsServer;
+
+  /// No description provided for @settingsSectionMedia.
+  ///
+  /// In de, this message translates to:
+  /// **'Medien & Speicher'**
+  String get settingsSectionMedia;
+
+  /// No description provided for @settingsOn.
+  ///
+  /// In de, this message translates to:
+  /// **'An'**
+  String get settingsOn;
+
+  /// No description provided for @settingsOff.
+  ///
+  /// In de, this message translates to:
+  /// **'Aus'**
+  String get settingsOff;
+
+  /// No description provided for @settingsPlayback.
+  ///
+  /// In de, this message translates to:
+  /// **'Wiedergabe'**
+  String get settingsPlayback;
+
+  /// No description provided for @settingsPlaybackHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Resume, Sleep-Timer'**
+  String get settingsPlaybackHint;
+
+  /// No description provided for @playbackInfo.
+  ///
+  /// In de, this message translates to:
+  /// **'Die App merkt sich die Position jeder Audio- und Videodatei und bietet beim nächsten Öffnen „Fortsetzen“ an. Sleep-Timer und Geschwindigkeit stellst du im Player ein.'**
+  String get playbackInfo;
+
+  /// No description provided for @playbackClearPositions.
+  ///
+  /// In de, this message translates to:
+  /// **'Gemerkte Positionen löschen ({count})'**
+  String playbackClearPositions(int count);
+
+  /// No description provided for @playbackPositionsCleared.
+  ///
+  /// In de, this message translates to:
+  /// **'Positionen gelöscht.'**
+  String get playbackPositionsCleared;
+
+  /// No description provided for @settingsCacheLimit.
+  ///
+  /// In de, this message translates to:
+  /// **'Cache-Limit'**
+  String get settingsCacheLimit;
+
+  /// No description provided for @settingsCacheValue.
+  ///
+  /// In de, this message translates to:
+  /// **'{limit} · {used} belegt'**
+  String settingsCacheValue(String limit, String used);
+
+  /// No description provided for @settingsCacheHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Gilt für gestreamte Medien, Dokumente und Vorschaubilder. Am längsten nicht Genutztes wird zuerst verdrängt.'**
+  String get settingsCacheHint;
+
+  /// No description provided for @cacheClear.
+  ///
+  /// In de, this message translates to:
+  /// **'Cache leeren'**
+  String get cacheClear;
+
+  /// No description provided for @cacheCleared.
+  ///
+  /// In de, this message translates to:
+  /// **'Cache geleert.'**
+  String get cacheCleared;
+
+  /// No description provided for @settingsOfflineStorage.
+  ///
+  /// In de, this message translates to:
+  /// **'Offline-Speicher'**
+  String get settingsOfflineStorage;
+
+  /// No description provided for @settingsSectionApp.
+  ///
+  /// In de, this message translates to:
+  /// **'App'**
+  String get settingsSectionApp;
+
+  /// No description provided for @settingsDesign.
+  ///
+  /// In de, this message translates to:
+  /// **'Design'**
+  String get settingsDesign;
+
+  /// No description provided for @themeSystem.
+  ///
+  /// In de, this message translates to:
+  /// **'System'**
+  String get themeSystem;
+
+  /// No description provided for @themeLight.
+  ///
+  /// In de, this message translates to:
+  /// **'Hell'**
+  String get themeLight;
+
+  /// No description provided for @themeDark.
+  ///
+  /// In de, this message translates to:
+  /// **'Dunkel'**
+  String get themeDark;
+
+  /// No description provided for @settingsLanguage.
+  ///
+  /// In de, this message translates to:
+  /// **'Sprache'**
+  String get settingsLanguage;
+
+  /// No description provided for @languageSystem.
+  ///
+  /// In de, this message translates to:
+  /// **'{language} (System)'**
+  String languageSystem(String language);
+
+  /// No description provided for @languageSystemOption.
+  ///
+  /// In de, this message translates to:
+  /// **'Systemsprache'**
+  String get languageSystemOption;
+
+  /// No description provided for @languageGerman.
+  ///
+  /// In de, this message translates to:
+  /// **'Deutsch'**
+  String get languageGerman;
+
+  /// No description provided for @languageEnglish.
+  ///
+  /// In de, this message translates to:
+  /// **'English'**
+  String get languageEnglish;
+
+  /// No description provided for @settingsAbout.
+  ///
+  /// In de, this message translates to:
+  /// **'Über & Lizenzen'**
+  String get settingsAbout;
+
+  /// No description provided for @aboutLegalese.
+  ///
+  /// In de, this message translates to:
+  /// **'Freie Software (CC0), kein Produkt der Synology Inc. Die App sendet keine Daten an Dritte. Die Videowiedergabe nutzt media_kit mit libmpv und FFmpeg (LGPL 2.1 oder neuer); Quelltext und Lizenzen unter github.com/media-kit/media-kit.'**
+  String get aboutLegalese;
+
+  /// No description provided for @settingsClearAll.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle lokalen Daten löschen'**
+  String get settingsClearAll;
+
+  /// No description provided for @settingsClearAllHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Cache, Offline, Tokens'**
+  String get settingsClearAllHint;
+
+  /// No description provided for @settingsClearAllConfirm.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle lokalen Daten löschen?'**
+  String get settingsClearAllConfirm;
+
+  /// No description provided for @settingsClearAllBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Gelöscht werden Cache, Offline-Dateien und Transfers sowie Anmeldungen, Geräte-Token, gemerkte Passwörter und bestätigte Zertifikate. Server-Profile und Einstellungen bleiben; danach meldest du dich neu an.'**
+  String get settingsClearAllBody;
+
+  /// No description provided for @settingsClearAllAction.
+  ///
+  /// In de, this message translates to:
+  /// **'Alles löschen'**
+  String get settingsClearAllAction;
+
+  /// No description provided for @settingsCleared.
+  ///
+  /// In de, this message translates to:
+  /// **'Lokale Daten gelöscht.'**
+  String get settingsCleared;
+
+  /// No description provided for @autoUploadTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Auto-Upload'**
+  String get autoUploadTitle;
+
+  /// No description provided for @autoUploadHeroTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Fotos & Videos sichern'**
+  String get autoUploadHeroTitle;
+
+  /// No description provided for @autoUploadHeroSubtitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Neue Aufnahmen aus der Kamera-Rolle'**
+  String get autoUploadHeroSubtitle;
+
+  /// No description provided for @autoUploadEnabled.
+  ///
+  /// In de, this message translates to:
+  /// **'Neue Aufnahmen werden ab jetzt gesichert.'**
+  String get autoUploadEnabled;
+
+  /// No description provided for @autoUploadTarget.
+  ///
+  /// In de, this message translates to:
+  /// **'Zielordner'**
+  String get autoUploadTarget;
+
+  /// No description provided for @autoUploadTargetNone.
+  ///
+  /// In de, this message translates to:
+  /// **'Nicht gewählt'**
+  String get autoUploadTargetNone;
+
+  /// No description provided for @autoUploadPickConfirm.
+  ///
+  /// In de, this message translates to:
+  /// **'Hier sichern'**
+  String get autoUploadPickConfirm;
+
+  /// No description provided for @autoUploadNeedsSession.
+  ///
+  /// In de, this message translates to:
+  /// **'Zum Wählen des Zielordners zuerst mit dem Server verbinden.'**
+  String get autoUploadNeedsSession;
+
+  /// No description provided for @autoUploadScheme.
+  ///
+  /// In de, this message translates to:
+  /// **'Ordnerschema'**
+  String get autoUploadScheme;
+
+  /// No description provided for @schemeYearMonth.
+  ///
+  /// In de, this message translates to:
+  /// **'Jahr / Monat'**
+  String get schemeYearMonth;
+
+  /// No description provided for @schemeYear.
+  ///
+  /// In de, this message translates to:
+  /// **'Jahr'**
+  String get schemeYear;
+
+  /// No description provided for @schemeFlat.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Unterordner'**
+  String get schemeFlat;
+
+  /// No description provided for @autoUploadWifiOnly.
+  ///
+  /// In de, this message translates to:
+  /// **'Nur im WLAN'**
+  String get autoUploadWifiOnly;
+
+  /// No description provided for @autoUploadWifiOnlyHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Auch bei aktivem VPN über Mobilfunk pausieren'**
+  String get autoUploadWifiOnlyHint;
+
+  /// No description provided for @autoUploadVideos.
+  ///
+  /// In de, this message translates to:
+  /// **'Videos einschließen'**
+  String get autoUploadVideos;
+
+  /// No description provided for @autoUploadVideosHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Kann viel Volumen erzeugen'**
+  String get autoUploadVideosHint;
+
+  /// No description provided for @autoUploadCharging.
+  ///
+  /// In de, this message translates to:
+  /// **'Nur beim Laden'**
+  String get autoUploadCharging;
+
+  /// No description provided for @autoUploadChargingHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Schont Akku bei großen Rückständen'**
+  String get autoUploadChargingHint;
+
+  /// No description provided for @autoUploadPermissionDenied.
+  ///
+  /// In de, this message translates to:
+  /// **'Ohne Zugriff auf alle Fotos kann der Auto-Upload nichts sichern. Du kannst den Zugriff in den Systemeinstellungen erlauben.'**
+  String get autoUploadPermissionDenied;
+
+  /// No description provided for @openSystemSettings.
+  ///
+  /// In de, this message translates to:
+  /// **'Einstellungen öffnen'**
+  String get openSystemSettings;
+
+  /// No description provided for @autoUploadStatus.
+  ///
+  /// In de, this message translates to:
+  /// **'Status'**
+  String get autoUploadStatus;
+
+  /// No description provided for @autoUploadLastRun.
+  ///
+  /// In de, this message translates to:
+  /// **'Letzter Lauf {when} · {files, plural, =1{1 Datei} other{{files} Dateien}} · {failed} Fehler'**
+  String autoUploadLastRun(String when, int files, int failed);
+
+  /// No description provided for @autoUploadNeverRun.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch nichts gesichert'**
+  String get autoUploadNeverRun;
+
+  /// No description provided for @autoUploadRunning.
+  ///
+  /// In de, this message translates to:
+  /// **'Läuft …'**
+  String get autoUploadRunning;
+
+  /// No description provided for @autoUploadLastCheck.
+  ///
+  /// In de, this message translates to:
+  /// **'Zuletzt geprüft {when}'**
+  String autoUploadLastCheck(String when);
+
+  /// No description provided for @autoUploadTotal.
+  ///
+  /// In de, this message translates to:
+  /// **'Gesamt gesichert: {files} Dateien · {size}'**
+  String autoUploadTotal(String files, String size);
+
+  /// No description provided for @autoUploadRunNow.
+  ///
+  /// In de, this message translates to:
+  /// **'Jetzt ausführen'**
+  String get autoUploadRunNow;
+
+  /// No description provided for @autoUploadLog.
+  ///
+  /// In de, this message translates to:
+  /// **'Protokoll'**
+  String get autoUploadLog;
+
+  /// No description provided for @autoUploadLogEmpty.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch keine Einträge.'**
+  String get autoUploadLogEmpty;
+
+  /// No description provided for @autoUploadRunSummary.
+  ///
+  /// In de, this message translates to:
+  /// **'{files, plural, =1{1 Datei} other{{files} Dateien}} · {failed} Fehler · {size}'**
+  String autoUploadRunSummary(int files, int failed, String size);
+
+  /// No description provided for @autoUploadWaitingWifi.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Datei wartet} other{{count} Dateien warten}} auf WLAN'**
+  String autoUploadWaitingWifi(int count);
+
+  /// No description provided for @autoUploadWaitingCharging.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Datei wartet} other{{count} Dateien warten}} aufs Laden'**
+  String autoUploadWaitingCharging(int count);
+
+  /// No description provided for @autoUploadNoteUnreachable.
+  ///
+  /// In de, this message translates to:
+  /// **'NAS nicht erreichbar – {count, plural, =1{1 Datei wartet} other{{count} Dateien warten}}'**
+  String autoUploadNoteUnreachable(int count);
+
+  /// No description provided for @autoUploadNoteOtherServer.
+  ///
+  /// In de, this message translates to:
+  /// **'Anderer Server angemeldet – {count, plural, =1{1 Datei wartet} other{{count} Dateien warten}}'**
+  String autoUploadNoteOtherServer(int count);
+
+  /// No description provided for @autoUploadNoteSession.
+  ///
+  /// In de, this message translates to:
+  /// **'Anmeldung abgelaufen – bitte in der App neu anmelden'**
+  String get autoUploadNoteSession;
+
+  /// No description provided for @autoUploadNoteWrite.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Schreibrechte im Zielordner – anderen Ordner wählen oder Rechte in DSM anpassen'**
+  String get autoUploadNoteWrite;
+
+  /// No description provided for @autoUploadNoteTarget.
+  ///
+  /// In de, this message translates to:
+  /// **'Zielordner nicht gefunden'**
+  String get autoUploadNoteTarget;
+
+  /// No description provided for @autoUploadNotePermission.
+  ///
+  /// In de, this message translates to:
+  /// **'Kein Zugriff auf Fotos – in den Systemeinstellungen erlauben'**
+  String get autoUploadNotePermission;
+
+  /// No description provided for @autoUploadNoteError.
+  ///
+  /// In de, this message translates to:
+  /// **'Fehler beim letzten Lauf'**
+  String get autoUploadNoteError;
+
+  /// No description provided for @autoUploadIosHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Auf dem iPhone läuft der Upload im Hintergrund nur, wenn das System es zulässt; beim Öffnen der App wird nachgeholt.'**
+  String get autoUploadIosHint;
+
+  /// No description provided for @autoUploadNotification.
+  ///
+  /// In de, this message translates to:
+  /// **'Auto-Upload'**
+  String get autoUploadNotification;
 }
 
 class _AppLocalizationsDelegate

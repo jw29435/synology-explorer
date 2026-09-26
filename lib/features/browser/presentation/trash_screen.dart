@@ -104,10 +104,7 @@ class _TrashScreenState extends ConsumerState<TrashScreen> {
               ),
               child: Row(
                 children: [
-                  const Icon(
-                    Icons.info_outline,
-                    color: AppColors.textSecondary,
-                  ),
+                  Icon(Icons.info_outline, color: AppColors.textSecondary),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
@@ -121,7 +118,7 @@ class _TrashScreenState extends ConsumerState<TrashScreen> {
                         if (hidden.isNotEmpty)
                           l10n.trashHidden(hidden.join(', ')),
                       ].join(' '),
-                      style: const TextStyle(color: AppColors.textSecondary),
+                      style: TextStyle(color: AppColors.textSecondary),
                     ),
                   ),
                 ],
@@ -173,7 +170,7 @@ class _TrashScreenState extends ConsumerState<TrashScreen> {
             const SizedBox(height: 24),
             Text(
               l10n.trashFooter,
-              style: const TextStyle(color: AppColors.textSecondary),
+              style: TextStyle(color: AppColors.textSecondary),
             ),
           ],
         ),
@@ -230,10 +227,10 @@ class _TrashScreenState extends ConsumerState<TrashScreen> {
           borderRadius: BorderRadius.circular(16),
           side: const BorderSide(color: AppColors.error),
         ),
-        icon: const Icon(Icons.delete_forever, color: AppColors.errorSoft),
+        icon: Icon(Icons.delete_forever, color: AppColors.errorSoft),
         title: Text(
           l10n.deleteForeverTitle,
-          style: const TextStyle(color: AppColors.errorSoft),
+          style: TextStyle(color: AppColors.errorSoft),
         ),
         content: Text(
           entries.length == 1
@@ -307,7 +304,7 @@ class _TrashRow extends StatelessWidget {
           if (deleted != null) l10n.trashDeleted(formatRelative(deleted, l10n)),
           if (entry.size case final size?) formatSize(size, l10n.localeName),
         ].join(' · '),
-        style: const TextStyle(color: AppColors.textSecondary),
+        style: TextStyle(color: AppColors.textSecondary),
       ),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
@@ -319,7 +316,7 @@ class _TrashRow extends StatelessWidget {
           ),
           IconButton(
             tooltip: l10n.deleteForever,
-            icon: const Icon(Icons.delete_outline, color: AppColors.errorSoft),
+            icon: Icon(Icons.delete_outline, color: AppColors.errorSoft),
             onPressed: onDelete,
           ),
         ],

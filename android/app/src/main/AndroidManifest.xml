@@ -1,11 +1,18 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-    <!-- open_filex bringt Medien-/Speicher-Leserechte mit, die die App nicht
-         braucht (Offline-Dateien liegen im App-Verzeichnis, Picker nutzen
-         SAF bzw. Photo Picker). -->
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" tools:node="remove" />
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" tools:node="remove" />
-    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" tools:node="remove" />
+    <!-- Fotos/Videos nur für den Auto-Upload; angefragt erst beim
+         Einschalten (photo_manager). open_filex bringt Audio- und
+         Speicherrechte mit, die die App nicht braucht (Offline-Dateien liegen
+         im App-Verzeichnis, Picker nutzen SAF bzw. Photo Picker). -->
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32"
+        tools:node="replace" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" tools:node="replace" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" tools:node="replace" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
+    <!-- Ohne diese Berechtigung entfernt Android GPS-Daten aus den Originalen. -->
+    <uses-permission android:name="android.permission.ACCESS_MEDIA_LOCATION" />
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" tools:node="remove" />
     <!-- Streaming (Video) und alle NAS-Aufrufe auch im Release-Build. -->
     <uses-permission android:name="android.permission.INTERNET"/>
@@ -18,8 +25,11 @@
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"/>
+    <!-- workmanager bringt das für beschleunigte (expedited) Tasks mit; der
+         Auto-Upload nutzt nur einen normalen periodischen Task. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SHORT_SERVICE" tools:node="remove"/>
     <application
-        android:label="synology_explorer"
+        android:label="Synology Explorer"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:networkSecurityConfig="@xml/network_security_config">

@@ -293,10 +293,10 @@ class _ServerFormScreenState extends ConsumerState<ServerFormScreen> {
   InputDecoration _urlDecoration(String value, String hint) {
     final http = value.trim().toLowerCase().startsWith('http://');
     return InputDecoration(
-      hintText: 'https://',
+      hintText: 'https://', // l10n-ignore: URL-Schema, keine Sprache
       helperText: http ? AppLocalizations.of(context).httpWarning : hint,
       helperMaxLines: 2,
-      helperStyle: http ? const TextStyle(color: AppColors.errorSoft) : null,
+      helperStyle: http ? TextStyle(color: AppColors.errorSoft) : null,
     );
   }
 }
@@ -396,13 +396,10 @@ class ErrorBox extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.error_outline, color: AppColors.errorSoft),
+          Icon(Icons.error_outline, color: AppColors.errorSoft),
           const SizedBox(width: 14),
           Expanded(
-            child: Text(
-              text,
-              style: const TextStyle(color: AppColors.errorSoft),
-            ),
+            child: Text(text, style: TextStyle(color: AppColors.errorSoft)),
           ),
         ],
       ),
@@ -484,7 +481,7 @@ class _OtpScreenState extends State<OtpScreen> {
           Text(
             l10n.otpIntro(widget.account),
             textAlign: TextAlign.center,
-            style: const TextStyle(color: AppColors.textSecondary),
+            style: TextStyle(color: AppColors.textSecondary),
           ),
           const SizedBox(height: 24),
           SectionLabel(l10n.otpCode, padding: const EdgeInsets.only(bottom: 8)),

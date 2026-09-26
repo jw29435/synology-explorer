@@ -243,7 +243,7 @@ class _SelectionBar extends ConsumerWidget {
     );
 
     return DecoratedBox(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.surface,
         border: Border(top: BorderSide(color: AppColors.border)),
       ),
@@ -258,7 +258,7 @@ class _SelectionBar extends ConsumerWidget {
                 alignment: Alignment.centerLeft,
                 child: Text(
                   l10n.selectionSize(formatSize(bytes, l10n.localeName)),
-                  style: const TextStyle(color: AppColors.textSecondary),
+                  style: TextStyle(color: AppColors.textSecondary),
                 ),
               ),
             ),
@@ -500,7 +500,7 @@ class _FolderList extends ConsumerWidget {
               else if (e.mtime case final mtime?)
                 formatDate(mtime, l10n),
             ].join(' · '),
-            style: const TextStyle(color: AppColors.textSecondary),
+            style: TextStyle(color: AppColors.textSecondary),
           ),
           trailing: selection.isEmpty
               ? IconButton(
@@ -557,7 +557,7 @@ class _FolderGrid extends ConsumerWidget {
               if (ext == 'HEIC' || ext == 'HEIF')
                 Positioned(left: 6, top: 6, child: _Badge(ext)),
               if (e.type == NasFileType.video)
-                const Center(
+                Center(
                   child: CircleAvatar(
                     radius: 18,
                     backgroundColor: AppColors.playScrim,

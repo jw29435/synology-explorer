@@ -8,6 +8,7 @@ import '../../../core/network/syno_api_client.dart';
 import '../../../core/network/syno_exception.dart';
 import '../../../core/storage/storage_providers.dart';
 import '../../servers/presentation/server_providers.dart';
+import '../../settings/presentation/settings_providers.dart';
 import '../data/file_station_list_api.dart';
 import '../data/file_station_ops_api.dart';
 import '../data/file_station_task_api.dart';
@@ -39,6 +40,7 @@ final thumbnailCacheProvider = Provider<ThumbnailCache>(
   (ref) => ThumbnailCache(
     _client(ref),
     getApplicationCacheDirectory().then((d) => Directory('${d.path}/thumbs')),
+    maxBytes: ref.watch(cacheLimitProvider) ~/ 5,
   ),
 );
 

@@ -1,0 +1,42 @@
+name: release-please
+
+# Conventional Commits auf main → Release-PR mit CHANGELOG.md und Version in
+# pubspec.yaml. Nach dem Merge des Release-PRs legt release-please Tag und
+# GitHub-Release an und startet die Release-Builds (Tags aus GITHUB_TOKEN
+# lösen selbst keine Workflows aus, deshalb der direkte Aufruf).
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    outputs:
+      created: ${{ steps.release.outputs.release_created }}
+      tag: ${{ steps.release.outputs.tag_name }}
+    steps:
+      - id: release
+        uses: googleapis/release-please-action@v4
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  android:
+    needs: release-please
+    if: needs.release-please.outputs.created == 'true'
+    uses: ./.github/workflows/release-android.yml
+    with:
+      tag: ${{ needs.release-please.outputs.tag }}
+    secrets: inherit
+
+  ios:
+    needs: release-please
+    if: needs.release-please.outputs.created == 'true'
+    uses: ./.github/workflows/release-ios.yml
+    with:
+      tag: ${{ needs.release-please.outputs.tag }}
+    secrets: inherit

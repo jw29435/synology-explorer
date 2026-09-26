@@ -349,7 +349,7 @@ class _EntryInfoSheet extends ConsumerWidget {
                       padding: const EdgeInsets.only(bottom: 12),
                       child: Text(
                         describeError(error, l10n),
-                        style: const TextStyle(color: AppColors.errorSoft),
+                        style: TextStyle(color: AppColors.errorSoft),
                       ),
                     ),
                   DecoratedBox(
@@ -368,7 +368,7 @@ class _EntryInfoSheet extends ConsumerWidget {
                             ),
                             decoration: i == 0
                                 ? null
-                                : const BoxDecoration(
+                                : BoxDecoration(
                                     border: Border(
                                       top: BorderSide(color: AppColors.border),
                                     ),
@@ -380,7 +380,7 @@ class _EntryInfoSheet extends ConsumerWidget {
                                   width: 88,
                                   child: Text(
                                     label,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       color: AppColors.textSecondary,
                                       fontWeight: FontWeight.w600,
                                     ),
@@ -469,7 +469,7 @@ class _DirSizeRow extends ConsumerWidget {
       AsyncData(:final value) when value.finished => Text(text(value)),
       AsyncError(:final error) => Text(
         describeError(error, l10n),
-        style: const TextStyle(color: AppColors.errorSoft),
+        style: TextStyle(color: AppColors.errorSoft),
       ),
       _ => Row(
         children: [

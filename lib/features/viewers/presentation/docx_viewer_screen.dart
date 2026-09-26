@@ -74,7 +74,7 @@ class _DocxViewerScreenState extends ConsumerState<DocxViewerScreen> {
         ),
       ),
       bottomNavigationBar: DecoratedBox(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           border: Border(top: BorderSide(color: AppColors.border)),
         ),
         child: SafeArea(

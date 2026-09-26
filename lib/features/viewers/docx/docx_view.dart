@@ -85,10 +85,10 @@ class DocxView extends StatelessWidget {
   );
 
   Widget _table(BuildContext context, DocxTable t) {
-    const line = BorderSide(color: AppColors.border);
+    final line = BorderSide(color: AppColors.border);
     final style = Theme.of(context).textTheme.bodyMedium;
     return Table(
-      border: const TableBorder(horizontalInside: line, bottom: line),
+      border: TableBorder(horizontalInside: line, bottom: line),
       defaultVerticalAlignment: TableCellVerticalAlignment.top,
       children: [
         for (final row in t.rows)

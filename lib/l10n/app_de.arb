@@ -799,5 +799,184 @@
   "settingsWifiOnly": "Streaming nur im WLAN",
   "settingsWifiOnlyHint": "Über Mobilfunk wird nicht gestreamt.",
   "errorStreamFailed": "Datei konnte nicht geladen werden – Verbindung zum NAS prüfen.",
-  "playFolderShort": "Abspielen"
+  "playFolderShort": "Abspielen",
+  "settingsSectionConnection": "Verbindung",
+  "settingsServers": "Server verwalten",
+  "settingsLinksActive": "{count} aktiv",
+  "@settingsLinksActive": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsNeedsServer": "Dafür zuerst mit einem Server verbinden.",
+  "settingsSectionMedia": "Medien & Speicher",
+  "settingsOn": "An",
+  "settingsOff": "Aus",
+  "settingsPlayback": "Wiedergabe",
+  "settingsPlaybackHint": "Resume, Sleep-Timer",
+  "playbackInfo": "Die App merkt sich die Position jeder Audio- und Videodatei und bietet beim nächsten Öffnen „Fortsetzen“ an. Sleep-Timer und Geschwindigkeit stellst du im Player ein.",
+  "playbackClearPositions": "Gemerkte Positionen löschen ({count})",
+  "@playbackClearPositions": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "playbackPositionsCleared": "Positionen gelöscht.",
+  "settingsCacheLimit": "Cache-Limit",
+  "settingsCacheValue": "{limit} · {used} belegt",
+  "@settingsCacheValue": {
+    "placeholders": {
+      "limit": {
+        "type": "String"
+      },
+      "used": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsCacheHint": "Gilt für gestreamte Medien, Dokumente und Vorschaubilder. Am längsten nicht Genutztes wird zuerst verdrängt.",
+  "cacheClear": "Cache leeren",
+  "cacheCleared": "Cache geleert.",
+  "settingsOfflineStorage": "Offline-Speicher",
+  "settingsSectionApp": "App",
+  "settingsDesign": "Design",
+  "themeSystem": "System",
+  "themeLight": "Hell",
+  "themeDark": "Dunkel",
+  "settingsLanguage": "Sprache",
+  "languageSystem": "{language} (System)",
+  "@languageSystem": {
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "languageSystemOption": "Systemsprache",
+  "languageGerman": "Deutsch",
+  "languageEnglish": "English",
+  "settingsAbout": "Über & Lizenzen",
+  "aboutLegalese": "Freie Software (CC0), kein Produkt der Synology Inc. Die App sendet keine Daten an Dritte. Die Videowiedergabe nutzt media_kit mit libmpv und FFmpeg (LGPL 2.1 oder neuer); Quelltext und Lizenzen unter github.com/media-kit/media-kit.",
+  "settingsClearAll": "Alle lokalen Daten löschen",
+  "settingsClearAllHint": "Cache, Offline, Tokens",
+  "settingsClearAllConfirm": "Alle lokalen Daten löschen?",
+  "settingsClearAllBody": "Gelöscht werden Cache, Offline-Dateien und Transfers sowie Anmeldungen, Geräte-Token, gemerkte Passwörter und bestätigte Zertifikate. Server-Profile und Einstellungen bleiben; danach meldest du dich neu an.",
+  "settingsClearAllAction": "Alles löschen",
+  "settingsCleared": "Lokale Daten gelöscht.",
+  "autoUploadTitle": "Auto-Upload",
+  "autoUploadHeroTitle": "Fotos & Videos sichern",
+  "autoUploadHeroSubtitle": "Neue Aufnahmen aus der Kamera-Rolle",
+  "autoUploadEnabled": "Neue Aufnahmen werden ab jetzt gesichert.",
+  "autoUploadTarget": "Zielordner",
+  "autoUploadTargetNone": "Nicht gewählt",
+  "autoUploadPickConfirm": "Hier sichern",
+  "autoUploadNeedsSession": "Zum Wählen des Zielordners zuerst mit dem Server verbinden.",
+  "autoUploadScheme": "Ordnerschema",
+  "schemeYearMonth": "Jahr / Monat",
+  "schemeYear": "Jahr",
+  "schemeFlat": "Keine Unterordner",
+  "autoUploadWifiOnly": "Nur im WLAN",
+  "autoUploadWifiOnlyHint": "Auch bei aktivem VPN über Mobilfunk pausieren",
+  "autoUploadVideos": "Videos einschließen",
+  "autoUploadVideosHint": "Kann viel Volumen erzeugen",
+  "autoUploadCharging": "Nur beim Laden",
+  "autoUploadChargingHint": "Schont Akku bei großen Rückständen",
+  "autoUploadPermissionDenied": "Ohne Zugriff auf alle Fotos kann der Auto-Upload nichts sichern. Du kannst den Zugriff in den Systemeinstellungen erlauben.",
+  "openSystemSettings": "Einstellungen öffnen",
+  "autoUploadStatus": "Status",
+  "autoUploadLastRun": "Letzter Lauf {when} · {files, plural, =1{1 Datei} other{{files} Dateien}} · {failed} Fehler",
+  "@autoUploadLastRun": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      },
+      "files": {
+        "type": "int"
+      },
+      "failed": {
+        "type": "int"
+      }
+    }
+  },
+  "autoUploadNeverRun": "Noch nichts gesichert",
+  "autoUploadRunning": "Läuft …",
+  "autoUploadLastCheck": "Zuletzt geprüft {when}",
+  "@autoUploadLastCheck": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "autoUploadTotal": "Gesamt gesichert: {files} Dateien · {size}",
+  "@autoUploadTotal": {
+    "placeholders": {
+      "files": {
+        "type": "String"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "autoUploadRunNow": "Jetzt ausführen",
+  "autoUploadLog": "Protokoll",
+  "autoUploadLogEmpty": "Noch keine Einträge.",
+  "autoUploadRunSummary": "{files, plural, =1{1 Datei} other{{files} Dateien}} · {failed} Fehler · {size}",
+  "@autoUploadRunSummary": {
+    "placeholders": {
+      "files": {
+        "type": "int"
+      },
+      "failed": {
+        "type": "int"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "autoUploadWaitingWifi": "{count, plural, =1{1 Datei wartet} other{{count} Dateien warten}} auf WLAN",
+  "@autoUploadWaitingWifi": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "autoUploadWaitingCharging": "{count, plural, =1{1 Datei wartet} other{{count} Dateien warten}} aufs Laden",
+  "@autoUploadWaitingCharging": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "autoUploadNoteUnreachable": "NAS nicht erreichbar – {count, plural, =1{1 Datei wartet} other{{count} Dateien warten}}",
+  "@autoUploadNoteUnreachable": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "autoUploadNoteOtherServer": "Anderer Server angemeldet – {count, plural, =1{1 Datei wartet} other{{count} Dateien warten}}",
+  "@autoUploadNoteOtherServer": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "autoUploadNoteSession": "Anmeldung abgelaufen – bitte in der App neu anmelden",
+  "autoUploadNoteWrite": "Keine Schreibrechte im Zielordner – anderen Ordner wählen oder Rechte in DSM anpassen",
+  "autoUploadNoteTarget": "Zielordner nicht gefunden",
+  "autoUploadNotePermission": "Kein Zugriff auf Fotos – in den Systemeinstellungen erlauben",
+  "autoUploadNoteError": "Fehler beim letzten Lauf",
+  "autoUploadIosHint": "Auf dem iPhone läuft der Upload im Hintergrund nur, wenn das System es zulässt; beim Öffnen der App wird nachgeholt.",
+  "autoUploadNotification": "Auto-Upload"
 }

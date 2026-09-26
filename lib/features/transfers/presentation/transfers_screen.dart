@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:open_filex/open_filex.dart';
 
 import '../../../app/theme.dart';
 import '../../../core/storage/app_database.dart';
@@ -8,6 +7,8 @@ import '../../../core/utils/format.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../browser/domain/nas_entry.dart';
 import '../../browser/presentation/entry_widgets.dart';
+import '../../browser/presentation/file_actions.dart';
+import '../../viewers/presentation/viewer_screen.dart';
 import '../domain/transfer.dart';
 import 'transfer_providers.dart';
 
@@ -113,7 +114,7 @@ class _TransfersScreenState extends ConsumerState<TransfersScreen> {
               padding: const EdgeInsets.all(8),
               child: Text(
                 l10n.transfersFooter,
-                style: const TextStyle(color: AppColors.textSecondary),
+                style: TextStyle(color: AppColors.textSecondary),
               ),
             ),
         ],
@@ -277,7 +278,7 @@ class _TransferCard extends ConsumerWidget {
                       if (failed) amount,
                     ].join(' · '),
                     style: AppTheme.mono(
-                      const TextStyle(color: AppColors.textSecondary),
+                      TextStyle(color: AppColors.textSecondary),
                     ),
                   ),
                 ),
@@ -286,7 +287,7 @@ class _TransferCard extends ConsumerWidget {
                     right,
                     textAlign: TextAlign.end,
                     style: AppTheme.mono(
-                      const TextStyle(color: AppColors.textSecondary),
+                      TextStyle(color: AppColors.textSecondary),
                     ),
                   ),
                 ),
@@ -334,7 +335,22 @@ class _DoneRow extends StatelessWidget {
         download ? Icons.download_done : Icons.cloud_done_outlined,
         color: AppColors.success,
       ),
-      onTap: download ? () => OpenFilex.open(t.localPath) : null,
+      // Wie im Offline-Bereich: im passenden Viewer, Audio im Player.
+      onTap: download
+          ? () async {
+              final ok = await openOffline(
+                context,
+                OfflineFile(
+                  serverId: t.serverId,
+                  remotePath: t.remotePath,
+                  localPath: t.localPath,
+                  mtime: t.remoteMtime,
+                  size: t.bytesTotal ?? 0,
+                ),
+              );
+              if (!ok && context.mounted) showSnack(context, l10n.openFailed);
+            }
+          : null,
     );
   }
 }

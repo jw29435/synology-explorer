@@ -312,7 +312,7 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
                     if (info.isNotEmpty)
                       Text(
                         info,
-                        style: const TextStyle(color: AppColors.textSecondary),
+                        style: TextStyle(color: AppColors.textSecondary),
                       ),
                   ],
                 ),

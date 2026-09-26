@@ -64,6 +64,15 @@ class MediaCache {
     return file;
   }
 
+  /// Verdrängt sofort bis unter [limit] (nach dem Senken in den
+  /// Einstellungen, bevor ein Cache mit dem neuen Limit entsteht).
+  Future<void> trim(int limit) async {
+    final dir = await _dir;
+    if (!await dir.exists()) return;
+    _size = await _usage(dir);
+    if (_size! > limit) _size = await _prune(dir, keep: '', limit: limit);
+  }
+
   static Future<int> _usage(Directory dir) async {
     var sum = 0;
     await for (final f in dir.list()) {
@@ -76,7 +85,7 @@ class MediaCache {
   /// 80 % des Limits liegt – mit Luft, damit nicht jede neue Datei am Limit
   /// wieder das ganze Verzeichnis durchgeht. [keep] (gerade geladen) bleibt, auch wenn sie allein zu groß
   /// ist – sie wird ja gleich angezeigt.
-  Future<int> _prune(Directory dir, {required String keep}) async {
+  Future<int> _prune(Directory dir, {required String keep, int? limit}) async {
     final files = [
       for (final f in await dir.list().toList())
         if (f is File && !f.path.endsWith('.tmp'))
@@ -84,7 +93,7 @@ class MediaCache {
     ]..sort((a, b) => a.stat.modified.compareTo(b.stat.modified));
     var sum = files.fold(0, (s, f) => s + f.stat.size);
     for (final f in files) {
-      if (sum <= maxBytes * 0.8) break;
+      if (sum <= (limit ?? maxBytes) * 0.8) break;
       if (f.file.path == keep) continue;
       await f.file.delete();
       sum -= f.stat.size;
