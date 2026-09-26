@@ -31,6 +31,14 @@ class AutoUploadRepository {
     return next;
   });
 
+  /// Setzt die Einstellungen zurück, wenn sie auf den gelöschten Server
+  /// [serverId] zeigen.
+  Future<void> forgetServer(int serverId) => _db.transaction(() async {
+    if ((await read()).serverId == serverId) {
+      await _settings.write(_config, null);
+    }
+  });
+
   /// Nur ein Lauf gleichzeitig (App oder Hintergrund); nach 15 min gilt eine
   /// Sperre als verwaist (Prozess beendet).
   Future<bool> tryLock() =>
