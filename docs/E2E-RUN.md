@@ -50,8 +50,88 @@ FLAC, Markdown (nur `.txt`), HEIC.
 Auf dem NAS blieb nach Phase 1 nichts zurück: `/Daten` enthält weiter nur den bisherigen Ordner, die Favoritenliste
 ist vor und nach dem Test identisch (drei temporäre `_e2e_…`-Favoriten angelegt und gelöscht), keine Freigabelinks.
 
+## Phase 2 – Statisches Audit
+
+Vier Agents (Navigation, Screens gegen Mockups, Fehlerpfade/Lebenszyklus, Hygiene/Sicherheit) lasen den Code; 56
+Findings, dedupliziert in `docs/E2E-FINDINGS.md` (E2E-001 bis E2E-056). Ausgangslage: `flutter analyze` und
+`dart format` sauber, 278 Tests grün, keine TODO/FIXME, kein Logging von Passwörtern/SIDs, TLS-Regeln eingehalten.
+
+## Phase 3 – Headless E2E gegen den Mock-NAS
+
+`test/e2e/` startet die komplette App (`SynologyExplorerApp` in einem `ProviderScope`) mit echtem HTTP gegen
+`tool/mock_nas` auf einem freien Loopback-Port. Gefaked sind nur Plattform-Teile: drift in-memory, Secure Storage,
+path_provider, AudioController (Zustände), Benachrichtigungen, WorkManager, Fotozugriff, file_picker. Jeder Flow endet
+mit Zurück per Zurück-Pfeil **und** per `handlePopRoute()` (Android-Zurück); danach baut `E2E.dispose()` die App ab,
+und flutter_test prüft, dass keine Timer offen sind und keine Exception im `FlutterError`-Handler lag.
+
+| Flow | Datei | Ergebnis |
+| --- | --- | --- |
+| 1 Erststart, Validierung, 400/403/404, 2FA, Start | `flow_01_login_test.dart` | grün |
+| 2 Share, Ordner, Sortierung, Paging (520 Einträge), Grid | `flow_02_browse_test.dart` | grün; E2E-064 |
+| 3 Kebab, Info, DirSize-Stop beim Schließen, Favorit | `flow_03_info_favorite_test.dart` | grün |
+| 4 Suche mit `finished` ohne `total`, Filter, Stop/Clean beim Verlassen | `flow_04_search_test.dart` | grün |
+| 5 Ordner abspielen, Mini-Player, 12, 13, Shuffle/Repeat | `flow_05_audio_test.dart` | grün |
+| 6 Viewer 15, 17–19 öffnen/zurück, Download verweigert | `flow_06_viewers_test.dart` | grün; Video (16) geskippt (media_kit headless ohne libmpv) |
+| 7 Auswahlmodus, alle Aktionen, Upload-Sheet, Verweigerung | `flow_07_selection_test.dart` | grün bis auf E2E-057 (geskippt) |
+| 8 Transfers, Offline, Freigabelinks, Papierkorb, Auto-Upload-Formular, Einstellungen | `flow_08_transfers_settings_test.dart` | grün; E2E-059, E2E-062 |
+| 9 Session abgelaufen: Re-Login, zweiter Fehler | `flow_09_session_test.dart` | grün; E2E-012/013/063 als auskommentierte Erwartung markiert |
+
+Der Mock-NAS kann jetzt: Search als Task (optional erst `finished` ohne `total`), Paging in `/photo`, `getinfo` je
+Pfad, `#recycle`-Listing, Schalter für Fehlerfälle (`MockNasControl`: SIDs ungültig machen, Login ablehnen,
+Schreibaktionen mit 407 verweigern, Download-Fehler/502-HTML je Pfad).
+
+## Phase 4 – Gerät gegen das echte NAS
+
+**Werkzeug:** `tool/e2e/device.sh` über `adb.exe`. Semantik im Debug-Build (`--dart-define=E2E=true`) funktioniert:
+`uiautomator dump` sieht Texte, Tooltips und Labels der Flutter-Widgets. Grenzen: Solange die App ständig Frames
+erzeugt (laufende Wiedergabe, Video), scheitert der Dump („could not get idle state“) – dort wurde per Screenshot und
+Koordinaten getippt. Textfelder sind ohne Label nicht auffindbar (E2E-060). Eingaben gehen zeichenweise, sonst
+verliert die Tastatur Zeichen. Auf dem Samsung verdeckt die Tastatur die unteren Felder; dort wurde per Tab-Taste
+zwischen Feldern gewechselt. Screenshots/Dumps/Logcat liegen nur lokal unter `.e2e/`.
+
+Testdaten (per Search gefunden, hier anonymisiert): Ordner mit 8 MP3 und 3 JPG, Ordner mit 3 PDF/1 TXT/4 MP3,
+DOCX (87 KB) im Unterordner einer Schulung, MP4 (40 MB, 480p), großer Ordner (≈ 8 000 Dateien).
+
+### OnePlus 9 Pro (`4c5ce6f6`, Android 16) – voller Ablauf
+
+| Schritt | Ergebnis |
+| --- | --- |
+| 1 `pm clear`, Server anlegen, verbinden | bestanden. Bitwarden bot an, das Passwort zu speichern – abgelehnt |
+| 2 Start (05) | Share „Nur Lesen“, keine Favoriten (lokal leer, NAS-Favoriten erst nach Phase 6), Zuletzt nach Nutzung gefüllt |
+| 3 Liste/Grid, Sortierung, Pull-to-Refresh, Zurück je Ebene | bestanden; Breadcrumb-Sprung zerstört den Stack (E2E-017 bestätigt) |
+| 4 Thumbnails | echte Vorschaubilder (`size=small`, 2–4 KB je Bild), kein Dauer-Spinner, kein Massen-Download |
+| 5 Audio | Ordner abspielen, Mini-Player, Now Playing, Seek (Range), nächster Titel, Queue, Shuffle/Repeat, Hintergrund mit Foreground-Service (`mediaPlayback`) bestanden. **audioserver-Schleife des Geräts besteht weiter** (Neustarts im Log, Wiedergabe stockt, ~50 % Echtzeit) – kein App-Fehler, Dauertest deshalb auf dem A40 |
+| 6 Viewer | Bild (Galerie per schnellem Wisch, Thumbnail-Streifen, Info), PDF (Suche 30 Treffer), Text, DOCX, Video (Querformat, Controls, Rückkehr ins Hochformat) bestanden. PDF-Suche + Zurück schließt den Viewer (E2E-016), Löschen/Herunterladen „ab M4“ deaktiviert (E2E-003/004) |
+| 7 Suche | Treffer, Filter „Dokumente“, Verlassen während des Pollings bestanden; Datei-Treffer öffnet nur den Ordner (E2E-020) |
+| 8 Info, DirSize | großer Ordner: gleiche Werte wie curl; Verlassen während der Berechnung ohne Fehler |
+| 9 Schreibaktionen | Upload/Neuer Ordner: App meldet vorab „Keine Schreibrechte“ (bestanden). Umbenennen/Verschieben deaktiviert. Löschen: Dialog mit Papierkorb-Hinweis, **abgebrochen** (nie echte Dateien). Freigabelink: „Keine Berechtigung.“ (bestanden). **Kopieren → 407 → schwarzer Bildschirm (E2E-057, crash)**; am NAS nichts kopiert (curl geprüft). Upload aus dem Dateipicker war per UI nicht auslösbar (Sperre vorab), `_e2e.txt` wurde deshalb nicht aufs Handy gelegt |
+| 10 Freigabelinks, Papierkorb, Transfers, Offline | Links: Leerzustand. Papierkorb: „nur für Admins sichtbar“ (bestanden). Offline: TXT geladen, ohne WLAN lokal geöffnet (Mobilfunk blieb an, siehe A40). Benachrichtigungs-Berechtigung beim ersten Transfer erlaubt. Snackbar „Download eingereiht“ blieb minutenlang stehen und verdeckte die Design-Zeile (E2E-015) |
+| 11 Einstellungen | Wiedergabe, Cache-Limit (500 MB → 1 GB), Design Hell/Dunkel, Sprache de/en/System, Über & Lizenzen, Abmelden, erneut Anmelden bestanden. Hell: Viewer-Overlay unlesbar (E2E-047). „Server verwalten“ ohne Zurück (E2E-009) |
+| 12 Robustheit | Rotation Querformat ohne Overflow; App-Kill während der Wiedergabe → „Bei 0:11 fortsetzen?“ bestanden; Session-Ablauf nur headless (Flow 9) |
+
+Logcat im ganzen Lauf: genau eine Exception (E2E-057), kein ANR.
+
+### Samsung A40 (`R58MC1T7R4D`, Android 11) – gekürzt (1–3, 5, 6, 11)
+
+| Schritt | Ergebnis |
+| --- | --- |
+| 1 Anmelden | bestanden, kein Zertifikat-Dialog (ISRG-Root-Fix wirkt). Die Tastatur verdeckt „Verbinden“ (E2E-058); Absenden per Enter |
+| 2–3 Navigation, Grid, Zurück-Kette | bestanden; 360 dp kürzt „Abspielen“ (E2E-065) |
+| 5 Audio | 2 min im Hintergrund flüssig (Position 125 s nach ~130 s), Foreground-Service aktiv. Video öffnen pausiert die Musik nicht (E2E-045). Video-Ton stoppt im Hintergrund (E2E-044 nicht reproduzierbar) |
+| 6 Viewer | PDF, Text, DOCX, Bild-Galerie bestanden |
+| 11 Einstellungen | Sprache, Abmelden, erneut Anmelden bestanden; Cache-Wert gekürzt (E2E-065) |
+| extra: ohne Netz starten (keine SIM) | ~17 s Spinner, dann Server-Liste ohne Weg zu Offline/Einstellungen (E2E-001, E2E-037) |
+
+**Geräte-Unterschiede:** Das A40 zeigt beim ersten Video den Samsung-Vollbild-Hinweis (Systemdialog). Nach dem Video
+bleibt es bei aktiver Auto-Rotation im Querformat, solange das Gerät flach liegt (Plattformverhalten). Die
+Samsung-Tastatur hat eine Symbolleiste, die Tipps auf verdeckte Felder abfängt.
+
 ## Annahmen
 
 - NAS-Favoriten nur für Ordner: DSM nimmt Dateien als Favorit an, meldet sie aber sofort als `broken`. Die App
   bietet „Favorit“ deshalb nur für Ordner an (DS-File-Verhalten, dort gibt es ebenfalls nur Ordner-Favoriten).
+- Schweregrad „sicherheit“ ergänzt die vorgegebene Skala (crash > blockiert > sicherheit > navigation > fehlermeldung
+  > kosmetik), weil Backup-/Log-Lecks weder „blockiert“ noch „kosmetik“ sind.
+- Auf dem A40 öffnete ein Tipp auf die Tastatur-Symbolleiste versehentlich die Einstellungen der Samsung-Tastatur. Es
+  wurde dort nichts bewusst umgeschaltet, die sichtbaren Schalter standen unverändert auf „Ein“. **Bitte kurz prüfen.**
 - Markdown-Viewer ist am echten NAS nicht testbar (keine `.md`-Datei); geprüft werden `.txt` und headless Markdown.
