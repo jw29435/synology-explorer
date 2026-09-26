@@ -103,6 +103,24 @@ class Settings extends Table {
   Set<Column> get primaryKey => {key};
 }
 
+/// Auto-Upload-Protokoll (Screen 25): ein Eintrag je Lauf, der etwas
+/// hochgeladen hat oder an einer Bedingung hängen blieb ([note]).
+class AutoUploadRuns extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  DateTimeColumn get startedAt => dateTime()();
+
+  /// Eingereihte Dateien, davon [failed] fehlgeschlagen, [bytes] übertragen.
+  IntColumn get files => integer().withDefault(const Constant(0))();
+  IntColumn get failed => integer().withDefault(const Constant(0))();
+  IntColumn get bytes => integer().withDefault(const Constant(0))();
+
+  /// Neue Aufnahmen, die wegen [note] noch warten.
+  IntColumn get waiting => integer().withDefault(const Constant(0))();
+
+  /// Grund, warum der Lauf nicht (ganz) lief, z. B. `noWifi`.
+  TextColumn get note => text().nullable()();
+}
+
 @DriftDatabase(
   tables: [
     Servers,
@@ -113,13 +131,14 @@ class Settings extends Table {
     PlaybackPositions,
     AudiobookFolders,
     Settings,
+    AutoUploadRuns,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -137,6 +156,7 @@ class AppDatabase extends _$AppDatabase {
         await m.createTable(audiobookFolders);
         await m.createTable(settings);
       }
+      if (from < 6) await m.createTable(autoUploadRuns);
     },
   );
 }

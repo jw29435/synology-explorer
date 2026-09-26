@@ -163,7 +163,7 @@ class NowPlayingScreen extends ConsumerWidget {
                   child: Text(
                     describePlaybackError(error, l10n),
                     key: const Key('playback-error'),
-                    style: const TextStyle(color: AppColors.errorSoft),
+                    style: TextStyle(color: AppColors.errorSoft),
                   ),
                 ),
               const SizedBox(height: 16),

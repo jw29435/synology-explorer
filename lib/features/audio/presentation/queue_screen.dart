@@ -173,7 +173,7 @@ class QueueScreen extends ConsumerWidget {
                         if (track.size case final size?)
                           formatSize(size, l10n.localeName),
                       ].join(' · '),
-                      style: const TextStyle(color: AppColors.textSecondary),
+                      style: TextStyle(color: AppColors.textSecondary),
                     ),
                     onTap: () => controller.jumpTo(index),
                     trailing: Row(

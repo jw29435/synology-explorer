@@ -1202,4 +1202,306 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get playFolderShort => 'Play all';
+
+  @override
+  String get settingsSectionConnection => 'Connection';
+
+  @override
+  String get settingsServers => 'Manage servers';
+
+  @override
+  String settingsLinksActive(int count) {
+    return '$count active';
+  }
+
+  @override
+  String get settingsNeedsServer => 'Connect to a server first.';
+
+  @override
+  String get settingsSectionMedia => 'Media & storage';
+
+  @override
+  String get settingsOn => 'On';
+
+  @override
+  String get settingsOff => 'Off';
+
+  @override
+  String get settingsPlayback => 'Playback';
+
+  @override
+  String get settingsPlaybackHint => 'Resume, sleep timer';
+
+  @override
+  String get playbackInfo =>
+      'The app remembers the position of every audio and video file and offers to resume next time. Sleep timer and speed are set in the player.';
+
+  @override
+  String playbackClearPositions(int count) {
+    return 'Clear saved positions ($count)';
+  }
+
+  @override
+  String get playbackPositionsCleared => 'Positions cleared.';
+
+  @override
+  String get settingsCacheLimit => 'Cache limit';
+
+  @override
+  String settingsCacheValue(String limit, String used) {
+    return '$limit · $used used';
+  }
+
+  @override
+  String get settingsCacheHint =>
+      'Applies to streamed media, documents and thumbnails. Least recently used items are evicted first.';
+
+  @override
+  String get cacheClear => 'Clear cache';
+
+  @override
+  String get cacheCleared => 'Cache cleared.';
+
+  @override
+  String get settingsOfflineStorage => 'Offline storage';
+
+  @override
+  String get settingsSectionApp => 'App';
+
+  @override
+  String get settingsDesign => 'Theme';
+
+  @override
+  String get themeSystem => 'System';
+
+  @override
+  String get themeLight => 'Light';
+
+  @override
+  String get themeDark => 'Dark';
+
+  @override
+  String get settingsLanguage => 'Language';
+
+  @override
+  String languageSystem(String language) {
+    return '$language (system)';
+  }
+
+  @override
+  String get languageSystemOption => 'System language';
+
+  @override
+  String get languageGerman => 'Deutsch';
+
+  @override
+  String get languageEnglish => 'English';
+
+  @override
+  String get settingsAbout => 'About & licenses';
+
+  @override
+  String get aboutLegalese =>
+      'Free software (CC0), not a product of Synology Inc. The app sends no data to third parties. Video playback uses media_kit with libmpv and FFmpeg (LGPL 2.1 or later); source code and licenses at github.com/media-kit/media-kit.';
+
+  @override
+  String get settingsClearAll => 'Delete all local data';
+
+  @override
+  String get settingsClearAllHint => 'Cache, offline, tokens';
+
+  @override
+  String get settingsClearAllConfirm => 'Delete all local data?';
+
+  @override
+  String get settingsClearAllBody =>
+      'This deletes the cache, offline files and transfers as well as sessions, device tokens, saved passwords and trusted certificates. Server profiles and settings stay; you will need to sign in again.';
+
+  @override
+  String get settingsClearAllAction => 'Delete everything';
+
+  @override
+  String get settingsCleared => 'Local data deleted.';
+
+  @override
+  String get autoUploadTitle => 'Auto upload';
+
+  @override
+  String get autoUploadHeroTitle => 'Back up photos & videos';
+
+  @override
+  String get autoUploadHeroSubtitle => 'New shots from the camera roll';
+
+  @override
+  String get autoUploadEnabled => 'New shots will be backed up from now on.';
+
+  @override
+  String get autoUploadTarget => 'Destination folder';
+
+  @override
+  String get autoUploadTargetNone => 'Not selected';
+
+  @override
+  String get autoUploadPickConfirm => 'Back up here';
+
+  @override
+  String get autoUploadNeedsSession =>
+      'Connect to the server first to choose the destination folder.';
+
+  @override
+  String get autoUploadScheme => 'Folder scheme';
+
+  @override
+  String get schemeYearMonth => 'Year / month';
+
+  @override
+  String get schemeYear => 'Year';
+
+  @override
+  String get schemeFlat => 'No subfolders';
+
+  @override
+  String get autoUploadWifiOnly => 'Wi-Fi only';
+
+  @override
+  String get autoUploadWifiOnlyHint =>
+      'Pauses on mobile data, even with an active VPN';
+
+  @override
+  String get autoUploadVideos => 'Include videos';
+
+  @override
+  String get autoUploadVideosHint => 'Can use a lot of data';
+
+  @override
+  String get autoUploadCharging => 'Only while charging';
+
+  @override
+  String get autoUploadChargingHint => 'Saves battery with large backlogs';
+
+  @override
+  String get autoUploadPermissionDenied =>
+      'Without access to all photos, auto upload cannot back up anything. You can allow access in the system settings.';
+
+  @override
+  String get openSystemSettings => 'Open settings';
+
+  @override
+  String get autoUploadStatus => 'Status';
+
+  @override
+  String autoUploadLastRun(String when, int files, int failed) {
+    String _temp0 = intl.Intl.pluralLogic(
+      files,
+      locale: localeName,
+      other: '$files files',
+      one: '1 file',
+    );
+    return 'Last run $when · $_temp0 · $failed errors';
+  }
+
+  @override
+  String get autoUploadNeverRun => 'Nothing backed up yet';
+
+  @override
+  String get autoUploadRunning => 'Running …';
+
+  @override
+  String autoUploadLastCheck(String when) {
+    return 'Last checked $when';
+  }
+
+  @override
+  String autoUploadTotal(String files, String size) {
+    return 'Backed up in total: $files files · $size';
+  }
+
+  @override
+  String get autoUploadRunNow => 'Run now';
+
+  @override
+  String get autoUploadLog => 'Log';
+
+  @override
+  String get autoUploadLogEmpty => 'No entries yet.';
+
+  @override
+  String autoUploadRunSummary(int files, int failed, String size) {
+    String _temp0 = intl.Intl.pluralLogic(
+      files,
+      locale: localeName,
+      other: '$files files',
+      one: '1 file',
+    );
+    return '$_temp0 · $failed errors · $size';
+  }
+
+  @override
+  String autoUploadWaitingWifi(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count files wait',
+      one: '1 file waits',
+    );
+    return '$_temp0 for Wi-Fi';
+  }
+
+  @override
+  String autoUploadWaitingCharging(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count files wait',
+      one: '1 file waits',
+    );
+    return '$_temp0 for charging';
+  }
+
+  @override
+  String autoUploadNoteUnreachable(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count files wait',
+      one: '1 file waits',
+    );
+    return 'NAS not reachable – $_temp0';
+  }
+
+  @override
+  String autoUploadNoteOtherServer(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count files wait',
+      one: '1 file waits',
+    );
+    return 'Another server is signed in – $_temp0';
+  }
+
+  @override
+  String get autoUploadNoteSession =>
+      'Session expired – please sign in again in the app';
+
+  @override
+  String get autoUploadNoteWrite =>
+      'No write permission in the destination folder – choose another folder or adjust the permissions in DSM';
+
+  @override
+  String get autoUploadNoteTarget => 'Destination folder not found';
+
+  @override
+  String get autoUploadNotePermission =>
+      'No access to photos – allow it in the system settings';
+
+  @override
+  String get autoUploadNoteError => 'Error in the last run';
+
+  @override
+  String get autoUploadIosHint =>
+      'On iPhone, background uploads only run when the system allows it; anything missed is caught up when you open the app.';
+
+  @override
+  String get autoUploadNotification => 'Auto upload';
 }

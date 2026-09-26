@@ -151,7 +151,7 @@ class _PdfViewerScreenState extends ConsumerState<PdfViewerScreen> {
   Widget _pageBar(AppLocalizations l10n) {
     final mono = AppTheme.mono(const TextStyle(fontSize: 16));
     return DecoratedBox(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         border: Border(top: BorderSide(color: AppColors.border)),
       ),
       child: SafeArea(

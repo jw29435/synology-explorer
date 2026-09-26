@@ -93,14 +93,15 @@ class TransferQueue {
     _pump();
   }
 
-  /// Reiht den Upload von [localPath] als [remotePath] (Ordner/Name) ein.
-  Future<void> enqueueUpload({
+  /// Reiht den Upload von [localPath] als [remotePath] (Ordner/Name) ein und
+  /// liefert die ID des Transfers.
+  Future<int> enqueueUpload({
     required String localPath,
     required String remotePath,
     required bool overwrite,
     int? size,
   }) async {
-    await _db
+    final id = await _db
         .into(_t)
         .insert(
           TransfersCompanion.insert(
@@ -115,6 +116,7 @@ class TransferQueue {
           ),
         );
     _pump();
+    return id;
   }
 
   /// Pausiert [id]. Reihenfolge wie [pauseAll]: erst den wartenden Zustand
@@ -199,13 +201,23 @@ class TransferQueue {
 
   /// Bricht laufende Transfers ab (Zustand bleibt `running` und wird beim
   /// nächsten [start] wieder eingereiht) und wartet, bis sie beendet sind.
-  Future<void> dispose() async {
+  /// Mit [requeue] werden sie gleich wieder `queued` – für eine Queue, die
+  /// neben der App läuft (Auto-Upload im Hintergrund) und deshalb nie
+  /// [start] aufruft.
+  Future<void> dispose({bool requeue = false}) async {
     _disposed = true;
+    final ids = [..._running.keys];
     final runs = [..._running.values];
     for (final r in runs) {
       r.token.cancel();
     }
     await Future.wait([for (final r in runs) r.done]);
+    if (requeue) {
+      await (_db.update(_t)..where(
+            (t) => t.id.isIn(ids) & t.state.equalsValue(TransferState.running),
+          ))
+          .write(const TransfersCompanion(state: Value(TransferState.queued)));
+    }
   }
 
   Future<void> _stop(int id) async {

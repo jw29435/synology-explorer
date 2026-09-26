@@ -76,7 +76,7 @@ Future<bool?> showCertificateSheet(
             if (cert is CertificateMismatchException) ...[
               Text(
                 l10n.errorCertMismatch(cert.host),
-                style: const TextStyle(color: AppColors.errorSoft),
+                style: TextStyle(color: AppColors.errorSoft),
               ),
               const SizedBox(height: 8),
             ],
@@ -96,7 +96,7 @@ Future<bool?> showCertificateSheet(
                       padding: const EdgeInsets.all(14),
                       decoration: i == 0
                           ? null
-                          : const BoxDecoration(
+                          : BoxDecoration(
                               border: Border(
                                 top: BorderSide(color: AppColors.border),
                               ),
@@ -122,12 +122,12 @@ Future<bool?> showCertificateSheet(
             const SizedBox(height: 16),
             Row(
               children: [
-                const Icon(Icons.info_outline, color: AppColors.textSecondary),
+                Icon(Icons.info_outline, color: AppColors.textSecondary),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
                     l10n.certPinInfo,
-                    style: const TextStyle(color: AppColors.textSecondary),
+                    style: TextStyle(color: AppColors.textSecondary),
                   ),
                 ),
               ],

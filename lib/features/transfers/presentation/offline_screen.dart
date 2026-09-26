@@ -77,7 +77,7 @@ class _OfflineScreenState extends ConsumerState<OfflineScreen> {
                 Expanded(
                   child: Text(
                     files.isEmpty ? l10n.offlineEmpty : l10n.offlineInfo,
-                    style: const TextStyle(color: AppColors.textSecondary),
+                    style: TextStyle(color: AppColors.textSecondary),
                   ),
                 ),
               ],
@@ -141,7 +141,7 @@ class _StorageCard extends ConsumerWidget {
       children: [
         Container(width: 10, height: 10, color: color),
         const SizedBox(width: 6),
-        Text(label, style: const TextStyle(color: AppColors.textSecondary)),
+        Text(label, style: TextStyle(color: AppColors.textSecondary)),
       ],
     );
     return Container(
@@ -182,7 +182,7 @@ class _StorageCard extends ConsumerWidget {
                       child: const ColoredBox(color: AppColors.info),
                     ),
                   if (total == 0)
-                    const Expanded(child: ColoredBox(color: AppColors.border)),
+                    Expanded(child: ColoredBox(color: AppColors.border)),
                 ],
               ),
             ),
@@ -234,12 +234,12 @@ class _GroupHeader extends StatelessWidget {
         ),
         Text(
           formatSize(bytes, l10n.localeName),
-          style: AppTheme.mono(const TextStyle(color: AppColors.textSecondary)),
+          style: AppTheme.mono(TextStyle(color: AppColors.textSecondary)),
         ),
         if (onRemove != null)
           IconButton(
             tooltip: l10n.offlineRemove,
-            icon: const Icon(Icons.delete_outline, color: AppColors.errorSoft),
+            icon: Icon(Icons.delete_outline, color: AppColors.errorSoft),
             onPressed: onRemove,
           ),
       ],
@@ -278,13 +278,13 @@ class _FileRow extends ConsumerWidget {
               onTap: () => _update(context, ref, changed),
               child: Text(
                 l10n.offlineChanged,
-                style: const TextStyle(color: AppColors.errorSoft),
+                style: TextStyle(color: AppColors.errorSoft),
               ),
             ),
       trailing: onRemove != null
           ? IconButton(
               tooltip: l10n.offlineRemove,
-              icon: const Icon(
+              icon: Icon(
                 Icons.remove_circle_outline,
                 color: AppColors.errorSoft,
               ),
@@ -296,7 +296,7 @@ class _FileRow extends ConsumerWidget {
                 Text(
                   formatSize(file.size, l10n.localeName),
                   style: AppTheme.mono(
-                    const TextStyle(color: AppColors.textSecondary),
+                    TextStyle(color: AppColors.textSecondary),
                   ),
                 ),
                 // System-Share-Sheet: „In Dateien sichern“, Downloads usw.

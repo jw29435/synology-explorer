@@ -311,7 +311,7 @@ class _BottomBar extends ConsumerWidget {
                 padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
                 child: Text(
                   info,
-                  style: const TextStyle(color: AppColors.textSecondary),
+                  style: TextStyle(color: AppColors.textSecondary),
                 ),
               ),
             if (images.length > 1)
@@ -441,7 +441,7 @@ class _ImageError extends StatelessWidget {
                   ? describeError(cause, l10n)
                   : l10n.imageUnavailable,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.textSecondary),
+              style: TextStyle(color: AppColors.textSecondary),
             ),
           ],
         ),

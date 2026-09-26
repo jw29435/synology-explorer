@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../features/autoupload/presentation/auto_upload_screen.dart';
 import '../features/browser/domain/nas_entry.dart';
 import '../features/audio/presentation/now_playing_screen.dart';
-import '../features/audio/presentation/playback_providers.dart';
 import '../features/audio/presentation/queue_screen.dart';
 import '../features/browser/presentation/folder_screen.dart';
 import '../features/browser/presentation/search_screen.dart';
@@ -13,11 +13,11 @@ import '../features/browser/presentation/trash_screen.dart';
 import '../features/servers/presentation/server_form_screen.dart';
 import '../features/servers/presentation/server_list_screen.dart';
 import '../features/servers/presentation/server_providers.dart';
+import '../features/settings/presentation/settings_screen.dart';
 import '../features/sharing/presentation/share_links_screen.dart';
 import '../features/transfers/presentation/offline_screen.dart';
 import '../features/transfers/presentation/transfers_screen.dart';
 import '../features/viewers/presentation/viewer_screen.dart';
-import '../l10n/app_localizations.dart';
 import 'shell.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -131,11 +131,15 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/settings',
-                builder: (context, state) => const _SettingsPlaceholder(),
+                builder: (context, state) => const SettingsScreen(),
                 routes: [
                   GoRoute(
                     path: 'shares',
                     builder: (context, state) => const ShareLinksScreen(),
+                  ),
+                  GoRoute(
+                    path: 'autoupload',
+                    builder: (context, state) => const AutoUploadScreen(),
                   ),
                 ],
               ),
@@ -148,39 +152,6 @@ final routerProvider = Provider<GoRouter>((ref) {
   ref.onDispose(router.dispose);
   return router;
 });
-
-/// Platzhalter bis Screen 26 (M5); bietet schon die Freigabelinks (23).
-class _SettingsPlaceholder extends ConsumerWidget {
-  const _SettingsPlaceholder();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context);
-    return Scaffold(
-      appBar: AppBar(title: Text(l10n.tabSettings)),
-      body: ListView(
-        children: [
-          ListTile(
-            leading: const Icon(Icons.link),
-            title: Text(l10n.shareLinksTitle),
-            trailing: const Icon(Icons.chevron_right),
-            enabled: ref.watch(sessionProvider) != null,
-            onTap: () => context.go('/settings/shares'),
-          ),
-          SwitchListTile(
-            key: const Key('wifi-only'),
-            secondary: const Icon(Icons.wifi),
-            title: Text(l10n.settingsWifiOnly),
-            subtitle: Text(l10n.settingsWifiOnlyHint),
-            value: ref.watch(wifiOnlyProvider).value ?? false,
-            onChanged: (on) =>
-                ref.read(playbackRepositoryProvider).setWifiOnly(on),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 /// Vollbild-Sheet, das von unten hereinfährt.
 Page<void> _slideUp(GoRouterState state, Widget child) => CustomTransitionPage(

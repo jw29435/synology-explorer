@@ -8,8 +8,17 @@ final secureStorageProvider = Provider<FlutterSecureStorage>(
   (ref) => const FlutterSecureStorage(),
 );
 
+/// Öffnet die App-Datenbank. Geteilt über Isolates: Der Auto-Upload im
+/// Hintergrund (eigene Engine) nutzt dieselbe Verbindung wie die App.
+AppDatabase openAppDatabase() => AppDatabase(
+  driftDatabase(
+    name: 'synology_explorer',
+    native: const DriftNativeOptions(shareAcrossIsolates: true),
+  ),
+);
+
 final appDatabaseProvider = Provider<AppDatabase>((ref) {
-  final db = AppDatabase(driftDatabase(name: 'synology_explorer'));
+  final db = openAppDatabase();
   ref.onDispose(db.close);
   return db;
 });

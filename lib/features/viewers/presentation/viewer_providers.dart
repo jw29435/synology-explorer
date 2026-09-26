@@ -8,11 +8,14 @@ import 'package:path_provider/path_provider.dart';
 import '../../../core/storage/media_cache.dart';
 import '../../browser/domain/nas_entry.dart';
 import '../../servers/presentation/server_providers.dart';
+import '../../settings/presentation/settings_providers.dart';
 import '../data/media_repository.dart';
 
-/// Limit des Medien-Caches. ponytail: fest 500 MB (CONCEPT.md Abschnitt 6),
-/// bis Screen 26 (Einstellungen, M5) den Wert setzt.
-final mediaCacheLimitProvider = Provider<int>((ref) => 500 << 20);
+/// Limit des Medien-Caches: 4/5 des Cache-Limits aus den Einstellungen
+/// (den Rest bekommen die Vorschaubilder).
+final mediaCacheLimitProvider = Provider<int>(
+  (ref) => ref.watch(cacheLimitProvider) * 4 ~/ 5,
+);
 
 final mediaCacheProvider = Provider<MediaCache>(
   (ref) => MediaCache(

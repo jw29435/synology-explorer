@@ -124,9 +124,7 @@ class DownloadProgress extends StatelessWidget {
                   formatSize((size * progress!).round(), l10n.localeName),
                   formatSize(size, l10n.localeName),
                 ),
-                style: AppTheme.mono(
-                  const TextStyle(color: AppColors.textSecondary),
-                ),
+                style: AppTheme.mono(TextStyle(color: AppColors.textSecondary)),
               ),
             ],
           ],

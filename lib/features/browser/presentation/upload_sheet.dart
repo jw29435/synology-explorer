@@ -129,7 +129,7 @@ class _UploadSheetState extends State<_UploadSheet> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),
           ),
-          side: const BorderSide(color: AppColors.textMuted),
+          side: BorderSide(color: AppColors.textMuted),
           foregroundColor: AppColors.text,
         ),
         onPressed: () => Navigator.of(context).pop((source, _overwrite)),

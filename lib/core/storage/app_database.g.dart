@@ -2850,6 +2850,442 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
   }
 }
 
+class $AutoUploadRunsTable extends AutoUploadRuns
+    with TableInfo<$AutoUploadRunsTable, AutoUploadRun> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AutoUploadRunsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _startedAtMeta = const VerificationMeta(
+    'startedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> startedAt = GeneratedColumn<DateTime>(
+    'started_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _filesMeta = const VerificationMeta('files');
+  @override
+  late final GeneratedColumn<int> files = GeneratedColumn<int>(
+    'files',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _failedMeta = const VerificationMeta('failed');
+  @override
+  late final GeneratedColumn<int> failed = GeneratedColumn<int>(
+    'failed',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _bytesMeta = const VerificationMeta('bytes');
+  @override
+  late final GeneratedColumn<int> bytes = GeneratedColumn<int>(
+    'bytes',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _waitingMeta = const VerificationMeta(
+    'waiting',
+  );
+  @override
+  late final GeneratedColumn<int> waiting = GeneratedColumn<int>(
+    'waiting',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _noteMeta = const VerificationMeta('note');
+  @override
+  late final GeneratedColumn<String> note = GeneratedColumn<String>(
+    'note',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    startedAt,
+    files,
+    failed,
+    bytes,
+    waiting,
+    note,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'auto_upload_runs';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<AutoUploadRun> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('started_at')) {
+      context.handle(
+        _startedAtMeta,
+        startedAt.isAcceptableOrUnknown(data['started_at']!, _startedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_startedAtMeta);
+    }
+    if (data.containsKey('files')) {
+      context.handle(
+        _filesMeta,
+        files.isAcceptableOrUnknown(data['files']!, _filesMeta),
+      );
+    }
+    if (data.containsKey('failed')) {
+      context.handle(
+        _failedMeta,
+        failed.isAcceptableOrUnknown(data['failed']!, _failedMeta),
+      );
+    }
+    if (data.containsKey('bytes')) {
+      context.handle(
+        _bytesMeta,
+        bytes.isAcceptableOrUnknown(data['bytes']!, _bytesMeta),
+      );
+    }
+    if (data.containsKey('waiting')) {
+      context.handle(
+        _waitingMeta,
+        waiting.isAcceptableOrUnknown(data['waiting']!, _waitingMeta),
+      );
+    }
+    if (data.containsKey('note')) {
+      context.handle(
+        _noteMeta,
+        note.isAcceptableOrUnknown(data['note']!, _noteMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  AutoUploadRun map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AutoUploadRun(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      startedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}started_at'],
+      )!,
+      files: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}files'],
+      )!,
+      failed: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}failed'],
+      )!,
+      bytes: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}bytes'],
+      )!,
+      waiting: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}waiting'],
+      )!,
+      note: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}note'],
+      ),
+    );
+  }
+
+  @override
+  $AutoUploadRunsTable createAlias(String alias) {
+    return $AutoUploadRunsTable(attachedDatabase, alias);
+  }
+}
+
+class AutoUploadRun extends DataClass implements Insertable<AutoUploadRun> {
+  final int id;
+  final DateTime startedAt;
+
+  /// Eingereihte Dateien, davon [failed] fehlgeschlagen, [bytes] übertragen.
+  final int files;
+  final int failed;
+  final int bytes;
+
+  /// Neue Aufnahmen, die wegen [note] noch warten.
+  final int waiting;
+
+  /// Grund, warum der Lauf nicht (ganz) lief, z. B. `noWifi`.
+  final String? note;
+  const AutoUploadRun({
+    required this.id,
+    required this.startedAt,
+    required this.files,
+    required this.failed,
+    required this.bytes,
+    required this.waiting,
+    this.note,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['started_at'] = Variable<DateTime>(startedAt);
+    map['files'] = Variable<int>(files);
+    map['failed'] = Variable<int>(failed);
+    map['bytes'] = Variable<int>(bytes);
+    map['waiting'] = Variable<int>(waiting);
+    if (!nullToAbsent || note != null) {
+      map['note'] = Variable<String>(note);
+    }
+    return map;
+  }
+
+  AutoUploadRunsCompanion toCompanion(bool nullToAbsent) {
+    return AutoUploadRunsCompanion(
+      id: Value(id),
+      startedAt: Value(startedAt),
+      files: Value(files),
+      failed: Value(failed),
+      bytes: Value(bytes),
+      waiting: Value(waiting),
+      note: note == null && nullToAbsent ? const Value.absent() : Value(note),
+    );
+  }
+
+  factory AutoUploadRun.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AutoUploadRun(
+      id: serializer.fromJson<int>(json['id']),
+      startedAt: serializer.fromJson<DateTime>(json['startedAt']),
+      files: serializer.fromJson<int>(json['files']),
+      failed: serializer.fromJson<int>(json['failed']),
+      bytes: serializer.fromJson<int>(json['bytes']),
+      waiting: serializer.fromJson<int>(json['waiting']),
+      note: serializer.fromJson<String?>(json['note']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'startedAt': serializer.toJson<DateTime>(startedAt),
+      'files': serializer.toJson<int>(files),
+      'failed': serializer.toJson<int>(failed),
+      'bytes': serializer.toJson<int>(bytes),
+      'waiting': serializer.toJson<int>(waiting),
+      'note': serializer.toJson<String?>(note),
+    };
+  }
+
+  AutoUploadRun copyWith({
+    int? id,
+    DateTime? startedAt,
+    int? files,
+    int? failed,
+    int? bytes,
+    int? waiting,
+    Value<String?> note = const Value.absent(),
+  }) => AutoUploadRun(
+    id: id ?? this.id,
+    startedAt: startedAt ?? this.startedAt,
+    files: files ?? this.files,
+    failed: failed ?? this.failed,
+    bytes: bytes ?? this.bytes,
+    waiting: waiting ?? this.waiting,
+    note: note.present ? note.value : this.note,
+  );
+  AutoUploadRun copyWithCompanion(AutoUploadRunsCompanion data) {
+    return AutoUploadRun(
+      id: data.id.present ? data.id.value : this.id,
+      startedAt: data.startedAt.present ? data.startedAt.value : this.startedAt,
+      files: data.files.present ? data.files.value : this.files,
+      failed: data.failed.present ? data.failed.value : this.failed,
+      bytes: data.bytes.present ? data.bytes.value : this.bytes,
+      waiting: data.waiting.present ? data.waiting.value : this.waiting,
+      note: data.note.present ? data.note.value : this.note,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AutoUploadRun(')
+          ..write('id: $id, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('files: $files, ')
+          ..write('failed: $failed, ')
+          ..write('bytes: $bytes, ')
+          ..write('waiting: $waiting, ')
+          ..write('note: $note')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, startedAt, files, failed, bytes, waiting, note);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AutoUploadRun &&
+          other.id == this.id &&
+          other.startedAt == this.startedAt &&
+          other.files == this.files &&
+          other.failed == this.failed &&
+          other.bytes == this.bytes &&
+          other.waiting == this.waiting &&
+          other.note == this.note);
+}
+
+class AutoUploadRunsCompanion extends UpdateCompanion<AutoUploadRun> {
+  final Value<int> id;
+  final Value<DateTime> startedAt;
+  final Value<int> files;
+  final Value<int> failed;
+  final Value<int> bytes;
+  final Value<int> waiting;
+  final Value<String?> note;
+  const AutoUploadRunsCompanion({
+    this.id = const Value.absent(),
+    this.startedAt = const Value.absent(),
+    this.files = const Value.absent(),
+    this.failed = const Value.absent(),
+    this.bytes = const Value.absent(),
+    this.waiting = const Value.absent(),
+    this.note = const Value.absent(),
+  });
+  AutoUploadRunsCompanion.insert({
+    this.id = const Value.absent(),
+    required DateTime startedAt,
+    this.files = const Value.absent(),
+    this.failed = const Value.absent(),
+    this.bytes = const Value.absent(),
+    this.waiting = const Value.absent(),
+    this.note = const Value.absent(),
+  }) : startedAt = Value(startedAt);
+  static Insertable<AutoUploadRun> custom({
+    Expression<int>? id,
+    Expression<DateTime>? startedAt,
+    Expression<int>? files,
+    Expression<int>? failed,
+    Expression<int>? bytes,
+    Expression<int>? waiting,
+    Expression<String>? note,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (startedAt != null) 'started_at': startedAt,
+      if (files != null) 'files': files,
+      if (failed != null) 'failed': failed,
+      if (bytes != null) 'bytes': bytes,
+      if (waiting != null) 'waiting': waiting,
+      if (note != null) 'note': note,
+    });
+  }
+
+  AutoUploadRunsCompanion copyWith({
+    Value<int>? id,
+    Value<DateTime>? startedAt,
+    Value<int>? files,
+    Value<int>? failed,
+    Value<int>? bytes,
+    Value<int>? waiting,
+    Value<String?>? note,
+  }) {
+    return AutoUploadRunsCompanion(
+      id: id ?? this.id,
+      startedAt: startedAt ?? this.startedAt,
+      files: files ?? this.files,
+      failed: failed ?? this.failed,
+      bytes: bytes ?? this.bytes,
+      waiting: waiting ?? this.waiting,
+      note: note ?? this.note,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (startedAt.present) {
+      map['started_at'] = Variable<DateTime>(startedAt.value);
+    }
+    if (files.present) {
+      map['files'] = Variable<int>(files.value);
+    }
+    if (failed.present) {
+      map['failed'] = Variable<int>(failed.value);
+    }
+    if (bytes.present) {
+      map['bytes'] = Variable<int>(bytes.value);
+    }
+    if (waiting.present) {
+      map['waiting'] = Variable<int>(waiting.value);
+    }
+    if (note.present) {
+      map['note'] = Variable<String>(note.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AutoUploadRunsCompanion(')
+          ..write('id: $id, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('files: $files, ')
+          ..write('failed: $failed, ')
+          ..write('bytes: $bytes, ')
+          ..write('waiting: $waiting, ')
+          ..write('note: $note')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -2864,6 +3300,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     this,
   );
   late final $SettingsTable settings = $SettingsTable(this);
+  late final $AutoUploadRunsTable autoUploadRuns = $AutoUploadRunsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2877,6 +3314,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     playbackPositions,
     audiobookFolders,
     settings,
+    autoUploadRuns,
   ];
 }
 
@@ -4512,6 +4950,249 @@ typedef $$SettingsTableProcessedTableManager =
       Setting,
       PrefetchHooks Function()
     >;
+typedef $$AutoUploadRunsTableCreateCompanionBuilder =
+    AutoUploadRunsCompanion Function({
+      Value<int> id,
+      required DateTime startedAt,
+      Value<int> files,
+      Value<int> failed,
+      Value<int> bytes,
+      Value<int> waiting,
+      Value<String?> note,
+    });
+typedef $$AutoUploadRunsTableUpdateCompanionBuilder =
+    AutoUploadRunsCompanion Function({
+      Value<int> id,
+      Value<DateTime> startedAt,
+      Value<int> files,
+      Value<int> failed,
+      Value<int> bytes,
+      Value<int> waiting,
+      Value<String?> note,
+    });
+
+class $$AutoUploadRunsTableFilterComposer
+    extends Composer<_$AppDatabase, $AutoUploadRunsTable> {
+  $$AutoUploadRunsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get startedAt => $composableBuilder(
+    column: $table.startedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get files => $composableBuilder(
+    column: $table.files,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get failed => $composableBuilder(
+    column: $table.failed,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get bytes => $composableBuilder(
+    column: $table.bytes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get waiting => $composableBuilder(
+    column: $table.waiting,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$AutoUploadRunsTableOrderingComposer
+    extends Composer<_$AppDatabase, $AutoUploadRunsTable> {
+  $$AutoUploadRunsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get startedAt => $composableBuilder(
+    column: $table.startedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get files => $composableBuilder(
+    column: $table.files,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get failed => $composableBuilder(
+    column: $table.failed,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get bytes => $composableBuilder(
+    column: $table.bytes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get waiting => $composableBuilder(
+    column: $table.waiting,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$AutoUploadRunsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $AutoUploadRunsTable> {
+  $$AutoUploadRunsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get startedAt =>
+      $composableBuilder(column: $table.startedAt, builder: (column) => column);
+
+  GeneratedColumn<int> get files =>
+      $composableBuilder(column: $table.files, builder: (column) => column);
+
+  GeneratedColumn<int> get failed =>
+      $composableBuilder(column: $table.failed, builder: (column) => column);
+
+  GeneratedColumn<int> get bytes =>
+      $composableBuilder(column: $table.bytes, builder: (column) => column);
+
+  GeneratedColumn<int> get waiting =>
+      $composableBuilder(column: $table.waiting, builder: (column) => column);
+
+  GeneratedColumn<String> get note =>
+      $composableBuilder(column: $table.note, builder: (column) => column);
+}
+
+class $$AutoUploadRunsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $AutoUploadRunsTable,
+          AutoUploadRun,
+          $$AutoUploadRunsTableFilterComposer,
+          $$AutoUploadRunsTableOrderingComposer,
+          $$AutoUploadRunsTableAnnotationComposer,
+          $$AutoUploadRunsTableCreateCompanionBuilder,
+          $$AutoUploadRunsTableUpdateCompanionBuilder,
+          (
+            AutoUploadRun,
+            BaseReferences<_$AppDatabase, $AutoUploadRunsTable, AutoUploadRun>,
+          ),
+          AutoUploadRun,
+          PrefetchHooks Function()
+        > {
+  $$AutoUploadRunsTableTableManager(
+    _$AppDatabase db,
+    $AutoUploadRunsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AutoUploadRunsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AutoUploadRunsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AutoUploadRunsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<DateTime> startedAt = const Value.absent(),
+                Value<int> files = const Value.absent(),
+                Value<int> failed = const Value.absent(),
+                Value<int> bytes = const Value.absent(),
+                Value<int> waiting = const Value.absent(),
+                Value<String?> note = const Value.absent(),
+              }) => AutoUploadRunsCompanion(
+                id: id,
+                startedAt: startedAt,
+                files: files,
+                failed: failed,
+                bytes: bytes,
+                waiting: waiting,
+                note: note,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required DateTime startedAt,
+                Value<int> files = const Value.absent(),
+                Value<int> failed = const Value.absent(),
+                Value<int> bytes = const Value.absent(),
+                Value<int> waiting = const Value.absent(),
+                Value<String?> note = const Value.absent(),
+              }) => AutoUploadRunsCompanion.insert(
+                id: id,
+                startedAt: startedAt,
+                files: files,
+                failed: failed,
+                bytes: bytes,
+                waiting: waiting,
+                note: note,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$AutoUploadRunsTable, AutoUploadRun>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $AutoUploadRunsTable,
+                    AutoUploadRun
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$AutoUploadRunsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $AutoUploadRunsTable,
+      AutoUploadRun,
+      $$AutoUploadRunsTableFilterComposer,
+      $$AutoUploadRunsTableOrderingComposer,
+      $$AutoUploadRunsTableAnnotationComposer,
+      $$AutoUploadRunsTableCreateCompanionBuilder,
+      $$AutoUploadRunsTableUpdateCompanionBuilder,
+      (
+        AutoUploadRun,
+        BaseReferences<_$AppDatabase, $AutoUploadRunsTable, AutoUploadRun>,
+      ),
+      AutoUploadRun,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -4532,4 +5213,6 @@ class $AppDatabaseManager {
       $$AudiobookFoldersTableTableManager(_db, _db.audiobookFolders);
   $$SettingsTableTableManager get settings =>
       $$SettingsTableTableManager(_db, _db.settings);
+  $$AutoUploadRunsTableTableManager get autoUploadRuns =>
+      $$AutoUploadRunsTableTableManager(_db, _db.autoUploadRuns);
 }

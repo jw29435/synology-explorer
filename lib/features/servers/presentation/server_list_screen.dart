@@ -71,13 +71,10 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
                 onTap: () => Navigator.pop(context, 'logout'),
               ),
             ListTile(
-              leading: const Icon(
-                Icons.delete_outline,
-                color: AppColors.errorSoft,
-              ),
+              leading: Icon(Icons.delete_outline, color: AppColors.errorSoft),
               title: Text(
                 l10n.serverDelete,
-                style: const TextStyle(color: AppColors.errorSoft),
+                style: TextStyle(color: AppColors.errorSoft),
               ),
               onTap: () => Navigator.pop(context, 'delete'),
             ),
@@ -105,7 +102,7 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
                 onPressed: () => Navigator.pop(context, true),
                 child: Text(
                   l10n.serverDelete,
-                  style: const TextStyle(color: AppColors.errorSoft),
+                  style: TextStyle(color: AppColors.errorSoft),
                 ),
               ),
             ],
@@ -156,7 +153,7 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
               child: Text(
                 l10n.serversEmpty,
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: AppColors.textSecondary),
+                style: TextStyle(color: AppColors.textSecondary),
               ),
             ),
           for (final p in servers)
@@ -179,12 +176,12 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.info_outline, color: AppColors.textSecondary),
+                Icon(Icons.info_outline, color: AppColors.textSecondary),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Text(
                     l10n.serverInfo,
-                    style: const TextStyle(color: AppColors.textSecondary),
+                    style: TextStyle(color: AppColors.textSecondary),
                   ),
                 ),
               ],
@@ -235,7 +232,7 @@ class _ServerCard extends StatelessWidget {
       child: Material(
         color: AppColors.surface,
         shape: RoundedRectangleBorder(
-          side: const BorderSide(color: AppColors.border),
+          side: BorderSide(color: AppColors.border),
           borderRadius: BorderRadius.circular(20),
         ),
         clipBehavior: Clip.antiAlias,
@@ -278,9 +275,7 @@ class _ServerCard extends StatelessWidget {
                           ),
                           Text(
                             profile.user,
-                            style: const TextStyle(
-                              color: AppColors.textSecondary,
-                            ),
+                            style: TextStyle(color: AppColors.textSecondary),
                           ),
                         ],
                       ),
@@ -315,14 +310,14 @@ class _ServerCard extends StatelessWidget {
                           url.hasPort ? '${url.host}:${url.port}' : url.host,
                           overflow: TextOverflow.ellipsis,
                           style: AppTheme.mono(
-                            const TextStyle(color: AppColors.textSecondary),
+                            TextStyle(color: AppColors.textSecondary),
                           ),
                         ),
                       ),
                     ] else
                       Text(
                         l10n.serverNotConnected,
-                        style: const TextStyle(color: AppColors.textSecondary),
+                        style: TextStyle(color: AppColors.textSecondary),
                       ),
                   ],
                 ),

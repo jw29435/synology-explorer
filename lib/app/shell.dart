@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../features/audio/presentation/audio_widgets.dart';
+import '../features/autoupload/presentation/auto_upload_providers.dart';
 import '../features/audio/presentation/playback_providers.dart';
 import '../features/transfers/presentation/transfer_providers.dart';
 import '../l10n/app_localizations.dart';
@@ -18,6 +19,8 @@ class AppShell extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     // Transfer-Worker läuft, solange die Shell steht (auch nach Neustart).
     ref.watch(transferQueueProvider);
+    // Auto-Upload beim Start bzw. nach der Anmeldung nachholen.
+    ref.watch(autoUploadCatchUpProvider);
     return Scaffold(
       body: navigationShell,
       bottomNavigationBar: Column(

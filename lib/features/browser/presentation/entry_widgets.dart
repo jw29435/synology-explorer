@@ -201,7 +201,7 @@ class ErrorPanel extends ConsumerWidget {
       padding: const EdgeInsets.all(24),
       child: Column(
         children: [
-          const Icon(Icons.error_outline, color: AppColors.errorSoft),
+          Icon(Icons.error_outline, color: AppColors.errorSoft),
           const SizedBox(height: 8),
           Text(describeError(error, l10n), textAlign: TextAlign.center),
           const SizedBox(height: 12),

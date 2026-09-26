@@ -172,13 +172,13 @@ class _OpenWithScreenState extends ConsumerState<OpenWithScreen> {
             if (entry.size case final size?)
               Text(
                 formatSize(size, l10n.localeName),
-                style: const TextStyle(color: AppColors.textSecondary),
+                style: TextStyle(color: AppColors.textSecondary),
               ),
             const SizedBox(height: 16),
             Text(
               widget.hint ?? l10n.openWithHint,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.textSecondary),
+              style: TextStyle(color: AppColors.textSecondary),
             ),
             const SizedBox(height: 24),
             FilledButton.icon(

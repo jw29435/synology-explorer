@@ -247,7 +247,7 @@ class _TextBodyState extends State<_TextBody> {
         border: Border(left: BorderSide(color: AppColors.accent, width: 4)),
       ),
       blockquotePadding: const EdgeInsets.fromLTRB(16, 4, 8, 4),
-      horizontalRuleDecoration: const BoxDecoration(
+      horizontalRuleDecoration: BoxDecoration(
         border: Border(top: BorderSide(color: AppColors.border)),
       ),
     );
