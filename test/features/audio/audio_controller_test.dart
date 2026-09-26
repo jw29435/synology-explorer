@@ -16,6 +16,7 @@ import 'package:synology_explorer/core/network/media_proxy.dart';
 import 'package:synology_explorer/core/network/syno_api_client.dart';
 import 'package:synology_explorer/core/network/syno_exception.dart';
 import 'package:synology_explorer/core/storage/app_database.dart';
+import 'package:synology_explorer/core/storage/media_cache.dart';
 import 'package:synology_explorer/core/storage/storage_providers.dart';
 import 'package:synology_explorer/features/audio/data/audio_handler.dart';
 import 'package:synology_explorer/features/audio/data/playback_repository.dart';
@@ -250,7 +251,10 @@ void main() {
           TrackInfoLoader(
             download: (_, {maxBytes}) async => throw StateError('offline'),
             thumbnail: (_) async => throw StateError('offline'),
-            dir: Directory.systemTemp.createTemp('covers'),
+            cache: MediaCache(
+              Directory.systemTemp.createTemp('covers'),
+              maxBytes: 1 << 20,
+            ),
           ),
         ),
       ],

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:synology_explorer/core/storage/media_cache.dart';
 import 'package:synology_explorer/features/audio/data/track_info_loader.dart';
 import 'package:synology_explorer/features/browser/domain/nas_entry.dart';
 
@@ -44,7 +45,7 @@ void main() {
   late List<String> thumbs;
   late Map<String, Uint8List> files;
 
-  TrackInfoLoader loader() => TrackInfoLoader(
+  TrackInfoLoader loader({int maxBytes = 1 << 30}) => TrackInfoLoader(
     download: (path, {maxBytes}) async {
       downloads.add((path: path, maxBytes: maxBytes));
       final bytes = files[path] ?? (throw const SocketException('offline'));
@@ -56,7 +57,7 @@ void main() {
       thumbs.add(entry.path);
       return Uint8List.fromList([9, 9, 9]);
     },
-    dir: Future.value(tmp),
+    cache: MediaCache(Future.value(tmp), maxBytes: maxBytes),
   );
 
   NasEntry entry(String path, {int? size}) => NasEntry(
@@ -134,9 +135,13 @@ void main() {
     'parallele Loads desselben Titels kommen sich nicht in die Quere',
     () async {
       files[track.path] = id3Tag(cover: [5, 6]);
+      // Eine Instanz je Session (Provider): gleichzeitige Loads teilen sich
+      // einen Ladevorgang.
+      final shared = loader();
       final results = await Future.wait([
-        for (var i = 0; i < 4; i++) loader().load(track),
+        for (var i = 0; i < 4; i++) shared.load(track),
       ]);
+      expect(downloads, hasLength(1));
       for (final info in results) {
         expect(info.title, 'Strandgut');
         expect(await info.cover!.readAsBytes(), [5, 6]);
@@ -151,4 +156,29 @@ void main() {
       );
     },
   );
+
+  test('Cache hat ein Limit (LRU): alte Einträge werden verdrängt', () async {
+    for (var i = 0; i < 20; i++) {
+      final t = entry('/m/A/$i.mp3');
+      files[t.path] = id3Tag(cover: List.filled(10 << 10, i));
+      await loader(maxBytes: 64 << 10).load(t);
+    }
+    final used = tmp.listSync().whereType<File>().fold<int>(
+      0,
+      (sum, f) => sum + f.lengthSync(),
+    );
+    // 20 × 10 KB Cover passen nicht in 64 KB; es bleibt höchstens das Limit
+    // plus der zuletzt geladene Eintrag.
+    expect(used, lessThan((64 + 12) << 10));
+  });
+
+  test('verdrängtes Cover wird aus dem Dateianfang neu geholt', () async {
+    files[track.path] = id3Tag(cover: [4, 2]);
+    await loader().load(track);
+    for (final f in tmp.listSync().whereType<File>()) {
+      if (f.path.endsWith('.img')) f.deleteSync();
+    }
+    final info = await loader().load(track);
+    expect(await info.cover!.readAsBytes(), [4, 2]);
+  });
 }

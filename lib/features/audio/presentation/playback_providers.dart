@@ -12,6 +12,7 @@ import 'package:path_provider/path_provider.dart';
 
 import '../../../core/network/media_proxy.dart';
 import '../../../core/network/syno_exception.dart';
+import '../../../core/storage/media_cache.dart';
 import '../../../core/storage/storage_providers.dart';
 import '../../browser/domain/nas_entry.dart';
 import '../../browser/presentation/browser_providers.dart';
@@ -61,6 +62,9 @@ final audioProxyStarterProvider =
 PlaybackPositionRepository _positionsFor(Ref ref, int serverId) =>
     PlaybackPositionRepository(ref.read(appDatabaseProvider), serverId);
 
+/// Limit des Cover-/Tag-Caches (LRU) je Server.
+const coverCacheBytes = 100 << 20;
+
 final trackInfoLoaderProvider = Provider<TrackInfoLoader>((ref) {
   final client = ref.watch(sessionProvider)!.client;
   final thumbs = ref.watch(thumbnailCacheProvider);
@@ -77,8 +81,11 @@ final trackInfoLoaderProvider = Provider<TrackInfoLoader>((ref) {
       return bytes.takeBytes();
     },
     thumbnail: thumbs.load,
-    dir: getApplicationCacheDirectory().then(
-      (d) => Directory('${d.path}/covers/${client.profile.id}'),
+    cache: MediaCache(
+      getApplicationCacheDirectory().then(
+        (d) => Directory('${d.path}/covers/${client.profile.id}'),
+      ),
+      maxBytes: coverCacheBytes,
     ),
   );
 });

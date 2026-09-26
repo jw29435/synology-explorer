@@ -5,8 +5,8 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
-import 'package:crypto/crypto.dart';
 
+import '../../../core/storage/media_cache.dart';
 import '../../browser/domain/nas_entry.dart';
 
 /// Tags und Cover eines Titels.
@@ -33,13 +33,13 @@ const folderCoverNames = {
 
 /// Cover-Kette: 1. eingebettetes Bild (ID3/FLAC/MP4) aus den ersten
 /// [prefixBytes] der Datei, 2. `folder.jpg`/`cover.jpg` im Ordner,
-/// 3. Platzhalter (`cover == null`). Ergebnisse liegen auf der Platte;
-/// Schlüssel ist ein Hash aus Pfad und mtime.
+/// 3. Platzhalter (`cover == null`). Tags und Bilder liegen im [cache]
+/// (LRU mit Größenlimit); Schlüssel sind Pfad und mtime.
 class TrackInfoLoader {
   TrackInfoLoader({
     required this.download,
     required this.thumbnail,
-    required this.dir,
+    required this.cache,
   });
 
   /// Lädt eine Datei, höchstens die ersten [maxBytes] (Range).
@@ -48,103 +48,97 @@ class TrackInfoLoader {
   /// Vorschaubild über `SYNO.FileStation.Thumb`.
   final Future<Uint8List> Function(NasEntry entry) thumbnail;
 
-  /// Cache-Ordner.
-  final Future<Directory> dir;
+  final MediaCache cache;
 
   static const prefixBytes = 1 << 20;
 
   /// Größere Ordner-Cover kommen als Vorschaubild statt im Original.
   static const maxCoverBytes = 5 << 20;
 
-  // ponytail: kein Größenlimit für den Cover-Cache; liegt im Cache-Ordner, den
-  // das OS leeren darf. LRU wie beim Thumbnail-Cache, falls er zu groß wird.
+  static String _key(NasEntry e) =>
+      '${e.path}|${e.mtime?.millisecondsSinceEpoch}';
 
   Future<TrackInfo> load(NasEntry track, {NasEntry? folderCover}) async {
-    final tags = await _tags(track);
-    if (tags.cover != null || folderCover == null) return tags;
-    return TrackInfo(
-      title: tags.title,
-      artist: tags.artist,
-      album: tags.album,
-      cover: await _folderCover(folderCover),
-    );
-  }
-
-  static String _key(NasEntry e) => sha256
-      .convert(utf8.encode('${e.path}|${e.mtime?.millisecondsSinceEpoch}'))
-      .toString();
-
-  Future<TrackInfo> _tags(NasEntry track) async {
-    final cache = await dir;
     final key = _key(track);
-    final json = File('${cache.path}/$key.json');
-    final image = File('${cache.path}/$key.img');
-    if (await json.exists()) {
-      final m = jsonDecode(await json.readAsString()) as Map<String, dynamic>;
-      return TrackInfo(
-        title: m['title'] as String?,
-        artist: m['artist'] as String?,
-        album: m['album'] as String?,
-        cover: await image.exists() ? image : null,
-      );
-    }
-    // Netzwerkfehler gehen raus und werden nicht gecacht.
-    final prefix = await download(track.path, maxBytes: prefixBytes);
-    await cache.create(recursive: true);
-    final ext = track.name.contains('.')
-        ? track.name.substring(track.name.lastIndexOf('.'))
-        : '';
-    // Eindeutig: zwei gleichzeitige Loads desselben Titels dürfen sich nicht
-    // die Datei unter den Füßen wegziehen.
-    final part = File('${cache.path}/$key.${_unique()}.part$ext');
-    await part.writeAsBytes(prefix, flush: true);
-    final parsed = await Isolate.run(() => _parse(part.path));
-    await part.delete();
-    if (parsed.cover case final bytes?) await _write(image, bytes);
-    await _write(
-      json,
-      utf8.encode(
+    // Netzwerkfehler gehen raus; der Cache legt dann nichts an.
+    final tags = await cache.file('tags|$key', (target) async {
+      final parsed = await _parsePrefix(track);
+      if (parsed.cover case final bytes?) {
+        await cache.file(
+          'cover|$key',
+          (t) => t.writeAsBytes(bytes, flush: true),
+          extension: 'img',
+        );
+      }
+      await target.writeAsString(
         jsonEncode({
           'title': parsed.title,
           'artist': parsed.artist,
           'album': parsed.album,
+          'cover': parsed.cover != null,
         }),
-      ),
-    );
+        flush: true,
+      );
+    }, extension: 'json');
+    final m = jsonDecode(await tags.readAsString()) as Map<String, dynamic>;
+    final File? cover;
+    if (m['cover'] == true) {
+      // Bild inzwischen verdrängt: aus dem Dateianfang neu holen.
+      cover = await _quietly(
+        () => cache.file('cover|$key', (target) async {
+          final bytes = (await _parsePrefix(track)).cover;
+          if (bytes == null) throw StateError('kein Cover');
+          await target.writeAsBytes(bytes, flush: true);
+        }, extension: 'img'),
+      );
+    } else if (folderCover != null) {
+      cover = await _quietly(
+        () => cache.file('folder|${_key(folderCover)}', (target) async {
+          final size = folderCover.size;
+          final bytes = size != null && size <= maxCoverBytes
+              ? await download(folderCover.path)
+              : await thumbnail(folderCover);
+          await target.writeAsBytes(bytes, flush: true);
+        }, extension: 'img'),
+      );
+    } else {
+      cover = null;
+    }
     return TrackInfo(
-      title: parsed.title,
-      artist: parsed.artist,
-      album: parsed.album,
-      cover: parsed.cover == null ? null : image,
+      title: m['title'] as String?,
+      artist: m['artist'] as String?,
+      album: m['album'] as String?,
+      cover: cover,
     );
   }
 
-  Future<File?> _folderCover(NasEntry entry) async {
-    final cache = await dir;
-    final image = File('${cache.path}/${_key(entry)}.img');
-    if (await image.exists()) return image;
+  static Future<File?> _quietly(Future<File> Function() load) async {
     try {
-      final size = entry.size;
-      final bytes = size != null && size <= maxCoverBytes
-          ? await download(entry.path)
-          : await thumbnail(entry);
-      await cache.create(recursive: true);
-      await _write(image, bytes);
-      return image;
+      return await load();
     } catch (_) {
       return null;
     }
   }
 
   static final _random = Random();
-  static String _unique() =>
-      '${DateTime.now().microsecondsSinceEpoch}${_random.nextInt(1 << 32)}';
 
-  /// Atomar schreiben: halbe Dateien dürfen nie als Cache-Treffer gelten.
-  static Future<void> _write(File file, List<int> bytes) async {
-    final tmp = File('${file.path}.${_unique()}.tmp');
-    await tmp.writeAsBytes(bytes, flush: true);
-    await tmp.rename(file.path);
+  /// Lädt den Dateianfang und liest die Tags in einem Isolate.
+  Future<_Parsed> _parsePrefix(NasEntry track) async {
+    final prefix = await download(track.path, maxBytes: prefixBytes);
+    final ext = track.name.contains('.')
+        ? track.name.substring(track.name.lastIndexOf('.'))
+        : '';
+    // Eindeutig: gleichzeitige Loads dürfen sich nicht in die Quere kommen.
+    final part = File(
+      '${Directory.systemTemp.path}/se-tags-'
+      '${DateTime.now().microsecondsSinceEpoch}${_random.nextInt(1 << 32)}$ext',
+    );
+    await part.writeAsBytes(prefix, flush: true);
+    try {
+      return await Isolate.run(() => _parse(part.path));
+    } finally {
+      await part.delete();
+    }
   }
 }
 
