@@ -1,0 +1,17 @@
+flutter_launcher_icons:
+  image_path: "assets/icon/icon.png"
+  android: true
+  min_sdk_android: 26
+  adaptive_icon_background: "#032E7B"
+  adaptive_icon_foreground: "assets/icon/icon_foreground.png"
+  # Motiv liegt bereits in der Safe Zone, kein zusätzlicher Rand.
+  adaptive_icon_foreground_inset: 0
+  adaptive_icon_monochrome: "assets/icon/icon_monochrome.png"
+  ios: true
+  remove_alpha_ios: true
+  web:
+    generate: false
+  windows:
+    generate: false
+  macos:
+    generate: false
