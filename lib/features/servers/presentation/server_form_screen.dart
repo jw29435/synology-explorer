@@ -106,7 +106,7 @@ class _ServerFormScreenState extends ConsumerState<ServerFormScreen> {
       } else {
         await repo.update(profile);
         if (ref.read(sessionProvider)?.client.profile.id == _id) {
-          ref.read(sessionProvider.notifier).close();
+          await ref.read(sessionProvider.notifier).close();
         }
       }
       ref.invalidate(serversProvider);

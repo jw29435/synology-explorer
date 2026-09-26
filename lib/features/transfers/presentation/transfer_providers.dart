@@ -42,7 +42,8 @@ final transferQueueProvider = Provider<TransferQueue>((ref) {
   unawaited(queue.start());
   ref.onDispose(() {
     unawaited(sub.cancel());
-    unawaited(queue.dispose());
+    // Danach läuft nichts mehr: Benachrichtigung schließen.
+    unawaited(queue.dispose().then((_) => notifications.update(const [])));
   });
   return queue;
 });

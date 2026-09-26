@@ -10,6 +10,7 @@ import 'package:synology_explorer/core/storage/app_database.dart';
 import 'package:synology_explorer/features/transfers/data/transfer_api.dart';
 import 'package:synology_explorer/features/transfers/data/transfer_queue.dart';
 import 'package:synology_explorer/features/transfers/domain/transfer.dart';
+import 'package:synology_explorer/features/transfers/presentation/transfer_notifications.dart';
 
 /// Download schreibt [content] ab `offset`; jeder Aufruf wartet auf ein
 /// eigenes Tor, bis der Test es öffnet (oder wirft [failWith]).
@@ -49,6 +50,10 @@ class FakeTransferApi implements TransferApi {
   }) async {
     downloads.add((path: remotePath, offset: offset));
     await _gate(cancelToken);
+    if (rangeNotSatisfiable && offset > 0) {
+      rangeNotSatisfiable = false;
+      throw const SynoNetworkError(statusCode: 416);
+    }
     if (failWith case final e?) {
       failWith = null;
       // Halber Download bleibt als .part liegen.
@@ -83,6 +88,15 @@ class FakeTransferApi implements TransferApi {
 
   @override
   Future<String> freeName(String folder, String name) async => name;
+
+  /// Was `getinfo` als Änderungszeit auf dem NAS meldet.
+  DateTime? remoteMtime;
+
+  /// Einmal 416 bei einem Range-Request (Teil passt nicht mehr).
+  bool rangeNotSatisfiable = false;
+
+  @override
+  Future<DateTime?> mtime(String path) async => remoteMtime;
 }
 
 void main() {
@@ -302,6 +316,101 @@ void main() {
     await queue.start();
     await settle();
     expect(api.downloads, isEmpty);
+  });
+
+  test('Alle pausieren mit mehr als zwei: nichts startet nach, kein '
+      'Doppel-Worker nach Fortsetzen', () async {
+    api.gated = true;
+    for (final n in ['a', 'b', 'c', 'd']) {
+      await download(n);
+    }
+    await until(() => api.running == 2);
+    await queue.pauseAll();
+    await settle();
+    expect(
+      (await rows()).map((t) => t.state),
+      everyElement(TransferState.paused),
+    );
+    expect(api.downloads.map((d) => d.path), ['/music/a', '/music/b']);
+
+    final c = (await rows())[2].id;
+    await queue.retry(c);
+    await until(() => api.running == 1);
+    await settle();
+    expect(api.downloads.where((d) => d.path == '/music/c'), hasLength(1));
+    expect(api.running, 1);
+    api.openAll();
+    await waitState(TransferState.done, index: 2);
+    expect((await rows())[3].state, TransferState.paused);
+  });
+
+  test(
+    'suspend (Serverwechsel): Laufende pausiert, Wartende bleiben',
+    () async {
+      api.gated = true;
+      for (final n in ['a', 'b', 'c']) {
+        await download(n);
+      }
+      await until(() => api.running == 2);
+      await queue.suspend();
+      expect((await rows()).map((t) => t.state), [
+        TransferState.paused,
+        TransferState.paused,
+        TransferState.queued,
+      ]);
+      api.openAll();
+    },
+  );
+
+  test('Fortsetzen nach Änderung auf dem NAS beginnt neu', () async {
+    await File('${dir.path}/a.flac.part')
+        .writeAsBytes(api.content.sublist(0, 300));
+    api.remoteMtime = DateTime.utc(2026, 9, 20);
+    await download('a.flac'); // mtime 1.9. aus dem Listing
+    await waitState(TransferState.done);
+    expect(api.downloads.single.offset, 0);
+    expect(await File('${dir.path}/a.flac').readAsBytes(), api.content);
+    final offline = await db.select(db.offlineFiles).getSingle();
+    expect(offline.mtime!.isAtSameMomentAs(DateTime.utc(2026, 9, 20)), isTrue);
+  });
+
+  test('416 beim Fortsetzen: .part verwerfen, bei 0 neu', () async {
+    await File('${dir.path}/a.flac.part')
+        .writeAsBytes(api.content.sublist(0, 300));
+    api
+      ..remoteMtime = DateTime.utc(2026, 9, 1)
+      ..rangeNotSatisfiable = true;
+    await download('a.flac');
+    await waitState(TransferState.done);
+    expect(api.downloads.map((d) => d.offset), [300, 0]);
+    expect(await File('${dir.path}/a.flac').readAsBytes(), api.content);
+  });
+
+  test('Benachrichtigung nur, solange etwas läuft', () {
+    Transfer t(TransferState state) => Transfer(
+      id: state.index,
+      serverId: 1,
+      kind: TransferKind.download,
+      remotePath: '/a',
+      localPath: '/a',
+      bytesDone: 0,
+      state: state,
+      overwrite: false,
+      createdAt: DateTime(2026),
+    );
+    expect(notifiedTransfers([t(TransferState.queued)]), isEmpty);
+    expect(
+      notifiedTransfers([t(TransferState.queued), t(TransferState.failed)]),
+      isEmpty,
+    );
+    expect(
+      notifiedTransfers([
+        t(TransferState.running),
+        t(TransferState.queued),
+        t(TransferState.done),
+      ]).map((t) => t.state),
+      [TransferState.running, TransferState.queued],
+    );
   });
 
   test('Fehler-Tags', () {

@@ -108,6 +108,39 @@ void main() {
     expect(nas.calls('SYNO.FileStation.Upload', 'upload'), hasLength(3));
   });
 
+  test('Upload: parallel gleicher Name → verschiedene Namen, '
+      'overwrite=false wird nie gesendet', () async {
+    final file = File('${dir.path}/IMG_2.jpg')..writeAsBytesSync([1, 2, 3]);
+    final api = TransferApi(client);
+    final names = await Future.wait([
+      for (var i = 0; i < 2; i++)
+        api.upload(file, '/photo/Handy', 'IMG_2.jpg', overwrite: false),
+    ]);
+    expect(names.toSet(), {'IMG_2.jpg', 'IMG_2 (1).jpg'});
+    final uploads = nas.calls('SYNO.FileStation.Upload', 'upload');
+    expect(uploads.map((u) => u['file']).toSet(), names.toSet());
+    expect(uploads.map((u) => u.containsKey('overwrite')), everyElement(false));
+
+    await api.upload(file, '/photo/Handy', 'IMG_2.jpg', overwrite: true);
+    expect(
+      nas.calls('SYNO.FileStation.Upload', 'upload').last,
+      containsPair('overwrite', 'true'),
+    );
+  });
+
+  test('Download: Range hinter dem Dateiende → 416', () async {
+    await expectLater(
+      TransferApi(client).download(
+        '/music/a.flac',
+        File('${dir.path}/a.part'),
+        offset: mockFileSize + 10,
+      ),
+      throwsA(
+        isA<SynoNetworkError>().having((e) => e.statusCode, 'status', 416),
+      ),
+    );
+  });
+
   test('numberedName', () {
     expect(numberedName('a.jpg', 1), 'a (1).jpg');
     expect(numberedName('archiv.tar.gz', 2), 'archiv.tar (2).gz');

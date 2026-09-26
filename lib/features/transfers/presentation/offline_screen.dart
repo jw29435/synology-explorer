@@ -6,6 +6,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../../app/theme.dart';
 import '../../../core/storage/app_database.dart';
 import '../../../core/utils/format.dart';
+import '../../../core/utils/share_origin.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../browser/domain/nas_entry.dart';
 import '../../browser/presentation/entry_widgets.dart';
@@ -299,11 +300,16 @@ class _FileRow extends ConsumerWidget {
                   ),
                 ),
                 // System-Share-Sheet: „In Dateien sichern“, Downloads usw.
-                IconButton(
-                  tooltip: l10n.export,
-                  icon: const Icon(Icons.ios_share),
-                  onPressed: () => SharePlus.instance.share(
-                    ShareParams(files: [XFile(file.localPath)]),
+                Builder(
+                  builder: (button) => IconButton(
+                    tooltip: l10n.export,
+                    icon: const Icon(Icons.ios_share),
+                    onPressed: () => SharePlus.instance.share(
+                      ShareParams(
+                        files: [XFile(file.localPath)],
+                        sharePositionOrigin: shareOrigin(button),
+                      ),
+                    ),
                   ),
                 ),
               ],

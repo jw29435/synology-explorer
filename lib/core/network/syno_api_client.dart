@@ -206,8 +206,16 @@ class SynoApiClient {
         throw SynoException.fromCode(100, api: api);
       }
       final partial = res.statusCode == 206;
-      var done = partial ? offset : 0;
       final range = headers.value('content-range');
+      // Teilantwort, die nicht an [offset] anschließt: wie 416 behandeln.
+      if (partial &&
+          int.tryParse(
+                RegExp(r'bytes (\d+)-').firstMatch(range ?? '')?.group(1) ?? '',
+              ) !=
+              offset) {
+        throw const SynoNetworkError(statusCode: 416);
+      }
+      var done = partial ? offset : 0;
       final length = int.tryParse(headers.value('content-length') ?? '');
       final total = range != null
           ? int.tryParse(range.substring(range.lastIndexOf('/') + 1))

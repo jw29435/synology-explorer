@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:drift/drift.dart';
 
 import '../../../core/storage/app_database.dart';
+import '../../../core/network/syno_exception.dart';
 import '../domain/transfer.dart';
 import 'transfer_api.dart';
 
@@ -116,27 +117,53 @@ class TransferQueue {
     _pump();
   }
 
-  Future<void> pause(int id) async {
-    await _stop(id);
-    // Nur, wenn er nicht gerade noch fertig geworden ist.
+  /// Pausiert [id]. Reihenfolge wie [pauseAll]: erst den wartenden Zustand
+  /// setzen (dann übernimmt ihn der Worker nicht mehr), dann stoppen.
+  Future<void> pause(int id) => _pauseWhere((t) => t.id.equals(id));
+
+  /// Pausiert alle wartenden und laufenden Transfers dieses Servers.
+  Future<void> pauseAll() => _pauseWhere(
+    (t) =>
+        serverId == null ? const Constant(true) : t.serverId.equals(serverId!),
+  );
+
+  /// Stoppt laufende Transfers und setzt sie auf `paused` (Serverwechsel,
+  /// Abmelden); wartende bleiben für die nächste Session dieses Servers.
+  /// Danach startet diese Queue nichts mehr; die nächste Session bekommt
+  /// eine neue.
+  Future<void> suspend() async {
+    _halted = true;
+    final ids = [..._running.keys];
+    await _stopAll(ids);
     await (_db.update(_t)..where(
-          (t) =>
-              t.id.equals(id) &
-              t.state.isInValues([TransferState.queued, TransferState.running]),
+          (t) => t.id.isIn(ids) & t.state.equalsValue(TransferState.running),
         ))
         .write(const TransfersCompanion(state: Value(TransferState.paused)));
   }
 
-  Future<void> pauseAll() async {
-    await Future.wait([
-      for (final id in [..._running.keys]) _stop(id),
-    ]);
-    await (_db.update(_t)..where(
-          (t) =>
-              t.state.isInValues([TransferState.queued, TransferState.running]),
-        ))
-        .write(const TransfersCompanion(state: Value(TransferState.paused)));
+  Future<void> _pauseWhere(
+    Expression<bool> Function($TransfersTable) filter,
+  ) async {
+    const paused = TransfersCompanion(state: Value(TransferState.paused));
+    // 1. Wartende zuerst: _drain übernimmt nur `queued` (bedingtes UPDATE).
+    await (_db.update(_t)
+          ..where((t) => filter(t) & t.state.equalsValue(TransferState.queued)))
+        .write(paused);
+    // 2. Laufende stoppen. 3. Deren Zustand setzen (nicht, wenn gerade fertig).
+    final running =
+        await (_db.select(_t)..where(
+              (t) => filter(t) & t.state.equalsValue(TransferState.running),
+            ))
+            .get();
+    await _stopAll([for (final t in running) t.id]);
+    await (_db.update(
+          _t,
+        )..where((t) => filter(t) & t.state.equalsValue(TransferState.running)))
+        .write(paused);
   }
+
+  Future<void> _stopAll(List<int> ids) =>
+      Future.wait([for (final id in ids) _stop(id)]);
 
   /// Fortsetzen (pausiert) bzw. Wiederholen (fehlgeschlagen). Downloads
   /// setzen an der `.part`-Datei an, Uploads beginnen neu.
@@ -152,13 +179,14 @@ class TransferQueue {
     _pump();
   }
 
-  /// Bricht ab und entfernt den Transfer samt Teil-Download.
+  /// Bricht ab und entfernt den Transfer samt Teil-Download. Erst die Zeile
+  /// löschen (dann übernimmt ihn der Worker nicht mehr), dann stoppen.
   Future<void> cancel(int id) async {
-    await _stop(id);
     final t = await (_db.select(
       _t,
     )..where((t) => t.id.equals(id))).getSingleOrNull();
     await (_db.delete(_t)..where((t) => t.id.equals(id))).go();
+    await _stop(id);
     if (t != null && t.kind == TransferKind.download) {
       await _deleteQuietly(File('${t.localPath}.part'));
     }
@@ -210,7 +238,8 @@ class TransferQueue {
                   ..where(
                     (t) =>
                         t.serverId.equals(server) &
-                        t.state.equalsValue(TransferState.queued),
+                        t.state.equalsValue(TransferState.queued) &
+                        t.id.isNotIn(_running.keys),
                   )
                   ..orderBy([
                     (t) => OrderingTerm.asc(t.createdAt),
@@ -219,10 +248,17 @@ class TransferQueue {
                   ..limit(1))
                 .getSingleOrNull();
         if (next == null) break;
-        await _update(
-          next.id,
-          const TransfersCompanion(state: Value(TransferState.running)),
-        );
+        // Nur übernehmen, wenn er noch wartet (Pause/Abbruch dazwischen).
+        final claimed =
+            await (_db.update(_t)..where(
+                  (t) =>
+                      t.id.equals(next.id) &
+                      t.state.equalsValue(TransferState.queued),
+                ))
+                .write(
+                  const TransfersCompanion(state: Value(TransferState.running)),
+                );
+        if (claimed == 0 || _running.containsKey(next.id)) continue;
         final token = CancelToken();
         final done = Completer<void>();
         _running[next.id] = (token: token, done: done.future);
@@ -258,20 +294,43 @@ class TransferQueue {
       );
     }
 
+    var mtime = t.remoteMtime;
     try {
       switch (t.kind) {
         case TransferKind.download:
           final part = File('${t.localPath}.part');
           await part.parent.create(recursive: true);
-          final offset = await part.exists() ? await part.length() : 0;
-          sample = (at: DateTime.now(), bytes: offset);
-          await api.download(
-            t.remotePath,
-            part,
-            offset: offset,
-            cancelToken: token,
-            onProgress: progress,
-          );
+          var offset = await part.exists() ? await part.length() : 0;
+          if (offset > 0) {
+            // Seit dem Teil-Download auf dem NAS geändert: neu beginnen.
+            final remote = await api.mtime(t.remotePath);
+            if (remote != null && !remote.isAtSameMomentAs(mtime ?? remote)) {
+              await _deleteQuietly(part);
+              offset = 0;
+            }
+            mtime = remote ?? mtime;
+          }
+          Future<void> fetch(int from) {
+            sample = (at: DateTime.now(), bytes: from);
+            return api.download(
+              t.remotePath,
+              part,
+              offset: from,
+              cancelToken: token,
+              onProgress: progress,
+            );
+          }
+
+          try {
+            await fetch(offset);
+          } on SynoNetworkError catch (e) {
+            // 416 bzw. falscher Range-Start: Teil-Download passt nicht mehr.
+            if (e.statusCode != 416 || offset == 0 || token.isCancelled) {
+              rethrow;
+            }
+            await _deleteQuietly(part);
+            await fetch(0);
+          }
           await part.rename(t.localPath);
           final size = await File(t.localPath).length();
           await _db.transaction(() async {
@@ -282,7 +341,7 @@ class TransferQueue {
                     serverId: t.serverId,
                     remotePath: t.remotePath,
                     localPath: t.localPath,
-                    mtime: Value(t.remoteMtime),
+                    mtime: Value(mtime),
                     size: size,
                   ),
                 );

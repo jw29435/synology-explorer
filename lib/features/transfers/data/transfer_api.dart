@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 
 import '../../../core/network/syno_api_client.dart';
 import '../../../core/network/syno_exception.dart';
+import '../../browser/domain/nas_entry.dart';
 
 /// `SYNO.FileStation.Download` und `Upload` für die Transfer-Queue.
 class TransferApi {
@@ -40,22 +41,63 @@ class TransferApi {
     CancelToken? cancelToken,
     void Function(int sent, int total)? onProgress,
   }) async {
-    final target = overwrite ? name : await freeName(folder, name);
-    await _client.upload(
-      'SYNO.FileStation.Upload',
-      'upload',
-      {'path': folder, 'create_parents': true, 'overwrite': overwrite},
-      file,
-      target,
-      cancelToken: cancelToken,
-      onProgress: onProgress,
-    );
+    final target = overwrite ? name : await _reserveFreeName(folder, name);
+    try {
+      await _client.upload(
+        'SYNO.FileStation.Upload',
+        'upload',
+        {
+          'path': folder,
+          'create_parents': true,
+          // `overwrite=false` hieße bei DSM „still überspringen“; ohne den
+          // Parameter meldet DSM einen Namenskonflikt als Fehler.
+          if (overwrite) 'overwrite': true,
+        },
+        file,
+        target,
+        cancelToken: cancelToken,
+        onProgress: onProgress,
+      );
+    } finally {
+      _reserved.remove('$folder/$target');
+    }
     return target;
+  }
+
+  /// Namen, die laufende Uploads gewählt, aber noch nicht angelegt haben.
+  final _reserved = <String>{};
+
+  /// Wie [freeName], überspringt aber reservierte Namen und reserviert den
+  /// gewählten – zwei parallele Uploads gleichen Namens bekommen so
+  /// verschiedene Namen. Prüfen und Reservieren passieren ohne `await`
+  /// dazwischen, also atomar.
+  Future<String> _reserveFreeName(String folder, String name) async {
+    final free = await _freeNames(folder, name);
+    final chosen = free.firstWhere(
+      (c) => !_reserved.contains('$folder/$c'),
+      orElse: () => throw const SynoAlreadyExists(414),
+    );
+    _reserved.add('$folder/$chosen');
+    return chosen;
+  }
+
+  /// Änderungszeit von [path] auf dem NAS (`null`, wenn unbekannt).
+  Future<DateTime?> mtime(String path) async {
+    final data = await _client.request('SYNO.FileStation.List', 'getinfo', {
+      'path': jsonEncode([path]),
+      'additional': jsonEncode(['time']),
+    }) as Map;
+    final file = (data['files'] as List).first as Map<String, dynamic>;
+    return file['code'] == null ? NasEntry.fromSyno(file).mtime : null;
   }
 
   /// Erster Name aus „a.jpg“, „a (1).jpg“ … „a (9).jpg“, den es in [folder]
   /// noch nicht gibt – ein `getinfo` für alle (fehlend = Code 408).
-  Future<String> freeName(String folder, String name) async {
+  Future<String> freeName(String folder, String name) async =>
+      (await _freeNames(folder, name)).firstOrNull ??
+      (throw const SynoAlreadyExists(414));
+
+  Future<List<String>> _freeNames(String folder, String name) async {
     final candidates = [
       name,
       for (var i = 1; i < 10; i++) numberedName(name, i),
@@ -63,10 +105,10 @@ class TransferApi {
     final data = await _client.request('SYNO.FileStation.List', 'getinfo', {
       'path': jsonEncode([for (final c in candidates) '$folder/$c']),
     }) as Map;
-    for (final (i, file) in (data['files'] as List).indexed) {
-      if ((file as Map)['code'] == 408) return candidates[i];
-    }
-    throw const SynoAlreadyExists(414);
+    return [
+      for (final (i, file) in (data['files'] as List).indexed)
+        if ((file as Map)['code'] == 408) candidates[i],
+    ];
   }
 }
 

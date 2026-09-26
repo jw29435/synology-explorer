@@ -122,6 +122,12 @@ Handler mockNasHandler(Directory fixtures) {
     final start = int.tryParse(
       RegExp(r'bytes=(\d+)-').firstMatch(range ?? '')?.group(1) ?? '',
     );
+    if (start != null && start >= data.length) {
+      return Response(
+        416,
+        headers: {'content-range': 'bytes */${data.length}'},
+      );
+    }
     if (start == null) {
       return Response.ok(
         data,
@@ -172,10 +178,21 @@ Handler mockNasHandler(Directory fixtures) {
       }
       switch (api) {
         case 'SYNO.FileStation.Upload':
-          final parts = _multipart(type, body);
+          final parts = parseMultipart(type, body);
           final name = parts['file'];
           if (name == null) return _error(401);
-          uploaded.add('${parts['path']}/$name');
+          final target = '${parts['path']}/$name';
+          // Wie DSM: vorhanden + overwrite=false → still überspringen,
+          // ohne overwrite → Fehler 414, overwrite=true → ersetzen.
+          if (uploaded.contains(target)) {
+            switch (parts['overwrite']) {
+              case 'false':
+                return _ok({'blSkip': true, 'file': name});
+              case null:
+                return _error(414);
+            }
+          }
+          uploaded.add(target);
           return _ok({'blSkip': false, 'file': name, 'pid': 1, 'progress': 1});
         case 'SYNO.FileStation.Sharing':
           return sharing(method, params, request.requestedUri);
@@ -261,8 +278,8 @@ const mockFileSize = 256 * 1024;
 List<int> mockFileBytes() => [for (var i = 0; i < mockFileSize; i++) i % 251];
 
 /// Minimaler Multipart-Parser: Textfelder als Wert, Dateifelder als
-/// Dateiname.
-Map<String, String> _multipart(String contentType, List<int> body) {
+/// Dateiname. Auch für die Test-Hilfe, die Anfragen mitschreibt.
+Map<String, String> parseMultipart(String contentType, List<int> body) {
   final boundary = RegExp(r'boundary=(.+)$').firstMatch(contentType)?.group(1);
   if (boundary == null) return const {};
   final result = <String, String>{};

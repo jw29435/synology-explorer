@@ -7,8 +7,9 @@ import '../../../core/storage/app_database.dart';
 import '../../../l10n/app_localizations.dart';
 import '../domain/transfer.dart';
 
-/// Eine Sammel-Benachrichtigung mit Gesamtfortschritt, solange Transfers
-/// laufen oder warten; höchstens einmal pro Sekunde aktualisiert.
+/// Eine Sammel-Benachrichtigung mit Gesamtfortschritt, solange ein Transfer
+/// läuft (Wartende zählen dann mit); höchstens einmal pro Sekunde
+/// aktualisiert. `update([])` schließt sie.
 class TransferNotifications {
   static const _id = 7001;
 
@@ -34,11 +35,7 @@ class TransferNotifications {
   }
 
   Future<void> update(List<Transfer> transfers) async {
-    final active = [
-      for (final t in transfers)
-        if (t.state == TransferState.queued || t.state == TransferState.running)
-          t,
-    ];
+    final active = notifiedTransfers(transfers);
     if (active.isEmpty && !_shown) return;
     try {
       if (!await (_ready ??= _init())) return;
@@ -89,3 +86,16 @@ class TransferNotifications {
     );
   }
 }
+
+/// Was die Benachrichtigung zählt: Wartende und Laufende, aber nur solange
+/// einer wirklich läuft. Wartende allein (Auth-Halt, keine Session, anderer
+/// Server) halten keine Dauer-Benachrichtigung offen.
+List<Transfer> notifiedTransfers(List<Transfer> transfers) =>
+    transfers.any((t) => t.state == TransferState.running)
+    ? [
+        for (final t in transfers)
+          if (t.state == TransferState.queued ||
+              t.state == TransferState.running)
+            t,
+      ]
+    : const [];

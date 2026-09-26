@@ -7,6 +7,7 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../../app/theme.dart';
 import '../../../core/utils/format.dart';
+import '../../../core/utils/share_origin.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../browser/domain/nas_entry.dart';
 import '../../browser/presentation/entry_widgets.dart';
@@ -303,11 +304,17 @@ class _Result extends StatelessWidget {
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: FilledButton.icon(
-                  icon: const Icon(Icons.share_outlined),
-                  label: Text(l10n.share),
-                  onPressed: () =>
-                      SharePlus.instance.share(ShareParams(text: all)),
+                child: Builder(
+                  builder: (button) => FilledButton.icon(
+                    icon: const Icon(Icons.share_outlined),
+                    label: Text(l10n.share),
+                    onPressed: () => SharePlus.instance.share(
+                      ShareParams(
+                        text: all,
+                        sharePositionOrigin: shareOrigin(button),
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ],
