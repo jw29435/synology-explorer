@@ -54,6 +54,9 @@ String describeError(Object error, AppLocalizations l10n) => switch (error) {
   SynoNetworkError() => l10n.errorNetwork,
   SynoUnknown(:final code?) => l10n.errorCode(code),
   CertificateMismatchException(:final host) => l10n.errorCertMismatch(host),
+  // Z. B. Adresswechsel mitten in der Wiedergabe auf eine ungepinnte
+  // externe Adresse – dort kommt kein Screen 03.
+  UntrustedCertificateException(:final host) => l10n.errorCertUntrusted(host),
   _ => l10n.errorGeneric,
 };
 

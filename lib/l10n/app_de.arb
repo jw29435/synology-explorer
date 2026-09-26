@@ -99,6 +99,14 @@
     }
   },
   "errorCertMismatch": "Das Zertifikat von {host} hat sich geändert. Verbindung blockiert.",
+  "errorCertUntrusted": "{host} nutzt ein unbekanntes Zertifikat. Über die Server-Liste neu verbinden und es dort prüfen.",
+  "@errorCertUntrusted": {
+    "placeholders": {
+      "host": {
+        "type": "String"
+      }
+    }
+  },
   "@errorCertMismatch": {
     "placeholders": {
       "host": {

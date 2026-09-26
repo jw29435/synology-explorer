@@ -482,6 +482,12 @@ abstract class AppLocalizations {
   /// **'Das Zertifikat von {host} hat sich geändert. Verbindung blockiert.'**
   String errorCertMismatch(String host);
 
+  /// No description provided for @errorCertUntrusted.
+  ///
+  /// In de, this message translates to:
+  /// **'{host} nutzt ein unbekanntes Zertifikat. Über die Server-Liste neu verbinden und es dort prüfen.'**
+  String errorCertUntrusted(String host);
+
   /// No description provided for @errorCode.
   ///
   /// In de, this message translates to:

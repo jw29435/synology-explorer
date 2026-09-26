@@ -224,6 +224,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String errorCertUntrusted(String host) {
+    return '$host uses an unknown certificate. Reconnect from the server list and check it there.';
+  }
+
+  @override
   String errorCode(int code) {
     return 'Error $code from the NAS.';
   }

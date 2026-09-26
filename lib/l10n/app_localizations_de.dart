@@ -225,6 +225,11 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String errorCertUntrusted(String host) {
+    return '$host nutzt ein unbekanntes Zertifikat. Über die Server-Liste neu verbinden und es dort prüfen.';
+  }
+
+  @override
   String errorCode(int code) {
     return 'Fehler $code vom NAS.';
   }

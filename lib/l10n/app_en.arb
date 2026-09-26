@@ -64,6 +64,7 @@
   "errorNetwork": "Server not reachable.",
   "errorHttp": "Server responded with HTTP {status}.",
   "errorCertMismatch": "The certificate of {host} has changed. Connection blocked.",
+  "errorCertUntrusted": "{host} uses an unknown certificate. Reconnect from the server list and check it there.",
   "errorCode": "Error {code} from the NAS.",
   "errorGeneric": "Unexpected error.",
   "sectionShares": "Shared folders",
