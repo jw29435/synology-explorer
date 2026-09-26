@@ -1,5 +1,6 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shelf/shelf.dart';
 import 'package:synology_explorer/core/auth/session_manager.dart';
 import 'package:synology_explorer/core/network/certificate_pinning.dart';
 import 'package:synology_explorer/core/network/syno_api_client.dart';
@@ -142,6 +143,27 @@ void main() {
     );
     expect(logins(), hasLength(1));
     expect(s.isLoggedIn, isFalse);
+  });
+
+  test('105 ohne gemerktes Passwort: Rechtefehler, Session bleibt', () async {
+    final s = await session();
+    await s.login(mockUser, mockPassword, otp: mockOtp);
+    final sid = s.client.sid;
+    nas.intercept = (p) => p['folder_path'] == '/verboten'
+        ? Response.ok(
+            '{"success": false, "error": {"code": 105}}',
+            headers: {'content-type': 'application/json'},
+          )
+        : null;
+    final api = FileStationListApi(s.client);
+
+    await expectLater(
+      api.list('/verboten'),
+      throwsA(isA<SynoPermissionDenied>()),
+    );
+    expect(s.client.sid, sid, reason: 'nicht abgemeldet');
+    expect(logins(), hasLength(1));
+    await api.listShares();
   });
 
   test('logout ruft die API und löscht SID, DID und Passwort', () async {

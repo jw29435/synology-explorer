@@ -100,9 +100,18 @@ class SessionManager {
   }
 
   /// Parallele Requests mit abgelaufener SID teilen sich einen Re-Login.
-  Future<void> _relogin() => _pendingRelogin ??= _silentLogin().whenComplete(
-    () => _pendingRelogin = null,
-  );
+  ///
+  /// 105 („keine Berechtigung“) kann auch ein reiner Rechtefehler sein: Ohne
+  /// gemerktes Passwort bleibt die Session dann bestehen und der Fehler geht
+  /// als solcher raus, statt den Nutzer abzumelden.
+  Future<void> _relogin(SynoException cause) async {
+    if (cause is SynoPermissionDenied && await _read('password') == null) {
+      throw cause;
+    }
+    return _pendingRelogin ??= _silentLogin().whenComplete(
+      () => _pendingRelogin = null,
+    );
+  }
 
   /// Scheitert der stille Login an der Anmeldung selbst (Passwort geändert,
   /// Konto gesperrt, OTP nötig), wird das gemerkte Passwort verworfen: Jeder

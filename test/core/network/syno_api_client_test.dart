@@ -79,7 +79,7 @@ void main() {
     relogins = 0;
     client
       ..sid = 'alt'
-      ..onSessionExpired = () async {
+      ..onSessionExpired = (_) async {
         relogins++;
         client.sid = 'neu';
       };
@@ -139,7 +139,7 @@ void main() {
 
   test('scheitert der Re-Login selbst, kein Retry', () async {
     await setUpClient([error(119)]);
-    client.onSessionExpired = () async => throw const SynoSessionExpired();
+    client.onSessionExpired = (_) async => throw const SynoSessionExpired();
     await expectLater(listShares(), throwsA(isA<SynoSessionExpired>()));
     expect(adapter.calls('list_share'), hasLength(1));
   });

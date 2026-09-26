@@ -139,8 +139,9 @@ class SynoApiClient {
   /// Aktuelle Session-ID; setzt der SessionManager.
   String? sid;
 
-  /// Erneuert die Session (Re-Login). Wirft, wenn das nicht still geht.
-  Future<void> Function()? onSessionExpired;
+  /// Erneuert die Session (Re-Login) nach [cause]. Wirft, wenn das nicht
+  /// still geht.
+  Future<void> Function(SynoException cause)? onSessionExpired;
 
   Uri? get activeUrl => _baseUrl;
   Stream<Uri> get activeUrlChanges => _activeUrl.stream;
@@ -239,7 +240,7 @@ class SynoApiClient {
         rethrow;
       }
       // Genau ein Re-Login je Request-Kette; ein zweiter Fehler geht raus.
-      await relogin();
+      await relogin(e);
       return send(base, info);
     }
   }
