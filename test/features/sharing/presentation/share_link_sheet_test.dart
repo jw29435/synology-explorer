@@ -90,15 +90,16 @@ void main() {
       expect(call.at, DateTime(now.year, now.month, now.day + 7));
 
       expect(find.text('Link erstellt'), findsOne);
-      expect(find.text('https://192.168.1.2:5001/sharing/kQ7mX2pLv'), findsOne);
-      // Ohne externe Adresse: Hinweis statt Umschreiben.
-      expect(find.textContaining('keine externe Adresse'), findsOne);
+      // Ohne zweite Adresse, aber mit öffentlicher primärer Adresse
+      // (nas.lan zählt nicht als privat): Link zeigt auf die primäre.
+      expect(find.text('https://nas.lan:5001/sharing/kQ7mX2pLv'), findsOne);
+      expect(find.textContaining('öffentlich erreichbare Adresse'), findsOne);
       expect(clipboard, isEmpty, reason: 'nie ohne Tipp kopieren');
 
       await tester.tap(find.text('Kopieren'));
       await tester.pumpAndSettle();
       expect(clipboard.single, {
-        'text': 'https://192.168.1.2:5001/sharing/kQ7mX2pLv',
+        'text': 'https://nas.lan:5001/sharing/kQ7mX2pLv',
       });
       expect(find.text('Link kopiert.'), findsOne);
     },

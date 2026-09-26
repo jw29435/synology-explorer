@@ -367,9 +367,11 @@ class _ServerCard extends StatelessWidget {
                       const SizedBox(width: 8),
                       if (url != null) ...[
                         Text(
-                          l10n.serverConnectedVia(
-                            viaLan ? l10n.viaLan : l10n.viaExternal,
-                          ),
+                          profile.externalUrl == null
+                              ? l10n.serverConnected
+                              : l10n.serverConnectedVia(
+                                  viaLan ? l10n.viaLan : l10n.viaExternal,
+                                ),
                         ),
                         const SizedBox(width: 8),
                         Flexible(

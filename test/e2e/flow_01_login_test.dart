@@ -23,16 +23,16 @@ void main() {
     final fields = find.byType(TextFormField);
     await app.type(fields.at(0), 'Heim-NAS');
     await app.type(fields.at(1), app.nas.url);
-    await app.type(fields.at(3), mockUser);
+    await app.type(fields.at(2), mockUser);
 
     // 400: falsches Passwort – eigener Zustand, kein Retry.
-    await app.type(fields.at(4), 'falsch');
+    await app.type(fields.at(3), 'falsch');
     await app.tap(find.text(l10n.connect));
     await app.waitFor(find.text(l10n.errorUnauthorized));
     expect(app.nas.calls('SYNO.API.Auth', 'login'), hasLength(1));
 
     // 403: OTP nötig → Screen 04; 404: OTP falsch.
-    await app.type(fields.at(4), mockPassword);
+    await app.type(fields.at(3), mockPassword);
     await app.tap(find.text(l10n.connect));
     await app.waitFor(find.text(l10n.otpTitle));
     await app.type(find.byType(TextField).first, '000000');

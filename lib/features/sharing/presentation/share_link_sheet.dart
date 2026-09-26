@@ -65,7 +65,10 @@ class _ShareLinkSheetState extends ConsumerState<ShareLinkSheet> {
       _busy = true;
       _error = null;
     });
-    final external = ref.read(sessionProvider)?.client.profile.externalUrl;
+    final session = ref.read(sessionProvider);
+    final external = session == null
+        ? null
+        : publicShareBase(session.client.profile);
     try {
       final links = await ref
           .read(sharingApiProvider)
@@ -91,7 +94,10 @@ class _ShareLinkSheetState extends ConsumerState<ShareLinkSheet> {
     final l10n = AppLocalizations.of(context);
     final text = Theme.of(context).textTheme;
     final entries = widget.entries;
-    final external = ref.watch(sessionProvider)?.client.profile.externalUrl;
+    final session = ref.watch(sessionProvider);
+    final external = session == null
+        ? null
+        : publicShareBase(session.client.profile);
     final expiresAt = _expiry.expiresAt(DateTime.now());
     final urls = _urls;
     final locked = _busy || urls != null;

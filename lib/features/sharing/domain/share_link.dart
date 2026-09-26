@@ -1,4 +1,6 @@
+import '../../../core/utils/private_host.dart';
 import '../../browser/domain/nas_entry.dart';
+import '../../servers/domain/server_profile.dart';
 
 /// Ablauf-Optionen beim Erstellen (Screen 22); Default 7 Tage.
 enum ShareExpiry {
@@ -90,6 +92,12 @@ class ShareLink {
 DateTime? parseSynoDate(Object? value) => value is String && value.length >= 10
     ? DateTime.tryParse(value.replaceFirst(' ', 'T'))
     : null;
+
+/// Von außen erreichbare Adresse des Servers für Freigabelinks: die zweite
+/// Adresse, sonst die primäre, sofern sie nicht nur im LAN/VPN liegt.
+String? publicShareBase(ServerProfile profile) =>
+    profile.externalUrl ??
+    (isPrivateHost(profile.lanUrl) ? null : profile.lanUrl);
 
 /// Freigabelinks sollen von außen erreichbar sein: Zeigt DSM auf eine
 /// `/sharing/`-Adresse, wird Schema/Host/Port durch die externe Adresse des

@@ -10,7 +10,13 @@ abstract class ServerProfile with _$ServerProfile {
     /// `null`, solange das Profil noch nicht gespeichert ist.
     int? id,
     required String name,
+
+    /// Primäre Adresse (LAN, DDNS oder Tailscale), wird zuerst probiert.
+    /// Heißt aus historischen Gründen `lanUrl`.
     required String lanUrl,
+
+    /// Optionale zweite Adresse als Fallback, wenn [lanUrl] nicht erreichbar
+    /// ist.
     String? externalUrl,
     required String user,
   }) = _ServerProfile;

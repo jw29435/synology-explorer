@@ -212,10 +212,16 @@ abstract class AppLocalizations {
   /// **'Nicht verbunden'**
   String get serverNotConnected;
 
+  /// No description provided for @serverConnected.
+  ///
+  /// In de, this message translates to:
+  /// **'Verbunden'**
+  String get serverConnected;
+
   /// No description provided for @serverInfo.
   ///
   /// In de, this message translates to:
-  /// **'Beim Start wird zuerst die LAN-Adresse probiert, dann die externe. QuickConnect wird nicht unterstützt.'**
+  /// **'Beim Start wird zuerst die Adresse probiert, dann die zweite Adresse, falls hinterlegt. QuickConnect wird nicht unterstützt.'**
   String get serverInfo;
 
   /// No description provided for @serverManageHint.
@@ -263,20 +269,20 @@ abstract class AppLocalizations {
   /// No description provided for @fieldName.
   ///
   /// In de, this message translates to:
-  /// **'Name'**
+  /// **'Name (optional)'**
   String get fieldName;
 
-  /// No description provided for @fieldLanUrl.
+  /// No description provided for @fieldAddress.
   ///
   /// In de, this message translates to:
-  /// **'LAN-Adresse'**
-  String get fieldLanUrl;
+  /// **'Adresse'**
+  String get fieldAddress;
 
-  /// No description provided for @fieldLanUrlHint.
+  /// No description provided for @fieldAddressHint.
   ///
   /// In de, this message translates to:
-  /// **'Wird zuerst probiert, Timeout 2 s.'**
-  String get fieldLanUrlHint;
+  /// **'IP-Adresse oder Domain deines NAS, z. B. 192.168.1.20:5001 oder nas.example.de'**
+  String get fieldAddressHint;
 
   /// No description provided for @fieldExternalUrl.
   ///
@@ -287,8 +293,20 @@ abstract class AppLocalizations {
   /// No description provided for @fieldExternalUrlHint.
   ///
   /// In de, this message translates to:
-  /// **'DDNS, Reverse Proxy oder Tailscale-Adresse.'**
+  /// **'Die App nutzt diese Adresse, wenn die erste nicht erreichbar ist.'**
   String get fieldExternalUrlHint;
+
+  /// No description provided for @secondAddressShow.
+  ///
+  /// In de, this message translates to:
+  /// **'Zweite Adresse für unterwegs'**
+  String get secondAddressShow;
+
+  /// No description provided for @secondAddressHide.
+  ///
+  /// In de, this message translates to:
+  /// **'Zweite Adresse ausblenden'**
+  String get secondAddressHide;
 
   /// No description provided for @fieldUser.
   ///
@@ -1433,13 +1451,13 @@ abstract class AppLocalizations {
   /// No description provided for @shareExternalHint.
   ///
   /// In de, this message translates to:
-  /// **'Der Link zeigt auf die externe Adresse. Verwaltung aller Links unter Einstellungen › Freigabelinks.'**
+  /// **'Der Link zeigt auf die öffentlich erreichbare Adresse des Servers. Verwaltung aller Links unter Einstellungen › Freigabelinks.'**
   String get shareExternalHint;
 
   /// No description provided for @shareNoExternal.
   ///
   /// In de, this message translates to:
-  /// **'Für diesen Server ist keine externe Adresse hinterlegt: Der Link nutzt die Adresse, die DSM meldet, und ist evtl. nur im LAN erreichbar.'**
+  /// **'Für diesen Server ist keine öffentlich erreichbare Adresse hinterlegt: Der Link nutzt die Adresse, die DSM meldet, und ist evtl. nur im LAN erreichbar.'**
   String get shareNoExternal;
 
   /// No description provided for @shareLinksTitle.

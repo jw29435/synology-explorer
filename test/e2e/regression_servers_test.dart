@@ -126,7 +126,7 @@ void main() {
     await app.settle();
     await app.tap(find.text(l10n.serverEdit));
     await app.type(find.byType(TextFormField).at(0), 'Heim-NAS 2');
-    await app.type(find.byType(TextFormField).at(4), 'falsch');
+    await app.type(find.byType(TextFormField).at(3), 'falsch');
     await app.tap(find.widgetWithText(FilledButton, l10n.connect));
     await app.waitFor(find.text(l10n.errorUnauthorized));
 
@@ -161,9 +161,9 @@ void main() {
     final fields = find.byType(TextFormField);
     for (final (i, label) in [
       (0, l10n.fieldName),
-      (1, l10n.fieldLanUrl),
-      (3, l10n.fieldUser),
-      (4, l10n.fieldPassword),
+      (1, l10n.fieldAddress),
+      (2, l10n.fieldUser),
+      (3, l10n.fieldPassword),
     ]) {
       expect(
         tester.getSemantics(fields.at(i)).label.toLowerCase(),
