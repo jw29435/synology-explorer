@@ -126,6 +126,71 @@ Logcat im ganzen Lauf: genau eine Exception (E2E-057), kein ANR.
 bleibt es bei aktiver Auto-Rotation im Querformat, solange das Gerät flach liegt (Plattformverhalten). Die
 Samsung-Tastatur hat eine Symbolleiste, die Tipps auf verdeckte Felder abfängt.
 
+## Phase 5 – Fix-Schleife
+
+65 Findings, sortiert nach Schweregrad, behoben in je einem Commit mit Regressionstest (Details, Ursache und Test je
+Finding in `docs/E2E-FINDINGS.md`). Unabhängige Bereiche liefen parallel in eigenen Worktrees (Viewer; Browser;
+Einstellungen/Freigaben/Transfers/Audio), Kern/Server/Session/Router im Hauptzweig; danach zusammengeführt, alle Tests
+grün. Nachprüfung am Gerät nach den Fix-Serien:
+
+| Gerät | nachgeprüft (bestanden) |
+| --- | --- |
+| OnePlus | E2E-009/010 (01 mit Zurück), 022 (Hinweis sichtbar), 060 (Felder mit Label im Dump), 057 („Keine Berechtigung.“ statt schwarzem Bildschirm), 018 (Picker: Zurück eine Ebene hoch), 016 (PDF: erst Suche, dann Viewer), 015 (Snackbar verschwindet), 020 (Suchtreffer öffnet DOCX), 059 (Zurück auf Transfers → Dateien-Tab mit offenem Ordner), 047 (Bild-Viewer im hellen Design lesbar), 003 (Löschen-Dialog, abgebrochen) |
+| A40 | 065 („Abspielen“ auf 360 dp vollständig), 045 (Video pausiert Musik: AudioTrack `paused`, Video `started`) |
+
+In keinem Nachprüf-Lauf gab es `E/flutter`-Einträge im Logcat.
+
+## Phase 6 – Favoriten vom NAS
+
+Umgesetzt wie in CONCEPT.md Abschnitt 2/4 (neu): Ordner-Favoriten kommen aus `SYNO.FileStation.Favorite`, drift ist
+Cache (Schema v7). Headless: `test/features/browser/favorites_sync_test.dart` (Zustandsregel, 800, 105),
+`test/e2e/flow_10_nas_favorites_test.dart` (05: Anzeige, broken gedämpft mit Tooltip, Pull-to-Refresh, Verweigerung,
+lokaler Datei-Favorit öffnet den Viewer), `test/core/storage/migration_test.dart`.
+
+Am Gerät (OnePlus): 05 zeigt die fünf bestehenden NAS-Favoriten des Kontos. Test-Favorit `_e2e_<ts>` per curl
+angelegt → erscheint nach Pull-to-Refresh als Chip, Chip öffnet den Ordner → über Sheet 09 „Aus Favoriten entfernen“
+gelöscht → per curl bestätigt: Favoritenliste identisch mit dem Stand aus Phase 1. In DS File selbst nicht prüfbar
+(keine DS-File-Installation im Zugriff). Anlegen **über die App** wurde am echten NAS bewusst nicht ausgeführt: Die App
+benennt den Favoriten nach dem Ordner, der Auftrag erlaubt nur einen Test-Favoriten `_e2e_<ts>`; die Parameterform
+(`path`/`name` roh) ist per curl (Phase 1) und im Mock abgedeckt.
+
+## Phase 7 – Abschluss
+
+- Review des gesamten Diffs durch einen frischen Agent (Ergebnis und Nacharbeiten siehe unten).
+- NAS-Endzustand per curl: keine Freigabelinks, `/Daten` unverändert (kein Testordner – `CreateFolder` wurde
+  verweigert), Favoritenliste identisch mit Phase 1, curl-Session abgemeldet.
+- Handys: `_e2e.txt` wurde nie angelegt (Upload per UI gesperrt), „Aktiv lassen“ war schon an und wurde nicht
+  verändert, Rotation (OnePlus) und WLAN (beide) sind zurückgesetzt, Design der App wieder „Dunkel“. Die App bleibt auf
+  beiden Geräten installiert und angemeldet (OnePlus: eine Offline-Kopie der Test-TXT in den App-Daten).
+- `dart format`, `flutter analyze`, `flutter test`, `flutter build apk --debug` und `--release` grün. Der Release-Build
+  nutzt ohne `key.properties` die Debug-Signatur (Fallback im Build-Skript); der erste Release-Lauf brach einmal ohne
+  klare Meldung ab, die Wiederholung lief durch.
+
+## Nicht testbar und warum
+
+| Punkt | Grund |
+| --- | --- |
+| Upload, Neuer Ordner, Umbenennen, Verschieben, Löschen mit Erfolg am echten NAS | Konto ohne Schreibrecht (407); nur Fehlerpfade am Gerät, Erfolgspfade headless gegen den Mock |
+| Freigabelink erstellen/löschen mit Erfolg | Konto ohne Freigaberecht (407) |
+| Papierkorb listen/wiederherstellen | `#recycle` nur für Admins (407); headless mit Mock |
+| 2FA/OTP am echten NAS | 2FA auf dem Konto aus |
+| Zertifikat-Dialog (03) am echten NAS | gültiges Zertifikat, kein Pinning nötig |
+| Markdown-Viewer am echten NAS | keine `.md`-Datei auf dem NAS; headless geprüft |
+| Pinch-Zoom | per `adb input` nicht ausführbar |
+| Kopfhörer-Tasten, Sperrbildschirm-Steuerung | in diesem Lauf nicht geprüft (in SPIKE.md 3b auf dem A40 bestanden) |
+| Audio-Dauerlauf auf dem OnePlus | audioserver-Schleife des Geräts (unabhängig von der App) |
+| Session-Ablauf am Gerät | SID lässt sich nicht von außen ungültig machen; nur headless (Flow 9) |
+| Echter Offline-Zustand auf dem OnePlus | SIM/Mobilfunk bleibt bei `svc wifi disable` aktiv; auf dem A40 (ohne SIM) geprüft |
+| iOS | kein Mac/iPhone in diesem Lauf |
+
+## Rückstände
+
+- **Am NAS:** keine Dateien, Ordner, Links oder Favoriten. Die curl-Anmeldungen mit `enable_device_token=yes`
+  (Gerätename `e2e-curl`) und die App-Anmeldungen der beiden Handys können unter DSM › Persönlich › Sicherheit ›
+  „Vertrauenswürdige Geräte“ als Einträge stehen – bei Bedarf dort entfernen (für das Konto per API nicht löschbar).
+- **Am Handy:** siehe Phase 7; zusätzlich auf dem A40 bitte die Samsung-Tastatur-Einstellungen kurz ansehen (siehe
+  Annahmen).
+
 ## Annahmen
 
 - NAS-Favoriten nur für Ordner: DSM nimmt Dateien als Favorit an, meldet sie aber sofort als `broken`. Die App
@@ -134,4 +199,11 @@ Samsung-Tastatur hat eine Symbolleiste, die Tipps auf verdeckte Felder abfängt.
   > kosmetik), weil Backup-/Log-Lecks weder „blockiert“ noch „kosmetik“ sind.
 - Auf dem A40 öffnete ein Tipp auf die Tastatur-Symbolleiste versehentlich die Einstellungen der Samsung-Tastatur. Es
   wurde dort nichts bewusst umgeschaltet, die sichtbaren Schalter standen unverändert auf „Ein“. **Bitte kurz prüfen.**
+- Datei-Favoriten bleiben lokal, Ordner-Favoriten kommen vom NAS (Mischform statt „alles vom NAS“): DSM führt Dateien
+  als Favorit nur als `broken`, DS File würde sie als kaputte Einträge zeigen; die Mockups 12 und 15 zeigen aber einen
+  Favoriten-Stern für Dateien. Lokale Ordner-Favoriten werden beim ersten Abgleich durch die NAS-Liste ersetzt.
+- Zurück auf dem Root von Offline/Transfers/Einstellungen führt zum Dateien-Tab (Material-Konvention), erst dort
+  verlässt Zurück die App (E2E-059).
+- Nach gescheitertem stillem Re-Login verwirft die App die Session und zeigt 01 mit Meldung (CONCEPT 4); danach landet
+  man nach dem Login auf 05, nicht am alten Ort (E2E-012/013).
 - Markdown-Viewer ist am echten NAS nicht testbar (keine `.md`-Datei); geprüft werden `.txt` und headless Markdown.
