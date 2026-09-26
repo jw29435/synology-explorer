@@ -162,3 +162,44 @@ wurde nichts angelegt, verschoben oder gelöscht.
 
 - **Download per POST:** `SYNO.FileStation.Download` (v2, `mode=open`) funktioniert auch als POST-Formular, wie der
   Client alle Aufrufe schickt; Content-Type ist der der Datei (z. B. `audio/mpeg`).
+
+## M2 Audio auf echten Geräten (Prompt 3b, 26.09.2026)
+
+Debug-Build per `adb.exe` installiert und bedient (Eingaben per `input`, Zustand per `dumpsys media_session`,
+`meminfo`, `logcat`). Testordner: Album mit 21 MP3 (4–16 MB), für Speicher/Seek eine 881-MB-WAV.
+
+### Samsung Galaxy A40 (`R58MC1T7R4D`, Android 11, keine SIM, keine Bildschirmsperre eingerichtet)
+
+| Prüfung | Ergebnis |
+| --- | --- |
+| Album 16 min im Hintergrund, Bildschirm aus | läuft durch, 5 Titelwechsel (je getinfo + neuer Proxy), PSS stabil 510–533 MB (Debug-Build) |
+| Doze (`deviceidle force-idle`) 6 min während der Wiedergabe | kein Abbruch, Titelwechsel auch im Deep-Idle |
+| Notification | MediaStyle mit Zurück/Pause/Weiter, `vis=PUBLIC` (also auch auf dem Sperrbildschirm) |
+| Kopfhörer-/Medientasten (`HEADSETHOOK`, `MEDIA_PLAY/PAUSE/NEXT/PREVIOUS`) bei Bildschirm aus | alle wirken; Zurück nach > 3 s springt an den Titelanfang |
+| App-Kill (`am force-stop`) mitten im Titel | beim erneuten Öffnen „Bei 0:46 fortsetzen?“, Aktion springt an die Stelle (höchstens 5 s alt) |
+| 881-MB-WAV streamen (Review B1) | PSS vorher 534 MB, nach 60 s 559 MB, danach konstant – keine Datei im RAM |
+| Pause > 60 s, dann weiter | läuft weiter, kein Abbruch |
+| 8 Seeks quer durch die WAV | PSS konstant ~562 MB, ~15 MB WLAN-Traffic je Seek (ExoPlayer-Puffer) |
+| WLAN aus 90 s mitten im Titel | spielt aus dem Puffer weiter, danach ohne Unterbrechung |
+| WLAN aus am Titelende | **Fehler gefunden:** nächster Titel scheiterte (getinfo), Player blieb auch nach WLAN-Rückkehr stehen → behoben, lädt jetzt bei Netzrückkehr neu und spielt weiter |
+| Erstes Antippen nach WLAN aus/an | **Fehler gefunden:** „Connection closed before full header“ (tote Keep-alive-Verbindung) → behoben, Listing/getinfo werden nach neuer Adresswahl einmal wiederholt |
+| „Streaming nur im WLAN“, pausiert, WLAN aus, Kopfhörer-Play (Review S2) | bleibt pausiert, kein Byte geladen; WLAN zurück → spielt an der pausierten Stelle weiter (**Fehler gefunden:** begann erst bei 0:00 → behoben) |
+| WLAN → Mobilfunk | **nicht prüfbar:** keine SIM im Gerät |
+| Kaltstart (Profile-Build, `am start -W`) | 2,0–2,2 s (erster Start nach Installation 4,2 s); Debug-Build 8,3 s |
+| Scrollen, Liste mit 500 Einträgen (Profile-Build) | median 16,7 ms, p99 ≤ 19 ms, ≤ 0,8 % Frames über 25 ms (SurfaceFlinger-Latenz) |
+| Snackbar „Bei … fortsetzen?“ | **Fehler gefunden:** blieb dauerhaft stehen (Snackbars mit Aktion sind in diesem Flutter `persist`) → behoben |
+| Cover-Platzhalter | **Fehler gefunden:** unsichtbar (0 px breit) → behoben |
+
+Kein Ordner mit 500+ Einträgen auf dem NAS; einen Testordner anzulegen ging nicht (Share-ACL: `write`/`append`
+false, CreateFolder → 407). Gemessen wurde deshalb die Trefferliste der Suche (500 Zeilen, gleiche ListTiles).
+
+### OnePlus 9 Pro (`4c5ce6f6`, Android 16, PIN-Sperre)
+
+- Wiedergabe startet (Ordner abspielen, Mini-Player, Media-Session `PLAYING`).
+- **Gerät hat ein Audio-Problem unabhängig von der App:** `audioserver` startet alle ~7 s neu (Auslöser im Log:
+  Hotword-/SoundTrigger-HAL „Hey Google“, `sys.audio.restart.hal`). Die Schleife läuft auch bei pausierter und bei
+  beendeter App weiter. Folge: Wiedergabe stockt (in 6 min nur ~2 min Position). Ein Neustart des Handys oder
+  Abschalten von „Hey Google“ sollte das beheben – nicht per adb geändert.
+- Nach dem Sperren per Power-Taste verlangt das Gerät die PIN; weitere Bedienung per adb war deshalb nicht möglich.
+  Die App-Daten wurden beim Schema-Wechsel gelöscht (`pm clear`), die Anmeldung muss am Gerät neu erfolgen.
+- Offen auf dem OnePlus: 15-min-Hintergrundlauf, Sperrbildschirm, Kopfhörer, App-Kill, WLAN→Mobil (SIM vorhanden).
