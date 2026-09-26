@@ -47,6 +47,7 @@ class _ServerFormScreenState extends ConsumerState<ServerFormScreen> {
   final _password = TextEditingController();
   late int? _id = widget.serverId;
   bool _remember = false;
+  bool _showExternal = false;
   bool _rememberTouched = false;
   bool _busy = false;
   bool _validated = false;
@@ -73,6 +74,7 @@ class _ServerFormScreenState extends ConsumerState<ServerFormScreen> {
           _name.text = p.name;
           _lan.text = p.lanUrl;
           _external.text = p.externalUrl ?? '';
+          _showExternal = p.externalUrl != null;
           _user.text = p.user;
         });
       });
@@ -89,7 +91,14 @@ class _ServerFormScreenState extends ConsumerState<ServerFormScreen> {
 
   Future<void> _connect() async {
     if (!_form.currentState!.validate()) {
-      setState(() => _validated = true);
+      setState(() {
+        _validated = true;
+        // Fehler im eingeklappten Feld sichtbar machen.
+        if (_external.text.trim().isNotEmpty &&
+            normalizeServerUrl(_external.text) == null) {
+          _showExternal = true;
+        }
+      });
       return;
     }
     FocusScope.of(context).unfocus();
@@ -102,10 +111,12 @@ class _ServerFormScreenState extends ConsumerState<ServerFormScreen> {
     final password = _password.text;
     SessionManager? session;
     try {
+      final lanUrl = normalizeServerUrl(_lan.text)!;
+      final name = _name.text.trim();
       var profile = ServerProfile(
         id: _id,
-        name: _name.text.trim(),
-        lanUrl: normalizeServerUrl(_lan.text)!,
+        name: name.isEmpty ? Uri.parse(lanUrl).host : name,
+        lanUrl: lanUrl,
         externalUrl: _external.text.trim().isEmpty
             ? null
             : normalizeServerUrl(_external.text),
@@ -186,12 +197,11 @@ class _ServerFormScreenState extends ConsumerState<ServerFormScreen> {
                 label: l10n.fieldName,
                 child: TextFormField(
                   controller: _name,
-                  validator: required,
                   textInputAction: TextInputAction.next,
                 ),
               ),
               _Field(
-                label: l10n.fieldLanUrl,
+                label: l10n.fieldAddress,
                 child: TextFormField(
                   controller: _lan,
                   validator: url,
@@ -200,22 +210,41 @@ class _ServerFormScreenState extends ConsumerState<ServerFormScreen> {
                   style: AppTheme.mono(),
                   textInputAction: TextInputAction.next,
                   onChanged: (_) => setState(() {}),
-                  decoration: _urlDecoration(_lan.text, l10n.fieldLanUrlHint),
+                  decoration: _urlDecoration(_lan.text, l10n.fieldAddressHint),
                 ),
               ),
-              _Field(
-                label: l10n.fieldExternalUrl,
-                child: TextFormField(
-                  controller: _external,
-                  validator: (v) => _optionalUrl(v, l10n),
-                  keyboardType: TextInputType.url,
-                  autocorrect: false,
-                  style: AppTheme.mono(),
-                  textInputAction: TextInputAction.next,
-                  onChanged: (_) => setState(() {}),
-                  decoration: _urlDecoration(
-                    _external.text,
-                    l10n.fieldExternalUrlHint,
+              Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: TextButton.icon(
+                  icon: Icon(_showExternal ? Icons.remove : Icons.add),
+                  label: Text(
+                    _showExternal
+                        ? l10n.secondAddressHide
+                        : l10n.secondAddressShow,
+                  ),
+                  onPressed: () =>
+                      setState(() => _showExternal = !_showExternal),
+                ),
+              ),
+              // Eingeklappt bleibt das Feld im Formular: Inhalt und Prüfung
+              // bleiben erhalten, Zuklappen leert nichts.
+              Visibility(
+                visible: _showExternal,
+                maintainState: true,
+                child: _Field(
+                  label: l10n.fieldExternalUrl,
+                  child: TextFormField(
+                    controller: _external,
+                    validator: (v) => _optionalUrl(v, l10n),
+                    keyboardType: TextInputType.url,
+                    autocorrect: false,
+                    style: AppTheme.mono(),
+                    textInputAction: TextInputAction.next,
+                    onChanged: (_) => setState(() {}),
+                    decoration: _urlDecoration(
+                      _external.text,
+                      l10n.fieldExternalUrlHint,
+                    ),
                   ),
                 ),
               ),

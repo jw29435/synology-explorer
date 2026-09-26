@@ -69,8 +69,11 @@ class AppLocalizationsDe extends AppLocalizations {
   String get serverNotConnected => 'Nicht verbunden';
 
   @override
+  String get serverConnected => 'Verbunden';
+
+  @override
   String get serverInfo =>
-      'Beim Start wird zuerst die LAN-Adresse probiert, dann die externe. QuickConnect wird nicht unterstützt.';
+      'Beim Start wird zuerst die Adresse probiert, dann die zweite Adresse, falls hinterlegt. QuickConnect wird nicht unterstützt.';
 
   @override
   String get serverManageHint =>
@@ -97,20 +100,27 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get fieldName => 'Name';
+  String get fieldName => 'Name (optional)';
 
   @override
-  String get fieldLanUrl => 'LAN-Adresse';
+  String get fieldAddress => 'Adresse';
 
   @override
-  String get fieldLanUrlHint => 'Wird zuerst probiert, Timeout 2 s.';
+  String get fieldAddressHint =>
+      'IP-Adresse oder Domain deines NAS, z. B. 192.168.1.20:5001 oder nas.example.de';
 
   @override
   String get fieldExternalUrl => 'Externe Adresse (optional)';
 
   @override
   String get fieldExternalUrlHint =>
-      'DDNS, Reverse Proxy oder Tailscale-Adresse.';
+      'Die App nutzt diese Adresse, wenn die erste nicht erreichbar ist.';
+
+  @override
+  String get secondAddressShow => 'Zweite Adresse für unterwegs';
+
+  @override
+  String get secondAddressHide => 'Zweite Adresse ausblenden';
 
   @override
   String get fieldUser => 'Benutzer';
@@ -853,11 +863,11 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get shareExternalHint =>
-      'Der Link zeigt auf die externe Adresse. Verwaltung aller Links unter Einstellungen › Freigabelinks.';
+      'Der Link zeigt auf die öffentlich erreichbare Adresse des Servers. Verwaltung aller Links unter Einstellungen › Freigabelinks.';
 
   @override
   String get shareNoExternal =>
-      'Für diesen Server ist keine externe Adresse hinterlegt: Der Link nutzt die Adresse, die DSM meldet, und ist evtl. nur im LAN erreichbar.';
+      'Für diesen Server ist keine öffentlich erreichbare Adresse hinterlegt: Der Link nutzt die Adresse, die DSM meldet, und ist evtl. nur im LAN erreichbar.';
 
   @override
   String get shareLinksTitle => 'Freigabelinks';

@@ -48,10 +48,13 @@ class StartScreen extends ConsumerWidget {
                 const SizedBox(width: 6),
                 Flexible(
                   child: Text(
-                    l10n.serverStatus(
-                      viaLan ? l10n.viaLan : l10n.viaExternal,
-                      profile.user,
-                    ),
+                    // LAN/extern nur, wenn es eine zweite Adresse gibt.
+                    profile.externalUrl == null
+                        ? profile.user
+                        : l10n.serverStatus(
+                            viaLan ? l10n.viaLan : l10n.viaExternal,
+                            profile.user,
+                          ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: text.bodyMedium?.copyWith(

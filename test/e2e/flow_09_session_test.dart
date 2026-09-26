@@ -78,7 +78,7 @@ void main() {
     await app.tapThen(find.text('Heim-NAS'), find.text(l10n.connect));
     expect(app.location, startsWith('/servers/'));
     expect(logins(app), before + 1, reason: 'Verbinden allein meldet nicht an');
-    await app.type(find.byType(TextFormField).at(4), mockPassword);
+    await app.type(find.byType(TextFormField).at(3), mockPassword);
     await app.tapThen(
       find.text(l10n.connect),
       find.text(l10n.sectionShares.toUpperCase()),

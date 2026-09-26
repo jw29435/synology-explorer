@@ -285,8 +285,8 @@ class E2E {
     final fields = find.byType(TextFormField);
     await type(fields.at(0), 'Heim-NAS');
     await type(fields.at(1), nas.url);
-    await type(fields.at(3), mockUser);
-    await type(fields.at(4), mockPassword);
+    await type(fields.at(2), mockUser);
+    await type(fields.at(3), mockPassword);
     if (rememberPassword) await tapText(l10n.rememberPassword);
     await tap(find.text(l10n.connect));
     await waitFor(find.text(l10n.otpTitle));

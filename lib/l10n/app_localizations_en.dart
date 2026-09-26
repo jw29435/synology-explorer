@@ -69,8 +69,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get serverNotConnected => 'Not connected';
 
   @override
+  String get serverConnected => 'Connected';
+
+  @override
   String get serverInfo =>
-      'The LAN address is tried first, then the external one. QuickConnect is not supported.';
+      'The address is tried first, then the second address if set. QuickConnect is not supported.';
 
   @override
   String get serverManageHint => 'Press and hold to edit, sign out or delete.';
@@ -96,20 +99,27 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get fieldName => 'Name';
+  String get fieldName => 'Name (optional)';
 
   @override
-  String get fieldLanUrl => 'LAN address';
+  String get fieldAddress => 'Address';
 
   @override
-  String get fieldLanUrlHint => 'Tried first, 2 s timeout.';
+  String get fieldAddressHint =>
+      'IP address or domain of your NAS, e.g. 192.168.1.20:5001 or nas.example.com';
 
   @override
   String get fieldExternalUrl => 'External address (optional)';
 
   @override
   String get fieldExternalUrlHint =>
-      'DDNS, reverse proxy or Tailscale address.';
+      'The app uses this address when the first one is unreachable.';
+
+  @override
+  String get secondAddressShow => 'Second address for on the go';
+
+  @override
+  String get secondAddressHide => 'Hide second address';
 
   @override
   String get fieldUser => 'User';
@@ -852,11 +862,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shareExternalHint =>
-      'The link points to the external address. Manage all links in Settings › Sharing links.';
+      'The link points to the server\'s publicly reachable address. Manage all links in Settings › Sharing links.';
 
   @override
   String get shareNoExternal =>
-      'No external address is set for this server: the link uses the address reported by DSM and may only work on the local network.';
+      'No publicly reachable address is set for this server: the link uses the address reported by DSM and may only work on the local network.';
 
   @override
   String get shareLinksTitle => 'Sharing links';

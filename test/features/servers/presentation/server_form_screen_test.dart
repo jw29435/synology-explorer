@@ -66,23 +66,30 @@ void main() {
   Future<_FakeRepo> open(
     WidgetTester tester, {
     Future<SessionManager> Function(ServerProfile)? onConnect,
+    ServerProfile? existing,
   }) async {
     final repo = _FakeRepo(onConnect ?? (_) async => session);
+    if (existing != null) await repo.add(existing);
     await pumpApp(
       tester,
       loggedIn: false,
-      location: '/servers/new',
+      location: existing == null ? '/servers/new' : '/servers/1',
       overrides: [serverRepositoryProvider.overrideWithValue(repo)],
     );
     return repo;
   }
 
-  Future<void> fill(WidgetTester tester, {String lan = 'nas.lan:5001'}) async {
+  // Eingeklappt: Name, Adresse, Benutzer, Passwort.
+  Future<void> fill(
+    WidgetTester tester, {
+    String name = 'Heim-NAS',
+    String lan = 'nas.lan:5001',
+  }) async {
     final fields = find.byType(TextFormField);
-    await tester.enterText(fields.at(0), 'Heim-NAS');
+    await tester.enterText(fields.at(0), name);
     await tester.enterText(fields.at(1), lan);
-    await tester.enterText(fields.at(3), 'johann');
-    await tester.enterText(fields.at(4), 'geheim');
+    await tester.enterText(fields.at(2), 'johann');
+    await tester.enterText(fields.at(3), 'geheim');
   }
 
   Future<void> connect(WidgetTester tester) async {
@@ -93,7 +100,7 @@ void main() {
   testWidgets('02: Pflichtfelder, Adressprüfung, HTTP-Warnung', (tester) async {
     final repo = await open(tester);
     await connect(tester);
-    expect(find.text('Pflichtfeld'), findsNWidgets(4));
+    expect(find.text('Pflichtfeld'), findsNWidgets(3));
     expect(repo.saved, isEmpty);
 
     await fill(tester, lan: 'kein host');
@@ -107,6 +114,76 @@ void main() {
     expect(normalizeServerUrl('nas.lan:5001'), 'https://nas.lan:5001');
     expect(normalizeServerUrl('https://nas.lan:5001/'), 'https://nas.lan:5001');
     expect(normalizeServerUrl('ftp://nas'), isNull);
+  });
+
+  testWidgets('02: Standardansicht ohne zweite Adresse, aufklappbar', (
+    tester,
+  ) async {
+    final repo = await open(
+      tester,
+      onConnect: (_) async => throw const SynoNetworkError(),
+    );
+    expect(find.text('ADRESSE'), findsOne);
+    expect(find.text('BENUTZER'), findsOne);
+    expect(find.text('PASSWORT'), findsOne);
+    expect(find.text('EXTERNE ADRESSE (OPTIONAL)'), findsNothing);
+    expect(find.byType(TextFormField), findsNWidgets(4));
+
+    await tester.tap(find.text('Zweite Adresse für unterwegs'));
+    await tester.pump();
+    expect(find.text('EXTERNE ADRESSE (OPTIONAL)'), findsOne);
+    await tester.enterText(find.byType(TextFormField).at(2), 'nas.example.de');
+
+    // Zuklappen leert das Feld nicht; die Adresse wird trotzdem gespeichert.
+    await tester.tap(find.text('Zweite Adresse ausblenden'));
+    await tester.pump();
+    expect(find.text('EXTERNE ADRESSE (OPTIONAL)'), findsNothing);
+    await fill(tester);
+    await connect(tester);
+    expect(repo.saved.single.externalUrl, 'https://nas.example.de');
+  });
+
+  testWidgets('02: ungültige zweite Adresse klappt den Bereich auf', (
+    tester,
+  ) async {
+    final repo = await open(tester);
+    await tester.tap(find.text('Zweite Adresse für unterwegs'));
+    await tester.pump();
+    await tester.enterText(find.byType(TextFormField).at(2), 'kein host');
+    await tester.tap(find.text('Zweite Adresse ausblenden'));
+    await tester.pump();
+    await fill(tester);
+    await connect(tester);
+    expect(find.text('EXTERNE ADRESSE (OPTIONAL)'), findsOne);
+    expect(find.textContaining('Keine gültige Adresse'), findsOne);
+    expect(repo.saved, isEmpty);
+  });
+
+  testWidgets('02: Bearbeiten mit zweiter Adresse ist aufgeklappt', (
+    tester,
+  ) async {
+    await open(
+      tester,
+      existing: const ServerProfile(
+        name: 'Heim-NAS',
+        lanUrl: 'https://192.168.1.20:5001',
+        externalUrl: 'https://nas.example.de',
+        user: 'johann',
+      ),
+    );
+    expect(find.text('EXTERNE ADRESSE (OPTIONAL)'), findsOne);
+    expect(find.text('https://nas.example.de'), findsOne);
+    expect(find.text('Zweite Adresse ausblenden'), findsOne);
+  });
+
+  testWidgets('02: leerer Name → Host der Adresse', (tester) async {
+    final repo = await open(
+      tester,
+      onConnect: (_) async => throw const SynoNetworkError(),
+    );
+    await fill(tester, name: '', lan: 'https://nas.lan:5001/');
+    await connect(tester);
+    expect(repo.saved.single.name, 'nas.lan');
   });
 
   testWidgets('02: nicht erreichbar → Fehler, Profil bleibt gespeichert', (

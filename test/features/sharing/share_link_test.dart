@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:nuvo_explorer/features/servers/domain/server_profile.dart';
 import 'package:nuvo_explorer/features/sharing/domain/share_link.dart';
 import 'package:nuvo_explorer/features/sharing/presentation/share_link_sheet.dart';
 
@@ -70,6 +71,22 @@ void main() {
       publicShareUrl('https://gofile.me/abc/def', 'https://nas.beispiel.de'),
       'https://gofile.me/abc/def',
     );
+  });
+
+  test('öffentliche Basis: zweite Adresse, sonst nicht-private primäre', () {
+    ServerProfile p(String lan, [String? ext]) =>
+        ServerProfile(name: 'NAS', lanUrl: lan, externalUrl: ext, user: 'u');
+    expect(
+      publicShareBase(p('https://192.168.1.2:5001', 'https://nas.de')),
+      'https://nas.de',
+    );
+    expect(
+      publicShareBase(p('https://nas.example.de')),
+      'https://nas.example.de',
+    );
+    expect(publicShareBase(p('https://192.168.1.2:5001')), isNull);
+    expect(publicShareBase(p('https://nas.tailnet.ts.net')), isNull);
+    expect(publicShareBase(p('https://diskstation:5001')), isNull);
   });
 
   test('Zufallspasswort', () {

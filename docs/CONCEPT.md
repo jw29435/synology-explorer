@@ -29,7 +29,7 @@ Die wichtigste Randbedingung ist der deaktivierte Home-Dienst: Es gibt keinen pe
 - Auto-Foto-Upload braucht einen vom Nutzer gewählten Zielordner in einem Shared Folder (z. B. `photo/Handy-Johann`).
 - Papierkorb ist der Ordner `#recycle` je Shared Folder. Ob er sichtbar ist, entscheidet die Freigabe-Einstellung „Zugriff auf Papierkorb nur für Administratoren". Die App zeigt ihn nur, wenn das Listing erfolgreich ist.
 
-**Verbindungswege** (alle drei werden unterstützt, pro Server bis zu zwei Adressen)
+**Verbindungswege** (alle drei werden unterstützt; pro Server eine primäre Adresse und optional eine zweite Adresse für unterwegs)
 
 | Weg | Adresse | TLS | Besonderheit |
 | --- | --- | --- | --- |
@@ -37,7 +37,7 @@ Die wichtigste Randbedingung ist der deaktivierte Home-Dienst: Es gibt keinen pe
 | DDNS / Reverse Proxy | `https://nas.example.de` | Let's Encrypt, gültig | Standardweg unterwegs. Port 443, WebSocket nicht nötig |
 | VPN / Tailscale | `https://100.x.y.z:5001` oder MagicDNS-Name | Meist selbstsigniert | Aus App-Sicht identisch mit LAN; Tunnel wird außerhalb der App aufgebaut |
 
-Die App probiert beim Start die primäre Adresse (LAN) mit kurzem Timeout (2 s) und fällt auf die sekundäre (extern) zurück. Welche Adresse aktiv ist, wird in der Statusleiste angezeigt. QuickConnect wird bewusst nicht unterstützt: Es gibt keine öffentliche API, die Relay-Auflösung müsste nachgebaut werden und bricht bei jedem DSM-Update.
+Die primäre Adresse kann jeder der drei Wege sein (LAN-IP, DDNS-Domain oder Tailscale-Adresse); für die meisten Nutzer reicht sie allein. Die App probiert beim Start die primäre Adresse mit kurzem Timeout (2 s) und fällt auf die optionale zweite zurück. Welche Adresse aktiv ist (LAN/extern), zeigt die Statusleiste nur, wenn eine zweite Adresse hinterlegt ist. QuickConnect wird bewusst nicht unterstützt: Es gibt keine öffentliche API, die Relay-Auflösung müsste nachgebaut werden und bricht bei jedem DSM-Update.
 
 **Anmeldung**
 
@@ -57,7 +57,7 @@ v1 deckt den vollen DS-File-Umfang ab, priorisiert aber Audio; die Reihenfolge d
 
 | Bereich | Funktionen in v1 | Nicht in v1 |
 | --- | --- | --- |
-| Server | Mehrere Server-Profile, je zwei Adressen (LAN/extern), Auto-Fallback, 2FA, Zertifikat-Pinning, Logout | Single Sign-on, LDAP-Besonderheiten |
+| Server | Mehrere Server-Profile, je eine primäre Adresse und optional eine zweite mit Auto-Fallback, 2FA, Zertifikat-Pinning, Logout | Single Sign-on, LDAP-Besonderheiten |
 | Browsen | Shared Folders, Ordnernavigation mit Breadcrumb, Liste/Grid, Sortierung (Name, Datum, Größe, Typ), Pull-to-Refresh, Ordnergröße abfragen, Datei-Infos | Ansicht nach Dateityp über alle Ordner |
 | Suche | Name-Suche innerhalb des aktuellen Ordners (rekursiv), Filter nach Typ | Volltextsuche |
 | Favoriten / Zuletzt | Ordner-Favoriten des NAS-Kontos (wie DS File), Datei-Favoriten lokal, Zuletzt geöffnet (letzte 50) | Sync von Datei-Favoriten über Geräte |
@@ -211,7 +211,7 @@ integration_test/ # Login → Browse → Play gegen Mock-Server
 | Nr. | Screen | Zweck | Wesentliche Elemente | Kommt von / führt zu |
 | --- | --- | --- | --- | --- |
 | 01 | Server-Liste | Einstieg, Server wählen | Karte je Server mit Name, aktiver Adresse, Status; Leerzustand mit „Server hinzufügen" | Start → 02, 05 |
-| 02 | Server hinzufügen | Verbindung und Login | Name, LAN-Adresse, externe Adresse (optional), Benutzer, Passwort, Schalter „Passwort merken", Button „Verbinden" | 01 → 03/04 → 05 |
+| 02 | Server hinzufügen | Verbindung und Login | Adresse, Benutzer, Passwort; Name optional (leer = Host der Adresse); zweite Adresse für unterwegs eingeklappt (optional), Schalter „Passwort merken", Button „Verbinden" | 01 → 03/04 → 05 |
 | 03 | Zertifikat bestätigen | TOFU für selbstsignierte Zertifikate | Host, Aussteller, Gültigkeit, SHA-256-Fingerprint, „Vertrauen"/„Abbrechen" | 02 |
 | 04 | 2FA-Code | OTP-Eingabe | 6-stelliges Feld, „Dieses Gerät merken", Fehlerzustand | 02 → 05 |
 | 05 | Dateien – Start | Shared Folders, Favoriten, Zuletzt | Abschnitte: Freigegebene Ordner (Liste), Favoriten (Chips), Zuletzt geöffnet (Zeilen); Suche-Icon | Tab „Dateien" → 06, 11 |
