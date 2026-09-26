@@ -68,4 +68,95 @@ void main() {
     final response = await handler(Request('GET', Uri.parse('http://nas/x')));
     expect(response.statusCode, 404);
   });
+
+  group('MockNasControl', () {
+    late MockNasControl control;
+    late String sid;
+
+    setUp(() async {
+      control = MockNasControl();
+      handler = mockNasHandler(Directory('test/fixtures'), control: control);
+      final login = await call(
+        '',
+        body: 'api=SYNO.API.Auth&method=login&$creds&otp_code=$mockOtp',
+      );
+      sid = login['data']['sid'] as String;
+    });
+
+    test('expireSessions → 119, rejectLogin → 400', () async {
+      const shares = 'api=SYNO.FileStation.List&method=list_share';
+      control.expireSessions();
+      expect(code(await call('$shares&_sid=$sid')), 119);
+      control.rejectLogin = true;
+      expect(
+        code(await call('', body: 'api=SYNO.API.Auth&method=login&$creds')),
+        400,
+      );
+    });
+
+    test('denyWrites: Delete-status FAIL mit errors[0], Sharing 407', () async {
+      control.denyWrites = 407;
+      final start = await call(
+        'api=SYNO.FileStation.Delete&method=start&_sid=$sid&path=["/music/a"]',
+      );
+      final task = jsonEncode(start['data']['taskid']);
+      final status = await call(
+        'api=SYNO.FileStation.Delete&method=status&_sid=$sid&taskid=$task',
+      );
+      expect(status['data']['status'], 'FAIL');
+      expect(status['data']['errors'][0]['code'], 407);
+      expect(
+        code(
+          await call(
+            'api=SYNO.FileStation.Sharing&method=create&_sid=$sid'
+            '&path=["/music/a"]',
+          ),
+        ),
+        407,
+      );
+    });
+
+    test(
+      '#recycle: music listbar ohne Gelöschtes, photo 407, sonst 408',
+      () async {
+        Future<Map<String, dynamic>> list(String folder) => call(
+          'api=SYNO.FileStation.List&method=list&_sid=$sid'
+          '&folder_path=${Uri.encodeQueryComponent(folder)}',
+        );
+        final names = [
+          for (final f in (await list('/music/#recycle'))['data']['files'])
+            f['name'],
+        ];
+        expect(names, ['Alben', 'Demo Sturmflut.mp3']);
+        expect(code(await list('/photo/#recycle')), 407);
+        expect(code(await list('/video/#recycle')), 408);
+
+        await call(
+          'api=SYNO.FileStation.Delete&method=start&_sid=$sid'
+          '&path=${Uri.encodeQueryComponent('["/music/#recycle/Alben"]')}',
+        );
+        final after = (await list('/music/#recycle'))['data']['files'] as List;
+        expect(after.map((f) => f['name']), ['Demo Sturmflut.mp3']);
+      },
+    );
+
+    test('Download: Inhalt je Pfad, 502 als HTML', () async {
+      control
+        ..files['/a.txt'] = utf8.encode('hallo')
+        ..downloadErrors['/b.txt'] = 502;
+      Future<Response> download(String path) async => handler(
+        Request(
+          'GET',
+          Uri.parse(
+            'http://nas/webapi/entry.cgi?api=SYNO.FileStation.Download'
+            '&method=download&_sid=$sid&path=$path',
+          ),
+        ),
+      );
+      expect(await (await download('/a.txt')).readAsString(), 'hallo');
+      final missing = await download('/b.txt');
+      expect(missing.statusCode, 502);
+      expect(missing.headers['content-type'], 'text/html');
+    });
+  });
 }
