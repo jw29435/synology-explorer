@@ -410,6 +410,13 @@ class _FolderPickerSheetState extends ConsumerState<_FolderPickerSheet> {
   /// Rechte des aktuellen Ordners, sobald bekannt (aus der Liste darüber).
   NasPerm? _perm;
 
+  /// Eine Ebene hoch; von der Share-Ebene zur Liste der Shares.
+  void _up() => setState(() {
+    final path = _path!;
+    _path = path.lastIndexOf('/') == 0 ? null : parentPath(path);
+    _perm = null;
+  });
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -422,87 +429,91 @@ class _FolderPickerSheetState extends ConsumerState<_FolderPickerSheet> {
     final writable = _perm != NasPerm.readOnly;
     final valid =
         path != null && writable && isValidDestination(path, widget.sources);
-    return SafeArea(
-      child: SizedBox(
-        height: MediaQuery.sizeOf(context).height * 0.75,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            ListTile(
-              contentPadding: const EdgeInsets.only(left: 8, right: 8),
-              leading: IconButton(
-                tooltip: l10n.back,
-                icon: const Icon(Icons.arrow_back),
-                onPressed: path == null
-                    ? null
-                    : () => setState(() {
-                        _path = path.lastIndexOf('/') == 0
-                            ? null
-                            : parentPath(path);
-                        _perm = null;
-                      }),
-              ),
-              title: Text(
-                widget.title,
-                style: const TextStyle(fontWeight: FontWeight.w700),
-              ),
-              subtitle: Text(
-                path?.substring(1) ?? l10n.sectionShares,
-                style: AppTheme.mono(TextStyle(color: AppColors.textSecondary)),
-                overflow: TextOverflow.ellipsis,
-              ),
-              trailing: IconButton(
-                tooltip: l10n.close,
-                icon: const Icon(Icons.close),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-            ),
-            const Divider(height: 1),
-            Expanded(
-              child: switch (folders) {
-                AsyncData(:final value) when value.isEmpty => Center(
-                  child: Text(l10n.noSubfolders),
+    // Zurück-Geste wie der Zurück-Pfeil; erst auf der Share-Liste zu.
+    return PopScope(
+      canPop: path == null,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _up();
+      },
+      child: SafeArea(
+        child: SizedBox(
+          height: MediaQuery.sizeOf(context).height * 0.75,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              ListTile(
+                contentPadding: const EdgeInsets.only(left: 8, right: 8),
+                leading: IconButton(
+                  tooltip: l10n.back,
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: path == null ? null : _up,
                 ),
-                AsyncData(:final value) => ListView(
-                  children: [
-                    for (final f in value)
-                      ListTile(
-                        leading: const Icon(
-                          Icons.folder_outlined,
-                          color: AppColors.accent,
+                title: Text(
+                  widget.title,
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
+                subtitle: Text(
+                  path?.substring(1) ?? l10n.sectionShares,
+                  style: AppTheme.mono(
+                    TextStyle(color: AppColors.textSecondary),
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                trailing: IconButton(
+                  tooltip: l10n.close,
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ),
+              const Divider(height: 1),
+              Expanded(
+                child: switch (folders) {
+                  AsyncData(:final value) when value.isEmpty => Center(
+                    child: Text(l10n.noSubfolders),
+                  ),
+                  AsyncData(:final value) => ListView(
+                    children: [
+                      for (final f in value)
+                        ListTile(
+                          leading: const Icon(
+                            Icons.folder_outlined,
+                            color: AppColors.accent,
+                          ),
+                          title: Text(f.name),
+                          trailing: const Icon(Icons.chevron_right),
+                          enabled: !widget.sources.contains(f.path),
+                          onTap: () => setState(() {
+                            _path = f.path;
+                            _perm = f.perm;
+                          }),
                         ),
-                        title: Text(f.name),
-                        trailing: const Icon(Icons.chevron_right),
-                        enabled: !widget.sources.contains(f.path),
-                        onTap: () => setState(() {
-                          _path = f.path;
-                          _perm = f.perm;
-                        }),
-                      ),
-                  ],
+                    ],
+                  ),
+                  AsyncError(:final error) => Center(
+                    child: Text(describeError(error, l10n)),
+                  ),
+                  _ => const Center(child: CircularProgressIndicator()),
+                },
+              ),
+              if (!writable)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                  child: Text(
+                    l10n.noWritePermission,
+                    style: TextStyle(color: AppColors.errorSoft),
+                  ),
                 ),
-                AsyncError(:final error) => Center(
-                  child: Text(describeError(error, l10n)),
-                ),
-                _ => const Center(child: CircularProgressIndicator()),
-              },
-            ),
-            if (!writable)
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-                child: Text(
-                  l10n.noWritePermission,
-                  style: TextStyle(color: AppColors.errorSoft),
+                padding: const EdgeInsets.all(16),
+                child: FilledButton(
+                  onPressed: valid
+                      ? () => Navigator.of(context).pop(path)
+                      : null,
+                  child: Text(widget.confirm),
                 ),
               ),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: FilledButton(
-                onPressed: valid ? () => Navigator.of(context).pop(path) : null,
-                child: Text(widget.confirm),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
