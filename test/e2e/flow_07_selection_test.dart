@@ -84,18 +84,23 @@ void main() {
     await app.tapText(l10n.actionDownloadShort);
     await app.waitFor(find.text(l10n.downloadsQueued(2)));
     expect(find.text(l10n.selectedCount(2)), findsNothing);
+    // Die Aktion „Transfers“ geht, obwohl die Aktionsleiste (ihr Context)
+    // schon weg ist (E2E-015); zurück über den Dateien-Tab.
+    await app.tap(inSnackBar(l10n.tabTransfers));
+    expect(app.location, '/transfers');
+    await app.tap(find.byIcon(Icons.folder_outlined).last);
+    expect(app.location, startsWith('/files/folder'));
     await app.waitUntil(
       () async =>
           (await transfers(app)).every((t) => t.state == TransferState.done),
     );
     expect(app.nas.calls('SYNO.FileStation.Download', 'download'), isNotEmpty);
-    // E2E-Finding: E2E-015 – die Snackbar mit Aktion „Transfers“ bleibt
-    // stehen; ihre Aktion nutzt einen oft schon entfernten Context.
-    // await app.tap(inSnackBar(l10n.tabTransfers));
-    // expect(app.location, '/transfers');
-    ScaffoldMessenger.of(tester.element(find.byType(SnackBar)))
-        .removeCurrentSnackBar();
-    await app.settle();
+
+    // Ohne Tipp verschwindet die Snackbar von selbst (E2E-015).
+    await selectTwo(app);
+    await app.tapText(l10n.actionDownloadShort);
+    await app.waitFor(inSnackBar(l10n.downloadsQueued(2)));
+    await app.waitFor(find.byType(SnackBar), gone: true);
 
     // Verschieben.
     await selectTwo(app);
@@ -171,6 +176,8 @@ void main() {
         await app.waitFor(inSnackBar(l10n.errorPermission));
         expect(find.text(l10n.selectedCount(2)), findsOneWidget);
         expect(app.location, startsWith('/files/folder'));
+        // Die Meldung verdeckt die Aktionsleiste, verschwindet aber von selbst.
+        await app.waitFor(find.byType(SnackBar), gone: true);
       }
 
       await app.tapThen(
@@ -191,10 +198,6 @@ void main() {
       expect(app.location, '/files');
       await app.dispose();
     },
-    // E2E-Finding: H-001 – scheitert ein Task (status FAIL), schließt der
-    // Fortschrittsdialog zweimal (onError und onDone): der zweite `pop`
-    // entfernt die Shell-Seite, go_router meldet „popped the last page“.
-    skip: true,
   );
 
   testWidgets('Auswahl: Teilen und Download verweigert (407) → Meldung', (
@@ -279,6 +282,11 @@ void main() {
 
     testWidgets('Erfolg: Datei landet im Ordner', (tester) async {
       final app = await startUpload(tester);
+      int listings() => app.nas
+          .calls('SYNO.FileStation.List', 'list')
+          .where((c) => c['folder_path'] == '/music')
+          .length;
+      final before = listings();
       await app.tapThen(
         inSheet(l10n.uploadFiles),
         inSnackBar(l10n.uploadsQueued(1)),
@@ -289,6 +297,8 @@ void main() {
       expect(upload['file'], 'notiz.txt');
       // Der FAB-Ordner ist `/music` (der Mock zeigt darin das Album).
       expect(upload['path'], '/music');
+      // Nach dem Upload lädt der Ordner neu (E2E-036).
+      await app.waitUntil(() => listings() > before, 'Ordner neu geladen');
 
       await app.backButton();
       expect(app.location, '/files');

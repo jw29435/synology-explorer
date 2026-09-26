@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -9,6 +11,7 @@ import '../domain/recycle.dart';
 import 'browser_providers.dart';
 import 'entry_widgets.dart';
 import 'file_actions.dart';
+import 'folder_screen.dart';
 
 /// Screen 24: `#recycle` je Share. Nur Shares, deren Papierkorb sich listen
 /// lässt. Wiederherstellen = Verschieben an den Ursprungspfad; endgültig
@@ -30,13 +33,17 @@ class _TrashScreenState extends ConsumerState<TrashScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final text = Theme.of(context).textTheme;
-    final shares = ref.watch(sharesProvider).value ?? const <NasEntry>[];
+    final sharesValue = ref.watch(sharesProvider);
+    final shares = sharesValue.value ?? const <NasEntry>[];
     final bins = {
       for (final s in shares) s: ref.watch(recycleBinProvider(s.path)),
     };
     final loading =
-        !ref.watch(sharesProvider).hasValue ||
-        bins.values.any((b) => b.isLoading);
+        sharesValue.isLoading || bins.values.any((b) => b.isLoading);
+    final error = loading
+        ? null
+        : sharesValue.error ??
+              bins.values.map((b) => b.error).nonNulls.firstOrNull;
     final available = [
       for (final MapEntry(:key, :value) in bins.entries)
         if (value.value == RecycleBin.available) key.path,
@@ -96,34 +103,42 @@ class _TrashScreenState extends ConsumerState<TrashScreen> {
                 ],
               ),
             const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.info_outline, color: AppColors.textSecondary),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      [
-                        if (loading)
-                          l10n.trashChecking
-                        else if (available.isEmpty)
-                          l10n.trashNone
-                        else
-                          l10n.trashInfo,
-                        if (hidden.isNotEmpty)
-                          l10n.trashHidden(hidden.join(', ')),
-                      ].join(' '),
-                      style: TextStyle(color: AppColors.textSecondary),
+            if (error != null)
+              ErrorPanel(
+                error: error,
+                onRetry: () => ref
+                  ..invalidate(sharesProvider)
+                  ..invalidate(recycleBinProvider),
+              )
+            else
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.info_outline, color: AppColors.textSecondary),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        [
+                          if (loading)
+                            l10n.trashChecking
+                          else if (available.isEmpty)
+                            l10n.trashNone
+                          else
+                            l10n.trashInfo,
+                          if (hidden.isNotEmpty)
+                            l10n.trashHidden(hidden.join(', ')),
+                        ].join(' '),
+                        style: TextStyle(color: AppColors.textSecondary),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
             if (_path case final path?)
               ListTile(
                 contentPadding: EdgeInsets.zero,
@@ -152,6 +167,21 @@ class _TrashScreenState extends ConsumerState<TrashScreen> {
                         : null,
                     onRestore: () => _restore(e, share!),
                     onDelete: () => _deleteForever([e], folder!),
+                  ),
+                // Paging wie in 06: erreicht man das Ende, kommt die nächste
+                // Seite (nach einem Fehler nur über „Erneut versuchen“).
+                if (value.hasMore)
+                  Builder(
+                    builder: (context) {
+                      if (value.loadMoreError == null) {
+                        scheduleMicrotask(
+                          () => ref
+                              .read(folderProvider(folder!).notifier)
+                              .loadMore(),
+                        );
+                      }
+                      return PageFooter(path: folder!, state: value);
+                    },
                   ),
               ],
               AsyncError(:final error) => [

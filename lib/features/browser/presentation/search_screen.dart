@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../app/theme.dart';
 import '../../../core/utils/format.dart';
@@ -106,11 +105,22 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                             .search(_query.text, filter),
                       );
                     },
-                    child: Text(
-                      l10n.searchWholeNas,
-                      style: muted?.copyWith(
-                        color: AppColors.accent,
-                        fontWeight: FontWeight.w700,
+                    // Touch-Ziel mindestens 44 px.
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        minWidth: 44,
+                        minHeight: 44,
+                      ),
+                      child: Center(
+                        widthFactor: 1,
+                        heightFactor: 1,
+                        child: Text(
+                          l10n.searchWholeNas,
+                          style: muted?.copyWith(
+                            color: AppColors.accent,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -193,9 +203,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                     overflow: TextOverflow.ellipsis,
                     style: muted,
                   ),
-                  onTap: () => context.push(
-                    folderLocation(e.isDir ? e.path : parentPath(e.path)),
-                  ),
+                  // Ordner öffnen, Dateien direkt im Viewer bzw. Player.
+                  onTap: () => openEntry(context, ref, e),
                   onLongPress: () => showEntryActions(context, ref, e),
                 );
               },

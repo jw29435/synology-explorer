@@ -16,10 +16,14 @@ import 'entry_widgets.dart';
 /// Datei-Aktionen für Sheet 09 und die Auswahl-Leiste 08: Umbenennen,
 /// Verschieben/Kopieren, Löschen, Neuer Ordner, Download.
 
+/// Mit [action] bliebe die SnackBar sonst stehen (`persist`); die Aktion
+/// darf den [context] nicht mehr brauchen – er ist beim Tippen oft schon weg.
 void showSnack(BuildContext context, String text, {SnackBarAction? action}) =>
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(text), action: action));
+      ..showSnackBar(
+        SnackBar(content: Text(text), action: action, persist: false),
+      );
 
 /// Lädt die Ordner neu, die sich durch eine Aktion geändert haben.
 void refreshFolders(WidgetRef ref, Iterable<String> folders) {
@@ -157,6 +161,7 @@ Future<void> downloadEntries(
   List<NasEntry> entries,
 ) async {
   final l10n = AppLocalizations.of(context);
+  final router = GoRouter.of(context);
   try {
     final count = await enqueueDownloads(ref, entries);
     if (!context.mounted) return;
@@ -165,7 +170,7 @@ Future<void> downloadEntries(
       l10n.downloadsQueued(count),
       action: SnackBarAction(
         label: l10n.tabTransfers,
-        onPressed: () => context.go('/transfers'),
+        onPressed: () => router.go('/transfers'),
       ),
     );
   } catch (e) {
@@ -224,11 +229,11 @@ Future<bool> deleteEntries(
       ),
       content: Consumer(
         builder: (context, ref, _) =>
-            Text(switch (ref.watch(recycleBinProvider(share)).value) {
-              RecycleBin.available => l10n.deleteToRecycle,
-              RecycleBin.missing => l10n.deleteNoRecycle,
-              RecycleBin.unknown => l10n.deleteRecycleUnknown,
-              null => '…',
+            Text(switch (ref.watch(recycleBinProvider(share))) {
+              AsyncData(value: RecycleBin.available) => l10n.deleteToRecycle,
+              AsyncData(value: RecycleBin.missing) => l10n.deleteNoRecycle,
+              AsyncData() || AsyncError() => l10n.deleteRecycleUnknown,
+              _ => '…',
             }),
       ),
       actions: [
@@ -296,6 +301,10 @@ class _TaskDialogState extends State<_TaskDialog> {
   late final StreamSubscription<double?> _sub;
   double? _progress;
 
+  /// Nach einem Fehler meldet der Stream noch `done`; der Dialog bleibt
+  /// während der Schließ-Animation `mounted` – nur einmal poppen.
+  bool _closed = false;
+
   @override
   void initState() {
     super.initState();
@@ -307,7 +316,9 @@ class _TaskDialogState extends State<_TaskDialog> {
   }
 
   void _close(Object result) {
-    if (mounted) Navigator.of(context).pop(result);
+    if (_closed || !mounted) return;
+    _closed = true;
+    Navigator.of(context).pop(result);
   }
 
   @override
@@ -319,28 +330,32 @@ class _TaskDialogState extends State<_TaskDialog> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return AlertDialog(
-      title: Text(widget.title),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          LinearProgressIndicator(value: _progress),
-          if (_progress case final p?) ...[
-            const SizedBox(height: 8),
-            Text('${(p * 100).round()} %', style: AppTheme.mono()),
+    // Zurück bräche den Task still (ggf. halb) ab: nur über „Abbrechen“.
+    return PopScope(
+      canPop: false,
+      child: AlertDialog(
+        title: Text(widget.title),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            LinearProgressIndicator(value: _progress),
+            if (_progress case final p?) ...[
+              const SizedBox(height: 8),
+              Text('${(p * 100).round()} %', style: AppTheme.mono()),
+            ],
           ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              unawaited(_sub.cancel());
+              _close(false);
+            },
+            child: Text(l10n.cancel),
+          ),
         ],
       ),
-      actions: [
-        TextButton(
-          onPressed: () {
-            unawaited(_sub.cancel());
-            _close(false);
-          },
-          child: Text(l10n.cancel),
-        ),
-      ],
     );
   }
 }
@@ -395,6 +410,13 @@ class _FolderPickerSheetState extends ConsumerState<_FolderPickerSheet> {
   /// Rechte des aktuellen Ordners, sobald bekannt (aus der Liste darüber).
   NasPerm? _perm;
 
+  /// Eine Ebene hoch; von der Share-Ebene zur Liste der Shares.
+  void _up() => setState(() {
+    final path = _path!;
+    _path = path.lastIndexOf('/') == 0 ? null : parentPath(path);
+    _perm = null;
+  });
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -407,87 +429,91 @@ class _FolderPickerSheetState extends ConsumerState<_FolderPickerSheet> {
     final writable = _perm != NasPerm.readOnly;
     final valid =
         path != null && writable && isValidDestination(path, widget.sources);
-    return SafeArea(
-      child: SizedBox(
-        height: MediaQuery.sizeOf(context).height * 0.75,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            ListTile(
-              contentPadding: const EdgeInsets.only(left: 8, right: 8),
-              leading: IconButton(
-                tooltip: l10n.back,
-                icon: const Icon(Icons.arrow_back),
-                onPressed: path == null
-                    ? null
-                    : () => setState(() {
-                        _path = path.lastIndexOf('/') == 0
-                            ? null
-                            : parentPath(path);
-                        _perm = null;
-                      }),
-              ),
-              title: Text(
-                widget.title,
-                style: const TextStyle(fontWeight: FontWeight.w700),
-              ),
-              subtitle: Text(
-                path?.substring(1) ?? l10n.sectionShares,
-                style: AppTheme.mono(TextStyle(color: AppColors.textSecondary)),
-                overflow: TextOverflow.ellipsis,
-              ),
-              trailing: IconButton(
-                tooltip: l10n.close,
-                icon: const Icon(Icons.close),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-            ),
-            const Divider(height: 1),
-            Expanded(
-              child: switch (folders) {
-                AsyncData(:final value) when value.isEmpty => Center(
-                  child: Text(l10n.noSubfolders),
+    // Zurück-Geste wie der Zurück-Pfeil; erst auf der Share-Liste zu.
+    return PopScope(
+      canPop: path == null,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _up();
+      },
+      child: SafeArea(
+        child: SizedBox(
+          height: MediaQuery.sizeOf(context).height * 0.75,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              ListTile(
+                contentPadding: const EdgeInsets.only(left: 8, right: 8),
+                leading: IconButton(
+                  tooltip: l10n.back,
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: path == null ? null : _up,
                 ),
-                AsyncData(:final value) => ListView(
-                  children: [
-                    for (final f in value)
-                      ListTile(
-                        leading: const Icon(
-                          Icons.folder_outlined,
-                          color: AppColors.accent,
+                title: Text(
+                  widget.title,
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
+                subtitle: Text(
+                  path?.substring(1) ?? l10n.sectionShares,
+                  style: AppTheme.mono(
+                    TextStyle(color: AppColors.textSecondary),
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                trailing: IconButton(
+                  tooltip: l10n.close,
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ),
+              const Divider(height: 1),
+              Expanded(
+                child: switch (folders) {
+                  AsyncData(:final value) when value.isEmpty => Center(
+                    child: Text(l10n.noSubfolders),
+                  ),
+                  AsyncData(:final value) => ListView(
+                    children: [
+                      for (final f in value)
+                        ListTile(
+                          leading: const Icon(
+                            Icons.folder_outlined,
+                            color: AppColors.accent,
+                          ),
+                          title: Text(f.name),
+                          trailing: const Icon(Icons.chevron_right),
+                          enabled: !widget.sources.contains(f.path),
+                          onTap: () => setState(() {
+                            _path = f.path;
+                            _perm = f.perm;
+                          }),
                         ),
-                        title: Text(f.name),
-                        trailing: const Icon(Icons.chevron_right),
-                        enabled: !widget.sources.contains(f.path),
-                        onTap: () => setState(() {
-                          _path = f.path;
-                          _perm = f.perm;
-                        }),
-                      ),
-                  ],
+                    ],
+                  ),
+                  AsyncError(:final error) => Center(
+                    child: Text(describeError(error, l10n)),
+                  ),
+                  _ => const Center(child: CircularProgressIndicator()),
+                },
+              ),
+              if (!writable)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                  child: Text(
+                    l10n.noWritePermission,
+                    style: TextStyle(color: AppColors.errorSoft),
+                  ),
                 ),
-                AsyncError(:final error) => Center(
-                  child: Text(describeError(error, l10n)),
-                ),
-                _ => const Center(child: CircularProgressIndicator()),
-              },
-            ),
-            if (!writable)
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-                child: Text(
-                  l10n.noWritePermission,
-                  style: TextStyle(color: AppColors.errorSoft),
+                padding: const EdgeInsets.all(16),
+                child: FilledButton(
+                  onPressed: valid
+                      ? () => Navigator.of(context).pop(path)
+                      : null,
+                  child: Text(widget.confirm),
                 ),
               ),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: FilledButton(
-                onPressed: valid ? () => Navigator.of(context).pop(path) : null,
-                child: Text(widget.confirm),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

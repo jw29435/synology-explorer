@@ -401,6 +401,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get infoFolder => 'Folder';
 
   @override
+  String get infoType => 'Type';
+
+  @override
+  String infoTypeValue(String ext, String kind) {
+    String _temp0 = intl.Intl.selectLogic(kind, {
+      'audio': 'audio',
+      'image': 'image',
+      'video': 'video',
+      'document': 'document',
+      'other': 'file',
+    });
+    return '$ext $_temp0';
+  }
+
+  @override
   String get computeSize => 'Calculate size';
 
   @override

@@ -56,7 +56,8 @@ void main() {
           (await transfers(app)).length == 2 &&
           (await transfers(app)).every((t) => t.state.name != 'queued'),
     );
-    await app.dismissSnackBar();
+    // Snackbar mit Aktion verschwindet von selbst (E2E-015).
+    await app.waitFor(find.byType(SnackBar), gone: true);
 
     await app.tap(tab(Icons.swap_vert));
     expect(app.location, '/transfers');
@@ -320,7 +321,8 @@ void main() {
       () async => (await transfers(app)).singleOrNull?.state.name == 'done',
     );
 
-    await app.dismissSnackBar();
+    // Snackbar mit Aktion verschwindet von selbst (E2E-015).
+    await app.waitFor(find.byType(SnackBar), gone: true);
     await app.tap(tab(Icons.settings_outlined));
     expect(app.location, '/settings');
     await app.tap(find.byKey(const Key('settings-clear-all')));

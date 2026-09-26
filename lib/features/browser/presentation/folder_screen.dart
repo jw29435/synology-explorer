@@ -10,6 +10,8 @@ import '../../../l10n/app_localizations.dart';
 import '../../audio/presentation/audio_widgets.dart';
 import '../../audio/presentation/playback_providers.dart';
 import '../../sharing/presentation/share_link_sheet.dart';
+import '../../transfers/domain/transfer.dart';
+import '../../transfers/presentation/transfer_providers.dart';
 import '../data/file_station_list_api.dart';
 import '../domain/nas_entry.dart';
 import 'browser_providers.dart';
@@ -38,6 +40,39 @@ class FolderScreen extends ConsumerWidget {
     final readOnly =
         ref.watch(entryInfoProvider(path)).value?.perm == NasPerm.readOnly;
     void clearSelection() => ref.read(selectionProvider(path).notifier).clear();
+    final single = selection.length == 1
+        ? folder.value?.entries
+              .where((e) => e.path == selection.single)
+              .firstOrNull
+        : null;
+
+    // Refresh/Sortierung gescheitert: alte Liste bleibt, Fehler als Meldung.
+    ref.listen(folderProvider(path), (_, next) {
+      if (next case AsyncError(:final error, hasValue: true)
+          when !next.isLoading) {
+        showSnack(context, describeError(error, l10n));
+      }
+    });
+
+    // Fertiger Upload in diesen Ordner: neu laden, damit die Datei erscheint.
+    ref.listen(transfersProvider, (prev, next) {
+      final before = prev?.value;
+      if (before == null) return;
+      final done = {
+        for (final t in before)
+          if (t.state == TransferState.done) t.id,
+      };
+      if (next.value?.any(
+            (t) =>
+                t.kind == TransferKind.upload &&
+                t.state == TransferState.done &&
+                !done.contains(t.id) &&
+                parentPath(t.remotePath) == path,
+          ) ??
+          false) {
+        ref.invalidate(folderProvider(path));
+      }
+    });
 
     return PopScope(
       canPop: !selecting,
@@ -66,6 +101,17 @@ class FolderScreen extends ConsumerWidget {
                         ]),
                     child: Text(l10n.selectAll),
                   ),
+                  // Grid-Kacheln haben keinen Kebab (Mockup 07): Sheet 09
+                  // für genau ein ausgewähltes Element von hier.
+                  if (single != null)
+                    IconButton(
+                      tooltip: l10n.more,
+                      icon: const Icon(Icons.more_vert),
+                      onPressed: () {
+                        clearSelection();
+                        showEntryActions(context, ref, single);
+                      },
+                    ),
                   const SizedBox(width: 8),
                 ],
               )
@@ -154,7 +200,10 @@ class FolderScreen extends ConsumerWidget {
             ),
             Expanded(
               child: RefreshIndicator(
-                onRefresh: () => ref.refresh(folderProvider(path).future),
+                // Fehler meldet der Listener oben.
+                onRefresh: () => ref
+                    .refresh(folderProvider(path).future)
+                    .then((_) {}, onError: (_) {}),
                 child: switch (folder) {
                   AsyncValue(value: final state?) when state.entries.isEmpty =>
                     ListView(
@@ -321,15 +370,37 @@ class _Breadcrumb extends StatelessWidget {
             InkWell(
               onTap: i == segments.length - 1
                   ? null
-                  : () => context.go(
-                      folderLocation('/${segments.take(i + 1).join('/')}'),
-                    ),
-              child: Text(segment, style: style),
+                  : () => _open(context, '/${segments.take(i + 1).join('/')}'),
+              // Touch-Ziel mindestens 44 px, Text bleibt klein.
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+                child: Center(
+                  widthFactor: 1,
+                  heightFactor: 1,
+                  child: Text(segment, style: style),
+                ),
+              ),
             ),
           ],
         ],
       ),
     );
+  }
+}
+
+/// Liegt [target] schon im Stack, dorthin zurück; sonst obendrauf – so
+/// bleiben Suche und Zwischenordner erhalten. go_router legt die
+/// Query-Parameter einer Seite in `arguments` ab.
+void _open(BuildContext context, String target) {
+  bool isTarget(RouteSettings s) =>
+      s.name == 'folder' &&
+      s.arguments is Map &&
+      (s.arguments! as Map)['path'] == target;
+  final nav = Navigator.of(context);
+  if (nav.widget.pages.any(isTarget)) {
+    nav.popUntil((route) => isTarget(route.settings));
+  } else {
+    context.push(folderLocation(target));
   }
 }
 
@@ -405,7 +476,7 @@ class _SortButton extends ConsumerWidget {
 }
 
 /// Lädt die nächste Seite, sobald das Ende der Liste näher kommt – nicht
-/// nach einem Fehler (dann „Erneut versuchen“ in [_PageFooter]).
+/// nach einem Fehler (dann „Erneut versuchen“ in [PageFooter]).
 void _maybeLoadMore(WidgetRef ref, String path, FolderState state, int index) {
   if (state.hasMore &&
       state.loadMoreError == null &&
@@ -414,9 +485,9 @@ void _maybeLoadMore(WidgetRef ref, String path, FolderState state, int index) {
   }
 }
 
-/// Letzte Zeile/Kachel beim Paging: Spinner oder Fehler mit Retry.
-class _PageFooter extends ConsumerWidget {
-  const _PageFooter({required this.path, required this.state});
+/// Letzte Zeile/Kachel beim Paging (06/07, 24): Spinner oder Fehler mit Retry.
+class PageFooter extends ConsumerWidget {
+  const PageFooter({super.key, required this.path, required this.state});
 
   final String path;
   final FolderState state;
@@ -457,12 +528,14 @@ class _FolderList extends ConsumerWidget {
     );
     final entries = state.entries;
     return ListView.builder(
+      // Neue Sortierung: neue Scrollposition, also wieder am Anfang.
+      key: ValueKey(ref.watch(sortProvider)),
       padding: const EdgeInsets.only(bottom: 96),
       itemCount: entries.length + (state.hasMore ? 1 : 0),
       itemBuilder: (context, i) {
         _maybeLoadMore(ref, path, state, i);
         if (i == entries.length) {
-          return _PageFooter(path: path, state: state);
+          return PageFooter(path: path, state: state);
         }
         final e = entries[i];
         final selected = selection.contains(e.path);
@@ -528,6 +601,7 @@ class _FolderGrid extends ConsumerWidget {
     final selection = ref.watch(selectionProvider(path));
     final entries = state.entries;
     return GridView.builder(
+      key: ValueKey(ref.watch(sortProvider)),
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 96),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 3,
@@ -538,7 +612,7 @@ class _FolderGrid extends ConsumerWidget {
       itemBuilder: (context, i) {
         _maybeLoadMore(ref, path, state, i);
         if (i == entries.length) {
-          return _PageFooter(path: path, state: state);
+          return PageFooter(path: path, state: state);
         }
         final e = entries[i];
         final selected = selection.contains(e.path);
@@ -550,35 +624,48 @@ class _FolderGrid extends ConsumerWidget {
         return GestureDetector(
           onTap: selection.isEmpty ? () => openEntry(context, ref, e) : toggle,
           onLongPress: toggle,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              EntryIcon(e, label: true),
-              if (ext == 'HEIC' || ext == 'HEIF')
-                Positioned(left: 6, top: 6, child: _Badge(ext)),
-              if (e.type == NasFileType.video)
-                Center(
-                  child: CircleAvatar(
-                    radius: 18,
-                    backgroundColor: AppColors.playScrim,
-                    child: Icon(Icons.play_arrow, color: AppColors.text),
-                  ),
-                ),
-              if (selected)
-                DecoratedBox(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: AppColors.accent, width: 3),
-                  ),
-                  child: const Align(
-                    alignment: Alignment.topRight,
-                    child: Padding(
-                      padding: EdgeInsets.all(6),
-                      child: Icon(Icons.check_circle, color: AppColors.accent),
+          // Mit Vorschaubild steht kein Name auf der Kachel (TalkBack).
+          child: Semantics(
+            label: e.name,
+            selected: selected,
+            excludeSemantics: true,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                EntryIcon(e, label: true),
+                // Typ-Badge (Katalog 07); JPEG ist der Normalfall und bleibt
+                // wie im Mockup ohne, Videos haben das Play-Symbol.
+                if (e.type == NasFileType.image &&
+                    !const {'', 'JPG', 'JPEG'}.contains(ext))
+                  Positioned(left: 6, top: 6, child: _Badge(ext)),
+                if (e.type == NasFileType.video)
+                  Center(
+                    child: CircleAvatar(
+                      radius: 18,
+                      backgroundColor: AppColors.playScrim,
+                      // Auf dunklem Scrim immer hell, auch im Design „Hell“.
+                      child: Icon(Icons.play_arrow, color: Neutrals.dark.text),
                     ),
                   ),
-                ),
-            ],
+                if (selected)
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: AppColors.accent, width: 3),
+                    ),
+                    child: const Align(
+                      alignment: Alignment.topRight,
+                      child: Padding(
+                        padding: EdgeInsets.all(6),
+                        child: Icon(
+                          Icons.check_circle,
+                          color: AppColors.accent,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ),
         );
       },
@@ -600,7 +687,11 @@ class _Badge extends StatelessWidget {
     ),
     child: Text(
       text,
-      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700),
+      style: TextStyle(
+        fontSize: 11,
+        fontWeight: FontWeight.w700,
+        color: Neutrals.dark.text,
+      ),
     ),
   );
 }

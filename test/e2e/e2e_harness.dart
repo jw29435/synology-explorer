@@ -154,15 +154,6 @@ class E2E {
     await tester.pump();
   }
 
-  /// Schließt eine stehende Snackbar. Snackbars mit Aktion bleiben sonst
-  /// dauerhaft stehen und verdecken die Tabs (E2E-015).
-  Future<void> dismissSnackBar() async {
-    final bar = find.byType(SnackBar);
-    if (bar.evaluate().isEmpty) return;
-    ScaffoldMessenger.of(tester.element(bar.first)).removeCurrentSnackBar();
-    await settle();
-  }
-
   /// Wie [waitFor], bis [condition] gilt – synchron oder asynchron (z. B.
   /// eine DB-Abfrage, läuft in echter Zeit); [what] für die Fehlermeldung.
   Future<void> waitUntil(

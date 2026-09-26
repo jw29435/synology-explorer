@@ -30,6 +30,7 @@ Future<void> showUploadSheet(
   if (choice == null || !context.mounted) return;
   final (source, overwrite) = choice;
   final l10n = AppLocalizations.of(context);
+  final router = GoRouter.of(context);
   if (source == _UploadSource.folder) {
     await createFolderIn(context, ref, folder);
     return;
@@ -51,7 +52,7 @@ Future<void> showUploadSheet(
       l10n.uploadsQueued(files.length),
       action: SnackBarAction(
         label: l10n.tabTransfers,
-        onPressed: () => context.go('/transfers'),
+        onPressed: () => router.go('/transfers'),
       ),
     );
   } catch (e) {

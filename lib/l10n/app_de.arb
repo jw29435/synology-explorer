@@ -219,6 +219,15 @@
   "infoOwner": "Besitzer",
   "infoPerm": "Rechte",
   "infoFolder": "Ordner",
+  "infoType": "Typ",
+  "infoTypeValue": "{ext}-{kind, select, audio{Audio} image{Bild} video{Video} document{Dokument} other{Datei}}",
+  "@infoTypeValue": {
+    "description": "Zeile „Typ“ im Info-Sheet, z. B. FLAC-Audio.",
+    "placeholders": {
+      "ext": {"type": "String"},
+      "kind": {"type": "String"}
+    }
+  },
   "computeSize": "Größe berechnen",
   "dirSizeResult": "{size} · {files} Dateien · {dirs} Ordner",
   "@dirSizeResult": {
