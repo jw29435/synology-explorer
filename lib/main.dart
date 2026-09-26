@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -7,6 +9,7 @@ import 'package:media_kit/media_kit.dart';
 import 'package:workmanager/workmanager.dart';
 
 import 'app/app.dart';
+import 'core/storage/storage_providers.dart';
 import 'features/audio/data/audio_handler.dart';
 import 'features/audio/presentation/playback_providers.dart';
 import 'features/autoupload/data/background.dart';
@@ -25,6 +28,13 @@ Future<void> main() async {
     // Native Bibliotheken ohne eigenes Dart-Paket (media_kit_libs_*).
     yield const LicenseEntryWithLineBreaks(['libmpv', 'FFmpeg'], _lgplNotice);
   });
+  if (Platform.isIOS) {
+    try {
+      await migrateSecureStorage();
+    } catch (_) {
+      // Alte Einträge bleiben lesbar (nur nicht bei gesperrtem Gerät).
+    }
+  }
   // Auto-Upload im Hintergrund (WorkManager bzw. BGTaskScheduler).
   await Workmanager().initialize(autoUploadDispatcher);
   // Foreground-Service/Now Playing für die Hintergrundwiedergabe.

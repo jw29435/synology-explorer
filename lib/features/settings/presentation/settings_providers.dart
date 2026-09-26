@@ -77,7 +77,8 @@ Future<void> clearCache(WidgetRef ref) async {
     ..invalidate(storageUsageProvider);
 }
 
-/// „Alle lokalen Daten löschen“: Cache, Offline-Dateien samt Transfers und
+/// „Alle lokalen Daten löschen“: meldet die aktive Session am NAS ab und
+/// löscht Cache, Offline-Dateien samt Transfers und
 /// alle Secrets (SID, Geräte-Token, gemerkte Passwörter, Zertifikat-Pins).
 /// Server-Profile und Einstellungen bleiben; danach ist niemand angemeldet.
 Future<void> clearAllLocalData(WidgetRef ref) async {
@@ -86,7 +87,14 @@ Future<void> clearAllLocalData(WidgetRef ref) async {
   } catch (_) {
     // Kein Player aktiv.
   }
-  await ref.read(sessionProvider.notifier).close();
+  // Am NAS abmelden (best effort): kein stiller Re-Login, kein Retry –
+  // die Secrets werden ohnehin gelöscht.
+  ref.read(sessionProvider)?.client.onSessionExpired = null;
+  try {
+    await ref.read(sessionProvider.notifier).logout();
+  } catch (_) {
+    await ref.read(sessionProvider.notifier).close();
+  }
   final db = ref.read(appDatabaseProvider);
   await db.transaction(() async {
     await db.delete(db.transfers).go();
