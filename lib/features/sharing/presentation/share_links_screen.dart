@@ -198,7 +198,7 @@ class _LinkCard extends StatelessWidget {
                   ),
                 ),
                 IconButton(
-                  tooltip: l10n.actionDelete,
+                  tooltip: l10n.actionDeleteShort,
                   icon: const Icon(Icons.delete_outline),
                   onPressed: onDelete,
                 ),

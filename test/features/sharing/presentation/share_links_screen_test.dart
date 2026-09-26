@@ -54,16 +54,18 @@ void main() {
       overrides: [sharingApiProvider.overrideWithValue(api)],
     );
     expect(find.text('booklet.pdf'), findsOne);
+    // Links landen in keinem Papierkorb (E2E-062).
+    expect(find.byTooltip('Löschen (in Papierkorb)'), findsNothing);
 
     // Abbrechen löscht nichts.
-    await tester.tap(find.byIcon(Icons.delete_outline));
+    await tester.tap(find.byTooltip('Löschen'));
     await tester.pumpAndSettle();
     expect(find.text('Freigabelink für „booklet.pdf“ löschen?'), findsOne);
     await tester.tap(find.text('Abbrechen'));
     await tester.pumpAndSettle();
     expect(api.deleted, isEmpty);
 
-    await tester.tap(find.byIcon(Icons.delete_outline));
+    await tester.tap(find.byTooltip('Löschen'));
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(FilledButton, 'Löschen'));
     await tester.pumpAndSettle();

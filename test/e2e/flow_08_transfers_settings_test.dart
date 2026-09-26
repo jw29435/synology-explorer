@@ -178,7 +178,7 @@ void main() {
 
     // Löschen erst nach Bestätigung (E2E-035).
     await app.tapThen(
-      find.byTooltip(l10n.actionDelete),
+      find.byTooltip(l10n.actionDeleteShort),
       find.text(l10n.shareLinkDeleteConfirm('booklet.pdf')),
     );
     expect(app.nas.calls('SYNO.FileStation.Sharing', 'delete'), isEmpty);
