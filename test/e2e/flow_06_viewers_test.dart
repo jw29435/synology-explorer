@@ -140,11 +140,8 @@ void main() {
     // 105 (keine Berechtigung) mit nicht gemerktem Passwort.
     errors['$_folder/README.md'] = 105;
     await app.tapThen(find.text('README.md'), find.byType(OutlinedButton));
-    // E2E-Finding: E2E-024 – 105 löst einen Re-Login aus; ohne gemerktes
-    // Passwort ist die Session danach weg und der Viewer meldet „Sitzung
-    // abgelaufen“ (mit „Anmelden“) statt „Keine Berechtigung“.
-    // expect(find.text(l10n.errorPermission), findsOneWidget);
-    expect(find.text(l10n.errorSessionExpired), findsOneWidget);
+    // E2E-024: Rechtefehler bleibt Rechtefehler, die Session bleibt.
+    expect(find.text(l10n.errorPermission), findsOneWidget);
     await app.backButton();
     expect(app.location, startsWith('/files/folder'));
 

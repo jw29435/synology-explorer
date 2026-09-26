@@ -337,11 +337,8 @@ void main() {
       );
       final t = await finished(app);
       expect(t.state, TransferState.failed);
-      // E2E-Finding: E2E-024 – 105 löst einen Re-Login aus; ohne gemerktes
-      // Passwort endet der Upload als „Sitzung abgelaufen“ und die Session
-      // ist weg (der Ordner lädt danach nicht mehr).
-      // expect(t.error, startsWith('SynoPermissionDenied'));
-      expect(t.error, startsWith('SynoSessionExpired'));
+      // E2E-024: Rechtefehler, die Session bleibt.
+      expect(t.error, startsWith('SynoPermissionDenied'));
       await app.dispose();
     });
   });
