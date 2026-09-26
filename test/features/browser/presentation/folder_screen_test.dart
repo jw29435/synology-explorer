@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:synology_explorer/app/theme.dart';
+import 'package:synology_explorer/features/settings/data/settings_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:synology_explorer/core/network/syno_exception.dart';
 import 'package:synology_explorer/features/browser/domain/nas_entry.dart';
@@ -8,6 +10,7 @@ import 'package:synology_explorer/features/browser/data/file_station_list_api.da
 import 'package:synology_explorer/features/browser/presentation/entry_widgets.dart';
 
 import '../../../helpers/app_harness.dart';
+import '../../../helpers/settings_fakes.dart';
 
 void main() {
   const album = '/music/Alben/Nordlicht – Treibholz';
@@ -126,6 +129,33 @@ void main() {
     expect(find.text('Umbenennen'), findsOne);
     expect(find.text('Info'), findsOne);
     expect(find.text('1 ausgewählt'), findsNothing);
+  });
+
+  testWidgets('07 Hell: Play-Icon und Badge hell auf dem Scrim (E2E-048)', (
+    tester,
+  ) async {
+    addTearDown(() => AppColors.neutrals = Neutrals.dark);
+    final app = await pumpApp(
+      tester,
+      listApi: _MediaApi(),
+      location: folderLocation('/photo'),
+      overrides: settingsOverrides(),
+    );
+    await tester.runAsync(
+      () =>
+          SettingsRepository(app.db)
+              .write(SettingsRepository.themeMode, 'light'),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Rasteransicht'));
+    await tester.pumpAndSettle();
+    expect(AppColors.neutrals, same(Neutrals.light));
+    final play = tester.widget<Icon>(find.byIcon(Icons.play_arrow));
+    expect(play.color, Neutrals.dark.text);
+    expect(
+      tester.widget<Text>(find.text('HEIC')).style?.color,
+      Neutrals.dark.text,
+    );
   });
 
   testWidgets('09/10: Kebab öffnet Aktionen, Info zeigt getinfo', (
@@ -258,4 +288,31 @@ class _FailingApi extends FakeListApi {
       total: 60,
     );
   }
+}
+
+/// Ein Video, ein HEIC- und ein JPEG-Bild.
+class _MediaApi extends FakeListApi {
+  @override
+  Future<NasPage> list(
+    String folderPath, {
+    NasSortBy sortBy = NasSortBy.name,
+    bool descending = false,
+    int offset = 0,
+    int limit = 500,
+  }) async => (
+    entries: [
+      for (final (name, type) in [
+        ('clip.mp4', NasFileType.video),
+        ('foto.heic', NasFileType.image),
+        ('bild.jpg', NasFileType.image),
+      ])
+        NasEntry(
+          path: '$folderPath/$name',
+          name: name,
+          isDir: false,
+          type: type,
+        ),
+    ],
+    total: 3,
+  );
 }

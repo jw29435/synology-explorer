@@ -627,7 +627,8 @@ class _FolderGrid extends ConsumerWidget {
                   child: CircleAvatar(
                     radius: 18,
                     backgroundColor: AppColors.playScrim,
-                    child: Icon(Icons.play_arrow, color: AppColors.text),
+                    // Auf dunklem Scrim immer hell, auch im Design „Hell“.
+                    child: Icon(Icons.play_arrow, color: Neutrals.dark.text),
                   ),
                 ),
               if (selected)
@@ -666,7 +667,11 @@ class _Badge extends StatelessWidget {
     ),
     child: Text(
       text,
-      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700),
+      style: TextStyle(
+        fontSize: 11,
+        fontWeight: FontWeight.w700,
+        color: Neutrals.dark.text,
+      ),
     ),
   );
 }
