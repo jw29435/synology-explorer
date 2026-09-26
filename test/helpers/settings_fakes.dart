@@ -47,9 +47,12 @@ class FakeAccessCameraRoll implements CameraRoll {
   Future<void> clearCache() async {}
 }
 
+/// Mit [fakeShareLinks] ist die Liste der Freigabelinks leer, ohne das NAS
+/// zu fragen.
 List<Override> settingsOverrides({
   FakeScheduler? scheduler,
   CameraRoll? camera,
+  bool fakeShareLinks = true,
 }) => [
   autoUploadSchedulerProvider.overrideWithValue(scheduler ?? FakeScheduler()),
   cameraRollProvider.overrideWithValue(camera ?? FakeAccessCameraRoll()),
@@ -61,5 +64,5 @@ List<Override> settingsOverrides({
       buildNumber: '42',
     ),
   ),
-  shareLinksProvider.overrideWith((ref) async => const []),
+  if (fakeShareLinks) shareLinksProvider.overrideWith((ref) async => const []),
 ];

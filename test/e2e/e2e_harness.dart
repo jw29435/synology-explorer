@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:drift/native.dart';
@@ -8,6 +9,7 @@ import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shelf/shelf.dart' show Response;
 import 'package:synology_explorer/app/app.dart';
 import 'package:synology_explorer/app/router.dart';
 import 'package:synology_explorer/core/storage/app_database.dart';
@@ -87,7 +89,8 @@ class E2E {
         appDatabaseProvider.overrideWithValue(db),
         transferNotificationsProvider.overrideWithValue(NoNotifications()),
         audioControllerProvider.overrideWith(() => audio),
-        ...settingsOverrides(),
+        // Freigabelinks echt vom Mock-NAS (Flow 8).
+        ...settingsOverrides(fakeShareLinks: false),
         ...overrides,
       ],
     );
@@ -122,19 +125,49 @@ class E2E {
   String get location =>
       container.read(routerProvider).routerDelegate.state.uri.toString();
 
-  /// Frames und echte Zeit abwechselnd, bis [finder] etwas findet (höchstens
-  /// [timeout] echte Zeit). HTTP an den Mock läuft außerhalb der Fake-Zeit.
+  /// Frames und echte Zeit abwechselnd, bis [finder] etwas findet bzw. mit
+  /// [gone] nichts mehr (höchstens [timeout] echte Zeit). HTTP an den Mock
+  /// läuft außerhalb der Fake-Zeit.
   Future<void> waitFor(
     Finder finder, {
     Duration timeout = const Duration(seconds: 10),
+    bool gone = false,
   }) async {
     final deadline = DateTime.now().add(timeout);
-    while (finder.evaluate().isEmpty) {
+    while (finder.evaluate().isEmpty != gone) {
       if (DateTime.now().isAfter(deadline)) {
         fail(
-          'Nicht gefunden nach $timeout: $finder (Route: $location)\n'
+          '${gone ? 'Nicht verschwunden' : 'Nicht gefunden'} nach $timeout: '
+          '$finder (Route: $location)\n'
           'Sichtbar: $visibleTexts',
         );
+      }
+      await tester.pump(const Duration(milliseconds: 50));
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 20)),
+      );
+    }
+    await tester.pump();
+  }
+
+  /// Schließt eine stehende Snackbar. Snackbars mit Aktion bleiben sonst
+  /// dauerhaft stehen und verdecken die Tabs (E2E-015).
+  Future<void> dismissSnackBar() async {
+    final bar = find.byType(SnackBar);
+    if (bar.evaluate().isEmpty) return;
+    ScaffoldMessenger.of(tester.element(bar.first)).removeCurrentSnackBar();
+    await settle();
+  }
+
+  /// Wie [waitFor], aber bis [condition] (z. B. eine DB-Abfrage) gilt.
+  Future<void> waitUntil(
+    Future<bool> Function() condition, {
+    Duration timeout = const Duration(seconds: 10),
+  }) async {
+    final deadline = DateTime.now().add(timeout);
+    while (!(await tester.runAsync(condition))!) {
+      if (DateTime.now().isAfter(deadline)) {
+        fail('Bedingung nicht erfüllt nach $timeout (Route: $location)');
       }
       await tester.pump(const Duration(milliseconds: 50));
       await tester.runAsync(
@@ -157,11 +190,22 @@ class E2E {
 
   Future<void> tap(Finder finder) async {
     await tester.ensureVisible(finder);
+    // Nach dem Scrollen erst layouten, sonst trifft der Tipp die alte Stelle.
+    await tester.pump();
     await tester.tap(finder);
     await settle();
   }
 
   Future<void> tapText(String text) => tap(find.text(text).first);
+
+  /// Tippen und ohne `pumpAndSettle` auf [until] warten – für Ziele mit
+  /// Ladeanimation (Viewer, Fortschrittsdialog), die nie „settlen“.
+  Future<void> tapThen(Finder target, Finder until) async {
+    await tester.ensureVisible(target);
+    await tester.pump();
+    await tester.tap(target);
+    await waitFor(until);
+  }
 
   /// Text eingeben und einen Frame bauen (Buttons hängen an `onChanged`).
   Future<void> type(Finder field, String text) async {
@@ -214,18 +258,54 @@ class E2E {
     return handled;
   }
 
-  /// Server-Profil über Screen 02 anlegen und anmelden (Mock mit 2FA).
-  Future<void> addServerAndLogin() async {
+  /// Server-Profil über Screen 02 anlegen und anmelden (Mock mit 2FA),
+  /// auf Wunsch mit „Passwort merken“ (stiller Re-Login möglich).
+  Future<void> addServerAndLogin({bool rememberPassword = false}) async {
     await tapText(l10n.serverAdd);
     final fields = find.byType(TextFormField);
     await type(fields.at(0), 'Heim-NAS');
     await type(fields.at(1), nas.url);
     await type(fields.at(3), mockUser);
     await type(fields.at(4), mockPassword);
+    if (rememberPassword) await tapText(l10n.rememberPassword);
     await tap(find.text(l10n.connect));
     await waitFor(find.text(l10n.otpTitle));
     await type(find.byType(TextField).first, mockOtp);
     await tap(find.text(l10n.signIn));
     await waitFor(find.text(l10n.sectionShares.toUpperCase()));
+  }
+
+  /// Eigenes Listing für [folder] mit Dateien `name → Größe` (Mock liefert
+  /// sonst für jeden Ordner dieselbe Fixture).
+  void serveFolder(String folder, Map<String, int> files) {
+    nas.intercept = (p) {
+      if (p['api'] != 'SYNO.FileStation.List' ||
+          p['method'] != 'list' ||
+          p['folder_path'] != folder) {
+        return null;
+      }
+      final entries = [
+        for (final MapEntry(key: name, value: size) in files.entries)
+          {
+            'isdir': false,
+            'name': name,
+            'path': '$folder/$name',
+            'additional': {
+              'size': size,
+              'time': {'mtime': 1778580000, 'crtime': 1778580000},
+              'perm': {
+                'acl': {'read': true, 'write': true, 'del': true},
+              },
+            },
+          },
+      ];
+      return Response.ok(
+        jsonEncode({
+          'success': true,
+          'data': {'files': entries, 'offset': 0, 'total': entries.length},
+        }),
+        headers: {'content-type': 'application/json'},
+      );
+    };
   }
 }
