@@ -116,6 +116,7 @@
   },
   "errorGeneric": "Unerwarteter Fehler.",
   "sectionShares": "Freigegebene Ordner",
+  "sharesEmpty": "Keine freigegebenen Ordner sichtbar. In DSM prüfen, ob das Konto Leserechte auf Freigaben und Zugriff auf File Station hat.",
   "sectionFavorites": "Favoriten",
   "sectionRecent": "Zuletzt geöffnet",
   "permReadWrite": "Lesen/Schreiben",

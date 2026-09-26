@@ -236,6 +236,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get sectionShares => 'Freigegebene Ordner';
 
   @override
+  String get sharesEmpty =>
+      'Keine freigegebenen Ordner sichtbar. In DSM prüfen, ob das Konto Leserechte auf Freigaben und Zugriff auf File Station hat.';
+
+  @override
   String get sectionFavorites => 'Favoriten';
 
   @override

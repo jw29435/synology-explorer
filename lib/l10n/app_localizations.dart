@@ -500,6 +500,12 @@ abstract class AppLocalizations {
   /// **'Freigegebene Ordner'**
   String get sectionShares;
 
+  /// No description provided for @sharesEmpty.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine freigegebenen Ordner sichtbar. In DSM prüfen, ob das Konto Leserechte auf Freigaben und Zugriff auf File Station hat.'**
+  String get sharesEmpty;
+
   /// No description provided for @sectionFavorites.
   ///
   /// In de, this message translates to:

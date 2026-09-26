@@ -84,6 +84,15 @@ class StartScreen extends ConsumerWidget {
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 4),
             ),
             ...switch (shares) {
+              AsyncData(value: []) => [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
+                  child: Text(
+                    l10n.sharesEmpty,
+                    style: TextStyle(color: AppColors.textSecondary),
+                  ),
+                ),
+              ],
               AsyncData(:final value) => [
                 for (final share in value)
                   ListTile(

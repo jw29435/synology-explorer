@@ -235,6 +235,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sectionShares => 'Shared folders';
 
   @override
+  String get sharesEmpty =>
+      'No shared folders visible. Check in DSM that the account has read access to shares and may use File Station.';
+
+  @override
   String get sectionFavorites => 'Favorites';
 
   @override

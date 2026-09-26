@@ -67,6 +67,7 @@
   "errorCode": "Error {code} from the NAS.",
   "errorGeneric": "Unexpected error.",
   "sectionShares": "Shared folders",
+  "sharesEmpty": "No shared folders visible. Check in DSM that the account has read access to shares and may use File Station.",
   "sectionFavorites": "Favorites",
   "sectionRecent": "Recently opened",
   "permReadWrite": "Read/write",
