@@ -1,0 +1,110 @@
+name: Release Android
+
+# Tag v* (von Hand oder über release-please) → signierte APKs als
+# GitHub-Release-Assets und das AAB im Play-Internal-Track.
+on:
+  push:
+    tags: ['v*']
+  workflow_call:
+    inputs:
+      tag:
+        description: Release-Tag, z. B. v1.0.0
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release-Tag, z. B. v1.0.0
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    env:
+      TAG: ${{ inputs.tag || github.ref_name }}
+      HAS_PLAY: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON != '' }}
+    steps:
+      - name: Secrets prüfen
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEY_PROPERTIES: ${{ secrets.KEY_PROPERTIES }}
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          missing=()
+          [ -n "$ANDROID_KEYSTORE_BASE64" ] || missing+=(ANDROID_KEYSTORE_BASE64)
+          [ -n "$KEY_PROPERTIES" ] || missing+=(KEY_PROPERTIES)
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "::error title=Signing-Secrets fehlen::${missing[*]} in Settings › Secrets and variables › Actions anlegen (siehe README, Abschnitt Release)."
+            exit 1
+          fi
+          if [ -z "$PLAY_SERVICE_ACCOUNT_JSON" ]; then
+            echo "::warning title=Kein Play-Upload::PLAY_SERVICE_ACCOUNT_JSON fehlt – APKs landen nur im GitHub-Release."
+          fi
+          case "$TAG" in
+            v[0-9]*.[0-9]*.[0-9]*) ;;
+            *) echo "::error title=Ungültiger Tag::$TAG ist kein SemVer-Tag vX.Y.Z"; exit 1 ;;
+          esac
+
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.TAG }}
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Version aus Tag setzen
+        run: |
+          version="${TAG#v}"
+          sed -i -E "s/^version: .*/version: ${version}+${{ github.run_number }}/" pubspec.yaml
+          grep '^version:' pubspec.yaml
+
+      - name: Keystore aus Secrets
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEY_PROPERTIES: ${{ secrets.KEY_PROPERTIES }}
+        run: |
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > android/upload-keystore.jks
+          # KEY_PROPERTIES: storePassword, keyPassword, keyAlias; storeFile
+          # zeigt immer auf die eben geschriebene Datei.
+          printf '%s\n' "$KEY_PROPERTIES" | grep -v '^storeFile=' > android/key.properties
+          echo "storeFile=upload-keystore.jks" >> android/key.properties
+
+      - run: flutter pub get
+      - run: flutter build apk --release --split-per-abi
+      - run: flutter build appbundle --release
+
+      - name: Signatur prüfen (nicht mit dem Debug-Key)
+        run: |
+          apksigner="$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -1)apksigner"
+          if "$apksigner" verify --print-certs build/app/outputs/flutter-apk/app-arm64-v8a-release.apk | grep -q 'CN=Android Debug'; then
+            echo "::error::APK ist mit dem Debug-Key signiert – key.properties prüfen."
+            exit 1
+          fi
+
+      - name: APKs ins GitHub-Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG }}
+          files: build/app/outputs/flutter-apk/app-*-release.apk
+
+      - name: AAB in den Play-Internal-Track
+        if: env.HAS_PLAY == 'true'
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: de.jw29435.synology_explorer
+          releaseFiles: build/app/outputs/bundle/release/app-release.aab
+          track: internal
+          # Solange die App in der Play Console noch ein Entwurf ist, nimmt
+          # Play nur Entwürfe an: Repo-Variable PLAY_RELEASE_STATUS=draft.
+          status: ${{ vars.PLAY_RELEASE_STATUS || 'completed' }}
+
+      - name: Signing-Dateien entfernen
+        if: always()
+        run: rm -f android/upload-keystore.jks android/key.properties

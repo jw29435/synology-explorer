@@ -1,0 +1,19 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "packages": {
+    ".": {
+      "release-type": "dart",
+      "package-name": "synology_explorer",
+      "changelog-path": "CHANGELOG.md",
+      "include-component-in-tag": false,
+      "changelog-sections": [
+        { "type": "feat", "section": "Neue Funktionen" },
+        { "type": "fix", "section": "Fehlerbehebungen" },
+        { "type": "perf", "section": "Performance" },
+        { "type": "docs", "section": "Dokumentation", "hidden": true },
+        { "type": "test", "section": "Tests", "hidden": true },
+        { "type": "chore", "section": "Sonstiges", "hidden": true }
+      ]
+    }
+  }
+}

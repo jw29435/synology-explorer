@@ -1,0 +1,51 @@
+# Release nach TestFlight (release-ios.yml). Erwartet in der Umgebung:
+# MATCH_GIT_URL, MATCH_PASSWORD, ASC_KEY_PATH (App-Store-Connect-API-Key als
+# JSON: key_id, issuer_id, key) und optional MATCH_GIT_BASIC_AUTHORIZATION.
+require "plist"
+
+default_platform(:ios)
+
+APP_ID = "de.jw29435.synologyExplorer"
+ROOT = File.expand_path("../..", __dir__)
+
+platform :ios do
+  desc "Signierter Build (flutter build ipa) nach TestFlight"
+  lane :release do
+    setup_ci
+    key = ENV.fetch("ASC_KEY_PATH")
+    match(
+      type: "appstore",
+      readonly: true,
+      app_identifier: APP_ID,
+      api_key_path: key,
+    )
+    profile = ENV.fetch("sigh_#{APP_ID}_appstore_profile-name")
+    team = ENV.fetch("sigh_#{APP_ID}_appstore_team-id")
+    update_code_signing_settings(
+      path: "#{ROOT}/ios/Runner.xcodeproj",
+      targets: ["Runner"],
+      use_automatic_signing: false,
+      team_id: team,
+      code_sign_identity: "Apple Distribution",
+      profile_name: profile,
+      bundle_identifier: APP_ID,
+    )
+    export = "#{ROOT}/build/ExportOptions.plist"
+    FileUtils.mkdir_p(File.dirname(export))
+    File.write(export, {
+      "method" => "app-store-connect",
+      "teamID" => team,
+      "signingStyle" => "manual",
+      "signingCertificate" => "Apple Distribution",
+      "provisioningProfiles" => { APP_ID => profile },
+    }.to_plist)
+    Dir.chdir(ROOT) do
+      sh("flutter", "build", "ipa", "--release", "--export-options-plist=#{export}")
+    end
+    upload_to_testflight(
+      api_key_path: key,
+      ipa: Dir["#{ROOT}/build/ios/ipa/*.ipa"].first,
+      skip_waiting_for_build_processing: true,
+    )
+  end
+end

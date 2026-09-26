@@ -18,3 +18,16 @@ jobs:
       - run: flutter analyze
       - run: flutter test
       - run: flutter build apk --debug
+
+  # Baut iOS ohne Signing: prüft Xcode-Projekt, Plugins und Info.plist,
+  # die sich unter Linux nicht bauen lassen.
+  ios:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: flutter build ios --debug --no-codesign

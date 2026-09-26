@@ -1,0 +1,94 @@
+name: Release iOS
+
+# Tag v* (von Hand oder über release-please) → signierter Build in
+# TestFlight. Zertifikate und Profile kommen über fastlane match.
+on:
+  push:
+    tags: ['v*']
+  workflow_call:
+    inputs:
+      tag:
+        description: Release-Tag, z. B. v1.0.0
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release-Tag, z. B. v1.0.0
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  ios:
+    runs-on: macos-latest
+    env:
+      TAG: ${{ inputs.tag || github.ref_name }}
+    steps:
+      # Vor allem anderen: Ohne Apple-Zugang lieber klar abbrechen als nach
+      # 15 Minuten Build mit einem Signing-Fehler.
+      - name: Secrets prüfen
+        env:
+          MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          APP_STORE_CONNECT_API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
+        run: |
+          missing=()
+          [ -n "$MATCH_GIT_URL" ] || missing+=(MATCH_GIT_URL)
+          [ -n "$MATCH_PASSWORD" ] || missing+=(MATCH_PASSWORD)
+          [ -n "$APP_STORE_CONNECT_API_KEY" ] || missing+=(APP_STORE_CONNECT_API_KEY)
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "::error title=iOS-Release übersprungen::Es fehlen die Secrets ${missing[*]}. Einrichtung: README, Abschnitt Release."
+            exit 1
+          fi
+          if ! echo "$APP_STORE_CONNECT_API_KEY" | python3 -c 'import json,sys; k=json.load(sys.stdin); [k[x] for x in ("key_id","issuer_id","key")]' 2>/dev/null; then
+            echo "::error title=APP_STORE_CONNECT_API_KEY ungültig::Erwartet JSON mit key_id, issuer_id und key (Inhalt der .p8-Datei)."
+            exit 1
+          fi
+          case "$TAG" in
+            v[0-9]*.[0-9]*.[0-9]*) ;;
+            *) echo "::error title=Ungültiger Tag::$TAG ist kein SemVer-Tag vX.Y.Z"; exit 1 ;;
+          esac
+
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.TAG }}
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+          working-directory: ios
+
+      - name: Version aus Tag setzen
+        run: |
+          version="${TAG#v}"
+          sed -i '' -E "s/^version: .*/version: ${version}+${{ github.run_number }}/" pubspec.yaml
+          grep '^version:' pubspec.yaml
+
+      - run: flutter pub get
+
+      - name: API-Key ablegen
+        env:
+          APP_STORE_CONNECT_API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
+        run: printf '%s' "$APP_STORE_CONNECT_API_KEY" > "$RUNNER_TEMP/asc_key.json"
+
+      - name: Build und Upload nach TestFlight
+        working-directory: ios
+        env:
+          ASC_KEY_PATH: ${{ runner.temp }}/asc_key.json
+          MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
+        run: bundle exec fastlane release
+
+      - name: API-Key entfernen
+        if: always()
+        run: rm -f "$RUNNER_TEMP/asc_key.json"
