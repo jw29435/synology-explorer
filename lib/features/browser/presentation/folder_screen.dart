@@ -40,6 +40,11 @@ class FolderScreen extends ConsumerWidget {
     final readOnly =
         ref.watch(entryInfoProvider(path)).value?.perm == NasPerm.readOnly;
     void clearSelection() => ref.read(selectionProvider(path).notifier).clear();
+    final single = selection.length == 1
+        ? folder.value?.entries
+              .where((e) => e.path == selection.single)
+              .firstOrNull
+        : null;
 
     // Fertiger Upload in diesen Ordner: neu laden, damit die Datei erscheint.
     ref.listen(transfersProvider, (prev, next) {
@@ -88,6 +93,17 @@ class FolderScreen extends ConsumerWidget {
                         ]),
                     child: Text(l10n.selectAll),
                   ),
+                  // Grid-Kacheln haben keinen Kebab (Mockup 07): Sheet 09
+                  // für genau ein ausgewähltes Element von hier.
+                  if (single != null)
+                    IconButton(
+                      tooltip: l10n.more,
+                      icon: const Icon(Icons.more_vert),
+                      onPressed: () {
+                        clearSelection();
+                        showEntryActions(context, ref, single);
+                      },
+                    ),
                   const SizedBox(width: 8),
                 ],
               )

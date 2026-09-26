@@ -111,6 +111,23 @@ void main() {
     expect(find.text('cover.jpg'), findsOne);
   });
 
+  testWidgets('07: Sheet 09 im Grid über Auswahl → Mehr (E2E-021)', (
+    tester,
+  ) async {
+    await pumpApp(tester, location: folderLocation(album));
+    await tester.tap(find.byTooltip('Rasteransicht'));
+    await tester.pumpAndSettle();
+    expect(find.byTooltip('Mehr'), findsNothing);
+
+    await tester.longPress(find.text('cover.jpg'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Mehr'));
+    await tester.pumpAndSettle();
+    expect(find.text('Umbenennen'), findsOne);
+    expect(find.text('Info'), findsOne);
+    expect(find.text('1 ausgewählt'), findsNothing);
+  });
+
   testWidgets('09/10: Kebab öffnet Aktionen, Info zeigt getinfo', (
     tester,
   ) async {
