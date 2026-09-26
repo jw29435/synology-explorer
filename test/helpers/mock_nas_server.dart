@@ -12,9 +12,12 @@ import '../../tool/mock_nas/mock_nas.dart';
 class MockNasServer {
   MockNasServer._(this._server, this.requests);
 
-  static Future<MockNasServer> start() async {
+  static Future<MockNasServer> start({bool searchTotalLate = false}) async {
     final requests = <Map<String, String>>[];
-    final handler = mockNasHandler(Directory('test/fixtures'));
+    final handler = mockNasHandler(
+      Directory('test/fixtures'),
+      searchTotalLate: searchTotalLate,
+    );
     final server = await io.serve(
       (Request request) async {
         final body = await request.read().expand((c) => c).toList();

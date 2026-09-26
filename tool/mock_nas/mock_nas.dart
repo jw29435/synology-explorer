@@ -21,7 +21,13 @@ const mockOtp = '123456';
 /// beim zweiten `status` fertig sind; Upload (Multipart, merkt sich Pfade,
 /// die `getinfo` mit mehreren Pfaden dann kennt); Sharing create/list/delete;
 /// Download mit HTTP-Range über [mockFileSize] Byte Testdaten.
-Handler mockNasHandler(Directory fixtures) {
+///
+/// Für die E2E-Flows: Search als Task (Treffer aus `Search/list.json` nach
+/// Muster gefiltert, Endungen ignoriert; mit [searchTotalLate] meldet das erste `list`
+/// `finished` noch ohne `total`, wie DSM), `list` in [mockPhotoFolder] mit
+/// Paging und Sortierung, `getinfo` mit einem Pfad übernimmt Name, Pfad und
+/// Ordner-Art aus der Anfrage.
+Handler mockNasHandler(Directory fixtures, {bool searchTotalLate = false}) {
   final sids = <String>{};
   var logins = 0;
   final tasks = <String, int>{};
@@ -29,6 +35,7 @@ Handler mockNasHandler(Directory fixtures) {
   final uploaded = <String>{};
   final links = <Map<String, Object?>>[];
   var linkCount = 0;
+  final searches = <String, ({String pattern, int polls})>{};
 
   Future<String> read(String path) =>
       File('${fixtures.path}/$path').readAsString();
@@ -86,6 +93,66 @@ Handler mockNasHandler(Directory fixtures) {
       'progress': finished ? 1 : 0.5,
       'path': '',
       'processing_path': '',
+    });
+  }
+
+  Future<Response> search(String method, Map<String, String> p) async {
+    if (method == 'start') {
+      final id = 'mock-search-${++taskCount}';
+      searches[id] = (pattern: (p['pattern'] ?? '').toLowerCase(), polls: 0);
+      return _ok({'has_not_index_share': false, 'taskid': id});
+    }
+    final id = _taskId(p['taskid']);
+    final task = searches[id];
+    if (id == null || task == null) return _error(599);
+    switch (method) {
+      case 'stop':
+        return _ok(null);
+      case 'clean':
+        searches.remove(id);
+        return _ok(null);
+      case 'list':
+        searches[id] = (pattern: task.pattern, polls: task.polls + 1);
+        final data = jsonDecode(
+          await read('SYNO.FileStation.Search/list.json'),
+        );
+        final files = [
+          for (final f in (data['data']['files'] as List).cast<Map>())
+            if ((f['name'] as String).toLowerCase().contains(task.pattern)) f,
+        ];
+        return _ok({
+          'files': files,
+          'finished': true,
+          'offset': 0,
+          if (!searchTotalLate || task.polls > 0) 'total': files.length,
+        });
+    }
+    return _error(103);
+  }
+
+  /// [mockPhotoCount] Bilder, per offset/limit (0 = alle) und Richtung;
+  /// Name, Größe und Datum steigen mit der Nummer.
+  Response photos(Map<String, String> p) {
+    final offset = int.parse(p['offset'] ?? '0');
+    final limit = int.parse(p['limit'] ?? '0');
+    final numbers = [for (var n = 1; n <= mockPhotoCount; n++) n];
+    final sorted = p['sort_direction'] == 'desc' ? numbers.reversed : numbers;
+    return _ok({
+      'files': [
+        for (final n in sorted.skip(offset).take(limit > 0 ? limit : 1 << 30))
+          {
+            'isdir': false,
+            'name': mockPhotoName(n),
+            'path': '$mockPhotoFolder/${mockPhotoName(n)}',
+            'additional': {
+              'size': 1000000 + n,
+              'time': {'mtime': 1778580000 + n * 60},
+              'type': 'JPG',
+            },
+          },
+      ],
+      'offset': offset,
+      'total': mockPhotoCount,
     });
   }
 
@@ -160,6 +227,17 @@ Handler mockNasHandler(Directory fixtures) {
     final api = params['api'] ?? '';
     final method = params['method'] ?? '';
     if (api == 'SYNO.API.Auth' && method == 'login') return login(params);
+
+    final photoList =
+        api == 'SYNO.FileStation.List' &&
+        method == 'list' &&
+        params['folder_path'] == mockPhotoFolder;
+    if (api == 'SYNO.FileStation.Search' || photoList) {
+      if (!sids.contains(params['_sid'])) {
+        return _json(await read('errors/119.json'));
+      }
+      return photoList ? photos(params) : search(method, params);
+    }
 
     const stateful = {
       'SYNO.FileStation.CopyMove',
@@ -244,6 +322,17 @@ Handler mockNasHandler(Directory fixtures) {
     if (api == 'SYNO.API.Auth' && method == 'logout') {
       sids.remove(params['_sid']);
     }
+    if (api == 'SYNO.FileStation.List' && method == 'getinfo') {
+      final path =
+          (jsonDecode(params['path'] ?? '[]') as List).single as String;
+      final info = jsonDecode(await file.readAsString());
+      final name = path.split('/').last;
+      info['data']['files'][0]
+        ..['path'] = path
+        ..['name'] = name
+        ..['isdir'] = !name.contains('.');
+      return _json(jsonEncode(info));
+    }
     if (file == jpg) {
       return Response.ok(
         await file.readAsBytes(),
@@ -270,6 +359,13 @@ Response _error(int code) => _json(
 /// Task-IDs kommen JSON-kodiert (`"id"`), wie DSM 7.2 sie braucht.
 String? _taskId(String? raw) =>
     raw != null && raw.startsWith('"') ? jsonDecode(raw) as String : null;
+
+/// Share, dessen `list` [mockPhotoCount] Bilder mit Paging liefert.
+const mockPhotoFolder = '/photo';
+const mockPhotoCount = 520;
+
+/// `IMG_0001.jpg` … für Bild [n] in [mockPhotoFolder].
+String mockPhotoName(int n) => 'IMG_${'$n'.padLeft(4, '0')}.jpg';
 
 /// Größe der Testdatei, die `Download` für jeden Pfad liefert.
 const mockFileSize = 256 * 1024;
