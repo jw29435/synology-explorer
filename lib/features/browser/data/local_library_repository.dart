@@ -69,10 +69,11 @@ class LocalLibraryRepository {
   }
 
   /// Ordner-Favorit auf dem NAS setzen bzw. entfernen. Erst `list`, dann nur
-  /// `add`, wenn er fehlt, bzw. `delete`, wenn er da ist – `delete` entfernt
-  /// sonst auch einen Favoriten, den DS File angelegt hat (SPIKE.md). Fehler
-  /// 800 („schon vorhanden“) gilt als Erfolg. Scheitert der Aufruf (z. B.
-  /// 105), bleibt der Cache unverändert und der Fehler geht raus.
+  /// `add`, wenn er fehlt, bzw. `delete`, wenn er da ist – so arbeitet die App
+  /// immer auf dem bekannten Stand des NAS (Lehre aus SPIKE.md) und löst keine
+  /// überflüssigen Aufrufe aus. Fehler 800 („schon vorhanden“, z. B. von DS
+  /// File zwischen `list` und `add` angelegt) gilt als Erfolg. Scheitert der
+  /// Aufruf (z. B. 105), bleibt der Cache unverändert und der Fehler geht raus.
   Future<void> setFolderFavorite(
     int serverId,
     FileStationFavoriteApi api,

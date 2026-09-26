@@ -47,6 +47,7 @@ class _ServerFormScreenState extends ConsumerState<ServerFormScreen> {
   final _password = TextEditingController();
   late int? _id = widget.serverId;
   bool _remember = false;
+  bool _rememberTouched = false;
   bool _busy = false;
   bool _validated = false;
   Object? _error;
@@ -60,7 +61,10 @@ class _ServerFormScreenState extends ConsumerState<ServerFormScreen> {
         ref.read(secureStorageProvider),
         id,
       ).then((remembered) {
-        if (mounted) setState(() => _remember = remembered);
+        // Hat der Nutzer schon umgeschaltet, gilt seine Wahl.
+        if (mounted && !_rememberTouched) {
+          setState(() => _remember = remembered);
+        }
       });
       ref.read(serversProvider.future).then((servers) {
         final p = servers.where((s) => s.id == id).firstOrNull;
@@ -252,7 +256,10 @@ class _ServerFormScreenState extends ConsumerState<ServerFormScreen> {
                 title: l10n.rememberPassword,
                 subtitle: l10n.rememberPasswordHint,
                 value: _remember,
-                onChanged: (v) => setState(() => _remember = v),
+                onChanged: (v) => setState(() {
+                  _remember = v;
+                  _rememberTouched = true;
+                }),
               ),
               const SizedBox(height: 16),
               _NoticeBox(
