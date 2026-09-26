@@ -1,5 +1,10 @@
 import 'package:flutter/widgets.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:synology_explorer/core/auth/session_manager.dart';
+import 'package:synology_explorer/core/network/certificate_pinning.dart';
+import 'package:synology_explorer/core/network/syno_api_client.dart';
+import 'package:synology_explorer/features/servers/presentation/server_providers.dart';
 import 'package:synology_explorer/l10n/app_localizations.dart';
 import 'package:synology_explorer/features/browser/data/local_library_repository.dart';
 import 'package:synology_explorer/features/browser/domain/nas_entry.dart';
@@ -72,6 +77,33 @@ void main() {
       find.text(lookupAppLocalizations(const Locale('de')).sharesEmpty),
       findsOne,
     );
+  });
+
+  testWidgets('05: lange Server- und Benutzernamen ohne Überlauf (E2E-051)', (
+    tester,
+  ) async {
+    const storage = FlutterSecureStorage();
+    final session = SessionManager(
+      SynoApiClient(
+        testProfile.copyWith(
+          name: 'Mein sehr langer NAS-Name im Keller hinten links',
+          user: 'verwaltung.buchhaltung.langername',
+        ),
+        CertificatePinStore(storage),
+      ),
+      storage,
+      deviceName: 'Test',
+    );
+    await pumpApp(
+      tester,
+      location: '/files',
+      loggedIn: false,
+      overrides: [sessionProvider.overrideWith(() => FixedSession(session))],
+    );
+    tester.view.physicalSize = const Size(1080, 2340); // 360 dp (A40)
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    expect(find.textContaining('verwaltung.buchhaltung'), findsOne);
   });
 }
 

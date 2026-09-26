@@ -35,19 +35,25 @@ class StartScreen extends ConsumerWidget {
           children: [
             Text(
               profile.name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: text.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
             ),
             Row(
               children: [
                 const Icon(Icons.circle, size: 8, color: AppColors.success),
                 const SizedBox(width: 6),
-                Text(
-                  l10n.serverStatus(
-                    viaLan ? l10n.viaLan : l10n.viaExternal,
-                    profile.user,
-                  ),
-                  style: text.bodyMedium?.copyWith(
-                    color: AppColors.textSecondary,
+                Flexible(
+                  child: Text(
+                    l10n.serverStatus(
+                      viaLan ? l10n.viaLan : l10n.viaExternal,
+                      profile.user,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: text.bodyMedium?.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 ),
               ],
