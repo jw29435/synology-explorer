@@ -23,6 +23,7 @@ import 'package:re_highlight/styles/atom-one-dark.dart';
 import '../../../app/theme.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../browser/domain/nas_entry.dart';
+import '../../browser/presentation/entry_widgets.dart';
 import 'viewer_common.dart';
 import 'viewer_screen.dart';
 
@@ -180,7 +181,9 @@ class _TextBody extends StatefulWidget {
 }
 
 class _TextBodyState extends State<_TextBody> {
-  late final Future<String> _text = widget.file.readAsBytes().then(decodeText);
+  late Future<String> _text = _read();
+
+  Future<String> _read() => widget.file.readAsBytes().then(decodeText);
 
   /// Einmal berechnet; „Aa“ und der Markdown-Umschalter bauen neu.
   TextSpan? _span;
@@ -189,6 +192,15 @@ class _TextBodyState extends State<_TextBody> {
   Widget build(BuildContext context) => FutureBuilder(
     future: _text,
     builder: (context, snapshot) {
+      // Nicht lesbar (z. B. Offline-Kopie gelöscht): Fehler statt Spinner.
+      if (snapshot.error case final error?) {
+        return Center(
+          child: ErrorPanel(
+            error: error,
+            onRetry: () => setState(() => _text = _read()),
+          ),
+        );
+      }
       final text = snapshot.data;
       if (text == null) {
         return const Center(child: CircularProgressIndicator());
