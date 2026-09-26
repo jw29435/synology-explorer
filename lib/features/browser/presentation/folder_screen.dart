@@ -616,39 +616,48 @@ class _FolderGrid extends ConsumerWidget {
         return GestureDetector(
           onTap: selection.isEmpty ? () => openEntry(context, ref, e) : toggle,
           onLongPress: toggle,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              EntryIcon(e, label: true),
-              // Typ-Badge (Katalog 07); JPEG ist der Normalfall und bleibt
-              // wie im Mockup ohne, Videos haben das Play-Symbol.
-              if (e.type == NasFileType.image &&
-                  !const {'', 'JPG', 'JPEG'}.contains(ext))
-                Positioned(left: 6, top: 6, child: _Badge(ext)),
-              if (e.type == NasFileType.video)
-                Center(
-                  child: CircleAvatar(
-                    radius: 18,
-                    backgroundColor: AppColors.playScrim,
-                    // Auf dunklem Scrim immer hell, auch im Design „Hell“.
-                    child: Icon(Icons.play_arrow, color: Neutrals.dark.text),
-                  ),
-                ),
-              if (selected)
-                DecoratedBox(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: AppColors.accent, width: 3),
-                  ),
-                  child: const Align(
-                    alignment: Alignment.topRight,
-                    child: Padding(
-                      padding: EdgeInsets.all(6),
-                      child: Icon(Icons.check_circle, color: AppColors.accent),
+          // Mit Vorschaubild steht kein Name auf der Kachel (TalkBack).
+          child: Semantics(
+            label: e.name,
+            selected: selected,
+            excludeSemantics: true,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                EntryIcon(e, label: true),
+                // Typ-Badge (Katalog 07); JPEG ist der Normalfall und bleibt
+                // wie im Mockup ohne, Videos haben das Play-Symbol.
+                if (e.type == NasFileType.image &&
+                    !const {'', 'JPG', 'JPEG'}.contains(ext))
+                  Positioned(left: 6, top: 6, child: _Badge(ext)),
+                if (e.type == NasFileType.video)
+                  Center(
+                    child: CircleAvatar(
+                      radius: 18,
+                      backgroundColor: AppColors.playScrim,
+                      // Auf dunklem Scrim immer hell, auch im Design „Hell“.
+                      child: Icon(Icons.play_arrow, color: Neutrals.dark.text),
                     ),
                   ),
-                ),
-            ],
+                if (selected)
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: AppColors.accent, width: 3),
+                    ),
+                    child: const Align(
+                      alignment: Alignment.topRight,
+                      child: Padding(
+                        padding: EdgeInsets.all(6),
+                        child: Icon(
+                          Icons.check_circle,
+                          color: AppColors.accent,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ),
         );
       },

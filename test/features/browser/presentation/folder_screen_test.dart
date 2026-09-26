@@ -174,6 +174,27 @@ void main() {
     expect(find.text('MP4'), findsNothing);
   });
 
+  testWidgets('07: Kacheln tragen den Dateinamen als Semantik (E2E-061)', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    await pumpApp(
+      tester,
+      listApi: _MediaApi(),
+      location: folderLocation('/photo'),
+    );
+    await tester.tap(find.byTooltip('Rasteransicht'));
+    await tester.pumpAndSettle();
+    final tile = find.byWidgetPredicate(
+      (w) => w is Semantics && w.properties.label == 'bild.jpg',
+    );
+    expect(
+      tester.getSemantics(tile),
+      containsSemantics(label: 'bild.jpg', hasTapAction: true),
+    );
+    semantics.dispose();
+  });
+
   testWidgets('09/10: Kebab öffnet Aktionen, Info zeigt getinfo', (
     tester,
   ) async {
