@@ -1,8 +1,10 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:synology_explorer/features/browser/presentation/entry_widgets.dart';
+import 'package:synology_explorer/features/viewers/presentation/pdf_viewer_screen.dart';
 import 'package:synology_explorer/features/viewers/presentation/viewer_providers.dart';
 
 import '../../helpers/app_harness.dart';
@@ -39,5 +41,39 @@ void main() {
     expect(find.byType(PdfViewer), findsOne);
     expect(find.text('Wird geladen …'), findsNothing);
     expect(find.byTooltip('Teilen'), findsOne);
+  });
+
+  // pdfrx rendert headless nicht (kein PDFium), die Suche geht dort nie auf;
+  // daher der Zurück-Teil einzeln.
+  testWidgets('E2E-016: Zurück-Geste beendet erst die Suche', (tester) async {
+    var searching = true;
+    final navigator = GlobalKey<NavigatorState>();
+    await tester.pumpWidget(
+      MaterialApp(navigatorKey: navigator, home: const Text('Ordner')),
+    );
+    unawaited(
+      navigator.currentState!.push(
+        MaterialPageRoute<void>(
+          builder: (_) => StatefulBuilder(
+            builder: (context, setState) => SearchPopScope(
+              searching: searching,
+              onEndSearch: () => setState(() => searching = false),
+              child: const Text('PDF'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(searching, isFalse);
+    expect(find.text('PDF'), findsOne, reason: 'Viewer bleibt offen');
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.text('PDF'), findsNothing);
+    expect(find.text('Ordner'), findsOne);
   });
 }
