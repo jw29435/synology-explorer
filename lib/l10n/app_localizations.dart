@@ -1765,6 +1765,264 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Video kann nicht abgespielt werden'**
   String get videoUnavailable;
+
+  /// No description provided for @audioChannelName.
+  ///
+  /// In de, this message translates to:
+  /// **'Wiedergabe'**
+  String get audioChannelName;
+
+  /// No description provided for @playFolder.
+  ///
+  /// In de, this message translates to:
+  /// **'Ordner abspielen'**
+  String get playFolder;
+
+  /// No description provided for @playingFromFolder.
+  ///
+  /// In de, this message translates to:
+  /// **'Wiedergabe aus Ordner'**
+  String get playingFromFolder;
+
+  /// No description provided for @trackOf.
+  ///
+  /// In de, this message translates to:
+  /// **'Titel {index} von {count}'**
+  String trackOf(int index, int count);
+
+  /// No description provided for @nowPlayingRow.
+  ///
+  /// In de, this message translates to:
+  /// **'läuft gerade'**
+  String get nowPlayingRow;
+
+  /// No description provided for @queueTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Queue'**
+  String get queueTitle;
+
+  /// No description provided for @queueButton.
+  ///
+  /// In de, this message translates to:
+  /// **'Queue ({count})'**
+  String queueButton(int count);
+
+  /// No description provided for @queueClear.
+  ///
+  /// In de, this message translates to:
+  /// **'Leeren'**
+  String get queueClear;
+
+  /// No description provided for @queueNowPlaying.
+  ///
+  /// In de, this message translates to:
+  /// **'Läuft gerade'**
+  String get queueNowPlaying;
+
+  /// No description provided for @queueUpNext.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =0{Als Nächstes · keine Titel} =1{Als Nächstes · 1 Titel} other{Als Nächstes · {count} Titel}}'**
+  String queueUpNext(int count);
+
+  /// No description provided for @queueHint.
+  ///
+  /// In de, this message translates to:
+  /// **'{played, plural, =0{Wischen nach links entfernt, Handle zieht.} =1{1 Titel wurde bereits gespielt. Wischen nach links entfernt, Handle zieht.} other{{played} Titel wurden bereits gespielt. Wischen nach links entfernt, Handle zieht.}}'**
+  String queueHint(int played);
+
+  /// No description provided for @queueRemove.
+  ///
+  /// In de, this message translates to:
+  /// **'Aus der Queue entfernen'**
+  String get queueRemove;
+
+  /// No description provided for @queueAdded.
+  ///
+  /// In de, this message translates to:
+  /// **'Zur Queue hinzugefügt'**
+  String get queueAdded;
+
+  /// No description provided for @noAudioInFolder.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Audiodateien in diesem Ordner.'**
+  String get noAudioInFolder;
+
+  /// No description provided for @nextTrack.
+  ///
+  /// In de, this message translates to:
+  /// **'Nächster Titel'**
+  String get nextTrack;
+
+  /// No description provided for @previousTrack.
+  ///
+  /// In de, this message translates to:
+  /// **'Vorheriger Titel'**
+  String get previousTrack;
+
+  /// No description provided for @collapse.
+  ///
+  /// In de, this message translates to:
+  /// **'Einklappen'**
+  String get collapse;
+
+  /// No description provided for @shuffleOn.
+  ///
+  /// In de, this message translates to:
+  /// **'Zufallswiedergabe an'**
+  String get shuffleOn;
+
+  /// No description provided for @shuffleOff.
+  ///
+  /// In de, this message translates to:
+  /// **'Zufallswiedergabe aus'**
+  String get shuffleOff;
+
+  /// No description provided for @repeatOff.
+  ///
+  /// In de, this message translates to:
+  /// **'Wiederholen aus'**
+  String get repeatOff;
+
+  /// No description provided for @repeatOne.
+  ///
+  /// In de, this message translates to:
+  /// **'Titel wiederholen'**
+  String get repeatOne;
+
+  /// No description provided for @repeatAll.
+  ///
+  /// In de, this message translates to:
+  /// **'Ordner wiederholen'**
+  String get repeatAll;
+
+  /// No description provided for @repeatSummaryOff.
+  ///
+  /// In de, this message translates to:
+  /// **'Ordner · einmal'**
+  String get repeatSummaryOff;
+
+  /// No description provided for @repeatSummaryOne.
+  ///
+  /// In de, this message translates to:
+  /// **'Titel · Wiederholen'**
+  String get repeatSummaryOne;
+
+  /// No description provided for @repeatSummaryAll.
+  ///
+  /// In de, this message translates to:
+  /// **'Ordner · Wiederholen'**
+  String get repeatSummaryAll;
+
+  /// No description provided for @shuffleSummary.
+  ///
+  /// In de, this message translates to:
+  /// **'Zufällig'**
+  String get shuffleSummary;
+
+  /// No description provided for @speedTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Geschwindigkeit'**
+  String get speedTitle;
+
+  /// No description provided for @speedValue.
+  ///
+  /// In de, this message translates to:
+  /// **'{speed}×'**
+  String speedValue(String speed);
+
+  /// No description provided for @sleep.
+  ///
+  /// In de, this message translates to:
+  /// **'Sleep'**
+  String get sleep;
+
+  /// No description provided for @sleepTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Sleep-Timer'**
+  String get sleepTitle;
+
+  /// No description provided for @sleepMinutes.
+  ///
+  /// In de, this message translates to:
+  /// **'Sleep {minutes} min'**
+  String sleepMinutes(int minutes);
+
+  /// No description provided for @sleepEndOfTrackShort.
+  ///
+  /// In de, this message translates to:
+  /// **'Sleep: Titelende'**
+  String get sleepEndOfTrackShort;
+
+  /// No description provided for @sleepOption.
+  ///
+  /// In de, this message translates to:
+  /// **'{minutes} Minuten'**
+  String sleepOption(int minutes);
+
+  /// No description provided for @sleepEndOfTrack.
+  ///
+  /// In de, this message translates to:
+  /// **'Ende des Titels'**
+  String get sleepEndOfTrack;
+
+  /// No description provided for @sleepOff.
+  ///
+  /// In de, this message translates to:
+  /// **'Aus'**
+  String get sleepOff;
+
+  /// No description provided for @resumeAction.
+  ///
+  /// In de, this message translates to:
+  /// **'Fortsetzen'**
+  String get resumeAction;
+
+  /// No description provided for @errorWifiRequired.
+  ///
+  /// In de, this message translates to:
+  /// **'Streaming nur im WLAN – gerade keine WLAN-Verbindung.'**
+  String get errorWifiRequired;
+
+  /// No description provided for @errorNotPlayable.
+  ///
+  /// In de, this message translates to:
+  /// **'Nicht abspielbar: Das Format wird auf diesem Gerät nicht unterstützt.'**
+  String get errorNotPlayable;
+
+  /// No description provided for @audiobookMode.
+  ///
+  /// In de, this message translates to:
+  /// **'Hörbuch-Modus'**
+  String get audiobookMode;
+
+  /// No description provided for @audiobookModeHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Merkt sich Titel und Position im Ordner'**
+  String get audiobookModeHint;
+
+  /// No description provided for @settingsWifiOnly.
+  ///
+  /// In de, this message translates to:
+  /// **'Streaming nur im WLAN'**
+  String get settingsWifiOnly;
+
+  /// No description provided for @settingsWifiOnlyHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Über Mobilfunk wird nicht gestreamt.'**
+  String get settingsWifiOnlyHint;
+
+  /// No description provided for @errorStreamFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Datei konnte nicht geladen werden – Verbindung zum NAS prüfen.'**
+  String get errorStreamFailed;
 }
 
 class _AppLocalizationsDelegate

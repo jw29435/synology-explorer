@@ -92,8 +92,8 @@ class NoNotifications implements TransferNotifications {
   Future<void> update(List<Transfer> transfers) async {}
 }
 
-class _FixedSession extends SessionNotifier {
-  _FixedSession(this._session);
+class FixedSession extends SessionNotifier {
+  FixedSession(this._session);
 
   final SessionManager? _session;
 
@@ -135,7 +135,7 @@ Future<({ProviderContainer container, AppDatabase db})> pumpApp(
     overrides: [
       appDatabaseProvider.overrideWithValue(db),
       if (loggedIn)
-        sessionProvider.overrideWith(() => _FixedSession(testSession())),
+        sessionProvider.overrideWith(() => FixedSession(testSession())),
       startupProvider.overrideWith((ref) async => false),
       fileStationListApiProvider.overrideWithValue(listApi ?? FakeListApi()),
       thumbnailCacheProvider.overrideWithValue(NoThumbnails()),

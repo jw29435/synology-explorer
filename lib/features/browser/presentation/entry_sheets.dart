@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../app/theme.dart';
 import '../../../core/utils/format.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../audio/presentation/audio_widgets.dart';
 import '../data/file_station_task_api.dart';
 import '../domain/nas_entry.dart';
 import '../../sharing/presentation/share_link_sheet.dart';
@@ -110,23 +111,33 @@ class _EntryActionsSheet extends ConsumerWidget {
               l10n.actionOpen,
               onTap: () => openEntry(outer, outerRef, entry),
             ),
+            // Audio: Aktionen laufen im Kontext des Ordners (outer), das
+            // Sheet ist beim Ergebnis schon zu.
             if (audio)
               item(
                 Icons.play_arrow,
                 l10n.actionPlayFromHere,
-                disabled: l10n.availableFrom('M2'),
+                onTap: () => playAudioEntry(outer, entry),
               ),
             if (audio || entry.isDir)
               item(
                 Icons.playlist_play,
                 l10n.actionPlayFolder,
-                disabled: l10n.availableFrom('M2'),
+                onTap: () => startPlayback(
+                  outer,
+                  entry.isDir ? entry.path : parentPath(entry.path),
+                  recursive: true,
+                ),
               ),
             if (audio)
               item(
                 Icons.playlist_add,
                 l10n.actionQueue,
-                disabled: l10n.availableFrom('M2'),
+                onTap: () => enqueueEntry(outer, entry),
+              ),
+            if (audio || entry.isDir)
+              AudiobookSwitch(
+                folder: entry.isDir ? entry.path : parentPath(entry.path),
               ),
             const Divider(indent: 20, endIndent: 20),
             // Ganze Shares nicht versehentlich komplett laden.

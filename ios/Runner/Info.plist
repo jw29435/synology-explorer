@@ -72,6 +72,10 @@
 	<string>Fotos und Videos auswählen, um sie auf das NAS hochzuladen.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Ein Foto aufnehmen und direkt auf das NAS hochladen.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>audio</string>
+	</array>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<!-- Nur für die Proxys auf 127.0.0.1 (just_audio, media_kit) -->

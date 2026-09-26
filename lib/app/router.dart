@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../features/browser/domain/nas_entry.dart';
+import '../features/audio/presentation/now_playing_screen.dart';
+import '../features/audio/presentation/playback_providers.dart';
+import '../features/audio/presentation/queue_screen.dart';
 import '../features/browser/presentation/folder_screen.dart';
 import '../features/browser/presentation/search_screen.dart';
 import '../features/browser/presentation/start_screen.dart';
@@ -63,6 +66,19 @@ final routerProvider = Provider<GoRouter>((ref) {
             entry: extra as NasEntry?,
           ),
         },
+      ),
+      // Now Playing (12) und Queue (13) als Vollbild über der Shell.
+      GoRoute(
+        path: '/player',
+        pageBuilder: (context, state) =>
+            _slideUp(state, const NowPlayingScreen()),
+        routes: [
+          GoRoute(
+            path: 'queue',
+            pageBuilder: (context, state) =>
+                _slideUp(state, const QueueScreen()),
+          ),
+        ],
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>
@@ -151,8 +167,32 @@ class _SettingsPlaceholder extends ConsumerWidget {
             enabled: ref.watch(sessionProvider) != null,
             onTap: () => context.go('/settings/shares'),
           ),
+          SwitchListTile(
+            key: const Key('wifi-only'),
+            secondary: const Icon(Icons.wifi),
+            title: Text(l10n.settingsWifiOnly),
+            subtitle: Text(l10n.settingsWifiOnlyHint),
+            value: ref.watch(wifiOnlyProvider).value ?? false,
+            onChanged: (on) =>
+                ref.read(playbackRepositoryProvider).setWifiOnly(on),
+          ),
         ],
       ),
     );
   }
 }
+
+/// Vollbild-Sheet, das von unten hereinfährt.
+Page<void> _slideUp(GoRouterState state, Widget child) => CustomTransitionPage(
+  key: state.pageKey,
+  child: child,
+  transitionsBuilder: (context, animation, _, child) => SlideTransition(
+    position: animation.drive(
+      Tween(
+        begin: const Offset(0, 1),
+        end: Offset.zero,
+      ).chain(CurveTween(curve: Curves.easeOutCubic)),
+    ),
+    child: child,
+  ),
+);

@@ -3,13 +3,13 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:open_filex/open_filex.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/theme.dart';
 import '../../../core/storage/app_database.dart';
 import '../../../core/utils/format.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../audio/presentation/audio_widgets.dart';
 import '../../browser/domain/nas_entry.dart';
 import '../../browser/presentation/browser_providers.dart';
 import '../../browser/presentation/entry_widgets.dart';
@@ -28,8 +28,7 @@ class LocalView {
   final LocalFile local;
 }
 
-/// Offline-Datei (Screen 21) im passenden Viewer öffnen. Audio kommt mit M2
-/// in den Player; bis dahin wie bisher per „Öffnen mit“.
+/// Offline-Datei (Screen 21) im passenden Viewer öffnen, Audio im Player.
 Future<bool> openOffline(BuildContext context, OfflineFile file) async {
   final name = file.remotePath.substring(file.remotePath.lastIndexOf('/') + 1);
   final entry = NasEntry(
@@ -41,7 +40,8 @@ Future<bool> openOffline(BuildContext context, OfflineFile file) async {
     mtime: file.mtime,
   );
   if (entry.type == NasFileType.audio) {
-    return (await OpenFilex.open(file.localPath)).type == ResultType.done;
+    await playOfflineAudio(context, entry, File(file.localPath), file.serverId);
+    return true;
   }
   unawaited(
     context.push(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../features/audio/presentation/audio_widgets.dart';
 import '../features/audio/presentation/playback_providers.dart';
 import '../features/transfers/presentation/transfer_providers.dart';
 import '../l10n/app_localizations.dart';
@@ -22,9 +23,9 @@ class AppShell extends ConsumerWidget {
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Mini-Player-Slot: 64 px, sobald etwas läuft; der Player kommt in M2.
+          // Mini-Player (64 px), sobald etwas läuft.
           if (ref.watch(hasActivePlaybackProvider))
-            const SizedBox(key: Key('mini-player-slot'), height: 64),
+            const MiniPlayer(key: Key('mini-player-slot')),
           DecoratedBox(
             decoration: BoxDecoration(
               border: Border(

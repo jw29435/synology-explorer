@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:synology_explorer/features/audio/presentation/playback_providers.dart';
+import 'package:synology_explorer/features/audio/data/playback_repository.dart';
 
 import '../helpers/app_harness.dart';
+import '../helpers/audio_fakes.dart';
 
 void main() {
   testWidgets('ohne Server startet die App auf der Server-Liste', (
@@ -33,11 +34,29 @@ void main() {
     );
   });
 
-  testWidgets('Shell reserviert 64 px für den Mini-Player', (tester) async {
+  testWidgets('Einstellung „Streaming nur im WLAN“ landet in drift', (
+    tester,
+  ) async {
+    final app = await pumpApp(tester, location: '/settings');
+    await tester.tap(find.byKey(const Key('wifi-only')));
+    await tester.pumpAndSettle();
+    expect(
+      await tester.runAsync(() => PlaybackRepository(app.db).wifiOnly()),
+      isTrue,
+    );
+    final tile = tester.widget<SwitchListTile>(
+      find.byKey(const Key('wifi-only')),
+    );
+    expect(tile.value, isTrue);
+  });
+
+  testWidgets('Shell zeigt den Mini-Player (64 px), sobald etwas läuft', (
+    tester,
+  ) async {
     await pumpApp(
       tester,
       location: '/files',
-      overrides: [hasActivePlaybackProvider.overrideWithValue(true)],
+      overrides: audioOverrides(FakeAudioController(playingAlbum())),
     );
     final slot = find.byKey(const Key('mini-player-slot'));
     expect(tester.getSize(slot).height, 64);
