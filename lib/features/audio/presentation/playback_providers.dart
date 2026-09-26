@@ -11,6 +11,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../../../core/network/media_proxy.dart';
+import '../../../core/network/syno_exception.dart';
 import '../../../core/storage/storage_providers.dart';
 import '../../browser/domain/nas_entry.dart';
 import '../../browser/presentation/browser_providers.dart';
@@ -200,6 +201,9 @@ class AudioController extends Notifier<AudioState> {
   bool _attached = false;
   bool _addressStale = false;
   MediaProxy? _proxy;
+
+  /// Stelle, an der ein Netzfehler die Wiedergabe unterbrochen hat.
+  Duration? _errorPosition;
 
   /// Offline-Wiedergabe (Screen 21): lokale Datei je NAS-Pfad und der
   /// Server, zu dem die Positionen gehören – geht ohne Session.
@@ -433,6 +437,7 @@ class AudioController extends Notifier<AudioState> {
       _player.playbackEventStream.listen(
         (_) {},
         onError: (Object e) async {
+          _errorPosition = _player.position;
           final error = !await streamingAllowed(ref)
               ? const WifiRequired()
               : e is PlayerException
@@ -537,6 +542,7 @@ class AudioController extends Notifier<AudioState> {
       if (token != _loadToken) return;
       // Nur den Typ loggen: Meldungen können URLs mit `_sid` enthalten.
       debugPrint('Wiedergabe fehlgeschlagen: ${e.runtimeType}');
+      _errorPosition = position;
       await _player.stop();
       state = state.copyWith(
         loading: false,
@@ -626,6 +632,18 @@ class AudioController extends Notifier<AudioState> {
   /// pausiert der Player sofort, wenn das WLAN wegfällt.
   void _onConnectivity(List<ConnectivityResult> types) {
     _addressStale = true;
+    // Netz wieder da nach einem Netzfehler (auch Titelwechsel ohne Netz)
+    // oder WLAN zurück nach „nur WLAN“-Pause: an der Stelle weiterspielen.
+    final online = types.any((t) => t != ConnectivityResult.none);
+    final error = state.error;
+    if (online &&
+        state.active &&
+        (error is SynoNetworkError ||
+            error is StreamFailed ||
+            (error is WifiRequired && isUnmetered(types)))) {
+      unawaited(_playIndex(state.queue.index, position: _errorPosition));
+      return;
+    }
     if (isUnmetered(types) || !_player.playing) return;
     unawaited(
       _repo.wifiOnly().then((wifiOnly) async {

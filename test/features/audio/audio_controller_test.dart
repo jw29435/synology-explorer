@@ -1,13 +1,20 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:dio/dio.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:synology_explorer/core/auth/session_manager.dart';
+import 'package:synology_explorer/core/network/certificate_pinning.dart';
 import 'package:synology_explorer/core/network/media_proxy.dart';
+import 'package:synology_explorer/core/network/syno_api_client.dart';
+import 'package:synology_explorer/core/network/syno_exception.dart';
 import 'package:synology_explorer/core/storage/app_database.dart';
 import 'package:synology_explorer/core/storage/storage_providers.dart';
 import 'package:synology_explorer/features/audio/data/audio_handler.dart';
@@ -159,6 +166,43 @@ class _FakeConnectivity implements Connectivity {
   Stream<List<ConnectivityResult>> get onConnectivityChanged => changes.stream;
 }
 
+/// Beantwortet nur `SYNO.API.Info` – reicht für `connect()` nach Netzwechsel.
+class _InfoAdapter implements HttpClientAdapter {
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async => ResponseBody.fromString(
+    jsonEncode({
+      'success': true,
+      'data': {
+        'SYNO.API.Info': {'maxVersion': 1, 'path': 'entry.cgi'},
+      },
+    }),
+    200,
+    headers: {
+      Headers.contentTypeHeader: ['application/json'],
+    },
+  );
+
+  @override
+  void close({bool force = false}) {}
+}
+
+SessionManager _connectableSession() {
+  const storage = FlutterSecureStorage();
+  return SessionManager(
+    SynoApiClient(
+      testProfile,
+      CertificatePinStore(storage),
+      adapter: _InfoAdapter(),
+    ),
+    storage,
+    deviceName: 'Test',
+  );
+}
+
 const album = '/music/Alben/Nordlicht – Treibholz';
 const ebbe = '$album/01 Ebbe.flac';
 const strandgut = '$album/02 Strandgut.flac';
@@ -193,7 +237,7 @@ void main() {
       retry: (_, _) => null,
       overrides: [
         appDatabaseProvider.overrideWithValue(db),
-        sessionProvider.overrideWith(() => FixedSession(testSession())),
+        sessionProvider.overrideWith(() => FixedSession(_connectableSession())),
         fileStationListApiProvider.overrideWithValue(FakeListApi()),
         audioHandlerProvider.overrideWithValue(handler),
         audioProxyStarterProvider.overrideWithValue((path) async {
@@ -399,6 +443,33 @@ void main() {
         await PlaybackPositionRepository(db, 7).load(entry(ebbe)),
         const Duration(seconds: 60),
       );
+    },
+  );
+
+  test(
+    'Netz wieder da nach Netzfehler: Titel lädt neu und spielt weiter',
+    () async {
+      await controller.playFolder(album, startPath: ebbe);
+      await settle();
+      // Titelwechsel ohne Netz (wie WLAN weg am Titelende).
+      player.failNext = const SynoNetworkError(cause: 'offline');
+      await controller.next();
+      await settle();
+      expect(state().error, isA<SynoNetworkError>());
+      expect(player.sources, ['01 Ebbe.flac']);
+
+      net.changes.add([ConnectivityResult.none]);
+      await settle();
+      expect(player.sources, hasLength(1), reason: 'ohne Netz kein Versuch');
+
+      net.changes.add([ConnectivityResult.wifi]);
+      // Läuft im Listener, unabhängig vom Test – kurz warten.
+      for (var i = 0; i < 50 && player.sources.length < 2; i++) {
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+      }
+      expect(player.sources, ['01 Ebbe.flac', '02 Strandgut.flac']);
+      expect(state().error, isNull);
+      expect(state().playing, isTrue);
     },
   );
 }
