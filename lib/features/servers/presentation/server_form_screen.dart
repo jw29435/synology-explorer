@@ -104,10 +104,9 @@ class _ServerFormScreenState extends ConsumerState<ServerFormScreen> {
         profile = await repo.add(profile);
         _id = profile.id;
       } else {
+        // Eine laufende Session dieses Servers bleibt aktiv, bis der neue
+        // Login klappt; activate() ersetzt sie dann.
         await repo.update(profile);
-        if (ref.read(sessionProvider)?.client.profile.id == _id) {
-          await ref.read(sessionProvider.notifier).close();
-        }
       }
       ref.invalidate(serversProvider);
       if (!mounted) return;

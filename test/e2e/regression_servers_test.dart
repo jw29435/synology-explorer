@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:synology_explorer/features/servers/presentation/server_providers.dart';
+
 import 'e2e_harness.dart';
 
 /// Regressionen aus dem E2E-Lauf rund um Screen 01 (Server-Liste).
@@ -107,6 +109,30 @@ void main() {
     await tester.tap(button);
     await app.settle();
     expect(find.text(l10n.validationRequired), findsWidgets);
+    await app.dispose();
+  });
+
+  testWidgets('E2E-023: Bearbeiten mit falschem Passwort behält die Session', (
+    tester,
+  ) async {
+    final app = await E2E.start(tester);
+    await app.addServerAndLogin();
+    final active = app.container.read(sessionProvider);
+    await app.tap(find.byTooltip(l10n.switchServer));
+    await tester.longPress(find.text('Heim-NAS'));
+    await app.settle();
+    await app.tap(find.text(l10n.serverEdit));
+    await app.type(find.byType(TextFormField).at(0), 'Heim-NAS 2');
+    await app.type(find.byType(TextFormField).at(4), 'falsch');
+    await app.tap(find.widgetWithText(FilledButton, l10n.connect));
+    await app.waitFor(find.text(l10n.errorUnauthorized));
+
+    expect(app.container.read(sessionProvider), same(active));
+    expect(active!.isLoggedIn, isTrue);
+    await app.backButton();
+    await app.backButton();
+    expect(app.location, '/files');
+    expect(find.text('music'), findsOneWidget);
     await app.dispose();
   });
 }
