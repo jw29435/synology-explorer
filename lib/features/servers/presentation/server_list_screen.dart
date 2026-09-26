@@ -151,6 +151,20 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
           style: text.headlineMedium?.copyWith(fontWeight: FontWeight.w700),
         ),
         actions: [
+          // Ohne Session sonst unerreichbar: Offline-Dateien (auch ohne Netz)
+          // und Einstellungen.
+          if (session == null) ...[
+            IconButton(
+              tooltip: l10n.tabOffline,
+              icon: const Icon(Icons.cloud_download_outlined),
+              onPressed: () => context.go('/offline'),
+            ),
+            IconButton(
+              tooltip: l10n.tabSettings,
+              icon: const Icon(Icons.settings_outlined),
+              onPressed: () => context.go('/settings'),
+            ),
+          ],
           IconButton(
             tooltip: l10n.serverAdd,
             icon: const Icon(Icons.add),

@@ -50,4 +50,23 @@ void main() {
     expect(app.location, folder);
     await app.dispose();
   });
+
+  testWidgets('E2E-001: ohne Session zu Offline und Einstellungen', (
+    tester,
+  ) async {
+    final app = await E2E.start(tester);
+    await app.tap(find.byTooltip(l10n.tabOffline));
+    expect(app.location, '/offline');
+    expect(find.text(l10n.offlineEmpty), findsOneWidget);
+
+    await app.tap(find.text(l10n.tabSettings));
+    expect(app.location, '/settings');
+    // Dateien braucht eine Session: zurück zu 01.
+    await app.tap(find.text(l10n.tabFiles));
+    expect(app.location, '/servers');
+
+    await app.tap(find.byTooltip(l10n.tabSettings));
+    expect(app.location, '/settings');
+    await app.dispose();
+  });
 }
