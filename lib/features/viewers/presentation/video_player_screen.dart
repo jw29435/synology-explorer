@@ -13,11 +13,20 @@ import '../../../core/network/media_proxy.dart';
 import '../../../core/storage/storage_providers.dart';
 import '../../../core/utils/format.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../audio/presentation/playback_providers.dart';
 import '../../browser/domain/nas_entry.dart';
 import '../../browser/presentation/browser_providers.dart';
 import '../data/playback_position_repository.dart';
 import 'viewer_common.dart';
 import 'viewer_providers.dart';
+
+/// Video und Musik gleichzeitig ergibt keinen Sinn: Laufende Musik pausiert,
+/// sobald ein Video startet.
+void pauseMusicForVideo(WidgetRef ref) {
+  if (ref.read(audioControllerProvider).playing) {
+    unawaited(ref.read(audioControllerProvider.notifier).pause());
+  }
+}
 
 /// Screen 16: Streaming mit media_kit (Seek per HTTP-Range) im
 /// Landscape-Vollbild. Doppeltipp ±10 s, Wischen rechts Lautstärke, links
@@ -105,6 +114,7 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
           }
         }),
       );
+    pauseMusicForVideo(ref);
     _start();
   }
 
