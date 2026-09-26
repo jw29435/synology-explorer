@@ -268,7 +268,7 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
                 if (_resumedAt case final at?)
                   Align(
                     alignment: const Alignment(0, -0.55),
-                    child: _ResumeCard(
+                    child: ResumeCard(
                       at: at,
                       onResume: () => setState(() => _resumedAt = null),
                       onRestart: () {
@@ -464,8 +464,10 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
   }
 }
 
-class _ResumeCard extends StatelessWidget {
-  const _ResumeCard({
+/// „Bei mm:ss fortsetzen?“ mit „Fortsetzen“ und „Von vorn“.
+class ResumeCard extends StatelessWidget {
+  const ResumeCard({
+    super.key,
     required this.at,
     required this.onResume,
     required this.onRestart,
@@ -478,7 +480,10 @@ class _ResumeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    // Knöpfe nur so breit wie nötig (das Theme macht sie volle Breite), der
+    // Text bricht um: passt so auch ins Hochformat.
     return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.fromLTRB(20, 12, 12, 12),
       decoration: BoxDecoration(
         color: Neutrals.dark.background,
@@ -487,15 +492,27 @@ class _ResumeCard extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(l10n.resumeAt(formatDuration(at))),
+          Flexible(child: Text(l10n.resumeAt(formatDuration(at)))),
           const SizedBox(width: 16),
-          FilledButton(onPressed: onResume, child: Text(l10n.resume)),
+          FilledButton(
+            style: _compact,
+            onPressed: onResume,
+            child: Text(l10n.resume),
+          ),
           const SizedBox(width: 8),
-          OutlinedButton(onPressed: onRestart, child: Text(l10n.restart)),
+          OutlinedButton(
+            style: _compact,
+            onPressed: onRestart,
+            child: Text(l10n.restart),
+          ),
         ],
       ),
     );
   }
+
+  static const _compact = ButtonStyle(
+    minimumSize: WidgetStatePropertyAll(Size(64, 44)),
+  );
 }
 
 class _Pill extends StatelessWidget {
