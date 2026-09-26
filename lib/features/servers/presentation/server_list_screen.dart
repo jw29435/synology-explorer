@@ -25,6 +25,10 @@ class ServerListScreen extends ConsumerStatefulWidget {
 class _ServerListScreenState extends ConsumerState<ServerListScreen> {
   int? _connecting;
 
+  /// Nutzer wartet nicht auf die stille Verbindung beim Start (bis zum
+  /// Timeout, bei unerreichbarem NAS 15 s).
+  bool _skipStartup = false;
+
   Future<void> _open(ServerProfile profile) async {
     final active = ref.read(sessionProvider);
     if (active != null &&
@@ -134,12 +138,33 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     ref.listen(startupProvider, (_, next) {
-      if (next.value == true) context.go('/files');
+      if (next.value == true && !_skipStartup) context.go('/files');
     });
-    if (ref.watch(startupProvider).isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    if (ref.watch(startupProvider).isLoading && !_skipStartup) {
+      return Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const CircularProgressIndicator(),
+              const SizedBox(height: 20),
+              Text(
+                l10n.serverResuming,
+                textAlign: TextAlign.center,
+                style: TextStyle(color: AppColors.textSecondary),
+              ),
+              const SizedBox(height: 12),
+              TextButton(
+                onPressed: () => setState(() => _skipStartup = true),
+                child: Text(l10n.cancel),
+              ),
+            ],
+          ),
+        ),
+      );
     }
-    final servers = ref.watch(serversProvider).value ?? const [];
+    final serversAsync = ref.watch(serversProvider);
+    final servers = serversAsync.value ?? const [];
     final session = ref.watch(sessionProvider);
     final text = Theme.of(context).textTheme;
 
@@ -181,7 +206,10 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
               padding: const EdgeInsets.only(bottom: 12),
               child: ErrorBox(l10n.errorSessionExpired),
             ),
-          if (servers.isEmpty)
+          if (serversAsync.hasError && !serversAsync.hasValue)
+            // Eine kaputte DB ist nicht „kein Server“.
+            ErrorBox(describeError(serversAsync.error!, l10n))
+          else if (servers.isEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 24),
               child: Text(

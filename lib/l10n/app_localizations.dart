@@ -230,6 +230,12 @@ abstract class AppLocalizations {
   /// **'Bearbeiten, Abmelden, Löschen'**
   String get serverManageAction;
 
+  /// No description provided for @serverResuming.
+  ///
+  /// In de, this message translates to:
+  /// **'Verbinde mit dem zuletzt genutzten Server …'**
+  String get serverResuming;
+
   /// No description provided for @serverEdit.
   ///
   /// In de, this message translates to:

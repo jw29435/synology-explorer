@@ -22,6 +22,7 @@
   "serverInfo": "The LAN address is tried first, then the external one. QuickConnect is not supported.",
   "serverManageHint": "Press and hold to edit, sign out or delete.",
   "serverManageAction": "Edit, sign out, delete",
+  "serverResuming": "Connecting to the last used server …",
   "serverEdit": "Edit",
   "serverLogout": "Sign out",
   "serverDelete": "Delete",

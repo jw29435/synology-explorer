@@ -80,6 +80,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get serverManageAction => 'Bearbeiten, Abmelden, Löschen';
 
   @override
+  String get serverResuming => 'Verbinde mit dem zuletzt genutzten Server …';
+
+  @override
   String get serverEdit => 'Bearbeiten';
 
   @override

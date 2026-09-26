@@ -79,6 +79,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get serverManageAction => 'Edit, sign out, delete';
 
   @override
+  String get serverResuming => 'Connecting to the last used server …';
+
+  @override
   String get serverEdit => 'Edit';
 
   @override
