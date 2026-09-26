@@ -214,10 +214,8 @@ class AutoUploadScreen extends ConsumerWidget {
     await ref
         .read(autoUploadControllerProvider.notifier)
         .update(
-          (c) => c.copyWith(
-            enabled: true,
-            cursor: UploadCursor(DateTime.now(), const {}),
-          ),
+          (c) =>
+              c.copyWith(enabled: true, cursor: UploadCursor(DateTime.now())),
         );
     if (context.mounted) showSnack(context, l10n.autoUploadEnabled);
   }

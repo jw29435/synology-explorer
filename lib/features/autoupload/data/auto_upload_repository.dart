@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 
 import '../../../core/storage/app_database.dart';
 import '../../settings/data/settings_repository.dart';
+import '../../transfers/domain/transfer.dart';
 import '../domain/auto_upload_config.dart';
 
 /// Einstellungen, Fortschritt (Cursor) und Protokoll des Auto-Uploads.
@@ -47,6 +48,34 @@ class AutoUploadRepository {
             ? null
             : DateTime.fromMillisecondsSinceEpoch(int.parse(v)),
       );
+
+  /// Uploads von [serverId], die noch warten (z. B. vom letzten Lauf im
+  /// Hintergrund übrig).
+  Future<List<int>> queuedUploads(int serverId) async => [
+    for (final t
+        in await (_db.select(_db.transfers)..where(
+              (t) =>
+                  t.serverId.equals(serverId) &
+                  t.kind.equalsValue(TransferKind.upload) &
+                  t.state.equalsValue(TransferState.queued),
+            ))
+            .get())
+      t.id,
+  ];
+
+  /// Ob für [serverId] noch Uploads warten oder laufen.
+  Future<bool> hasOpenUploads(int serverId) async =>
+      (await (_db.select(_db.transfers)..where(
+                (t) =>
+                    t.serverId.equals(serverId) &
+                    t.kind.equalsValue(TransferKind.upload) &
+                    t.state.isInValues(const [
+                      TransferState.queued,
+                      TransferState.running,
+                    ]),
+              ))
+              .get())
+          .isNotEmpty;
 
   $AutoUploadRunsTable get _runs => _db.autoUploadRuns;
 

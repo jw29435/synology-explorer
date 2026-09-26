@@ -255,6 +255,71 @@ void main() {
     },
   );
 
+  group('Heartbeat einer Hintergrund-Queue', () {
+    Future<void> runningUpload() async {
+      await queue.dispose();
+      final file = File('${dir.path}/a.jpg')..writeAsBytesSync([1, 2, 3]);
+      await db
+          .into(db.transfers)
+          .insert(
+            TransfersCompanion.insert(
+              serverId: 1,
+              kind: TransferKind.upload,
+              remotePath: '/photo/a.jpg',
+              localPath: file.path,
+              state: TransferState.running,
+              createdAt: DateTime.now(),
+            ),
+          );
+    }
+
+    Future<void> beat(Duration age) => db
+        .into(db.settings)
+        .insertOnConflictUpdate(
+          SettingsCompanion.insert(
+            key: TransferQueue.heartbeatKey,
+            value: '${DateTime.now().subtract(age).millisecondsSinceEpoch}',
+          ),
+        );
+
+    test('frisch: start() lässt den laufenden Upload in Ruhe', () async {
+      await runningUpload();
+      await beat(const Duration(seconds: 10));
+      queue = newQueue();
+      await queue.start();
+      await settle();
+      expect((await rows()).single.state, TransferState.running);
+      expect(api.uploads, isEmpty);
+    });
+
+    test('veraltet: start() reiht neu ein und lädt hoch', () async {
+      await runningUpload();
+      await beat(const Duration(minutes: 5));
+      queue = newQueue();
+      await queue.start();
+      await waitState(TransferState.done);
+      expect(api.uploads, hasLength(1));
+    });
+
+    test(
+      'Queue mit heartbeat schreibt ihn und räumt ihn beim Ende weg',
+      () async {
+        await queue.dispose();
+        queue = TransferQueue(db, api: api, serverId: 1, heartbeat: true);
+        Future<String?> value() async =>
+            (await (db.select(db.settings)
+                      ..where((s) => s.key.equals(TransferQueue.heartbeatKey)))
+                    .getSingleOrNull())
+                ?.value;
+        await until(() => true);
+        await settle();
+        expect(await value(), isNotNull);
+        await queue.dispose();
+        expect(await value(), isNull);
+      },
+    );
+  });
+
   test('Pause bricht ab und behält den Teil-Download', () async {
     api.gated = true;
     await download('a');

@@ -6,8 +6,8 @@ void main() {
   CameraAsset asset(String id, int seconds, {bool video = false}) =>
       CameraAsset(id, t0.add(Duration(seconds: seconds)), isVideo: video);
 
-  test('Delta: nur Neues nach dem Cursor, gleiche Sekunde über IDs', () {
-    final cursor = UploadCursor(t0, {'a'});
+  test('Delta: nichts vor der Aktivierung, Verarbeitetes nicht nochmal', () {
+    final cursor = UploadCursor(t0, done: {'a': t0});
     final pending = pendingAssets(
       [asset('c', 5), asset('a', 0), asset('b', 0), asset('old', -10)],
       cursor,
@@ -22,15 +22,30 @@ void main() {
     expect(pendingAssets(all, null, includeVideos: true), hasLength(2));
   });
 
-  test('Cursor rückt vor und merkt IDs derselben Sekunde', () {
-    var c = UploadCursor(t0, const {});
-    c = c.advance(asset('a', 0)).advance(asset('b', 0));
-    expect(c.ids, {'a', 'b'});
-    c = c.advance(asset('c', 3));
-    expect(c.created, t0.add(const Duration(seconds: 3)));
-    expect(c.ids, {'c'});
-    // Ältere Aufnahme ändert nichts.
-    expect(c.advance(asset('x', -1)), same(c));
+  test('spät sichtbare ältere Aufnahme gilt nicht als erledigt', () {
+    // B (17:42) ist verarbeitet; A wurde 17:41 aufgenommen, aber erst
+    // danach sichtbar (Nachtmodus, IS_PENDING).
+    final now = t0.add(const Duration(minutes: 3));
+    final cursor = UploadCursor(t0)
+        .advance(asset('b', 120), now)
+        .checkedAt(now);
+    expect(cursor.windowStart, t0); // Fenster reicht bis zur Aktivierung.
+    final pending = pendingAssets(
+      [asset('a', 60), asset('b', 120)],
+      cursor,
+      includeVideos: true,
+    );
+    expect([for (final a in pending) a.id], ['a']);
+  });
+
+  test('Fenster: letzte Prüfung minus einen Tag; Altes wird aufgeräumt', () {
+    final day2 = t0.add(const Duration(days: 2));
+    var c = UploadCursor(t0)
+        .advance(asset('a', 0), t0)
+        .advance(asset('b', 0), day2.subtract(const Duration(hours: 1)));
+    c = c.checkedAt(day2);
+    expect(c.windowStart, day2.subtract(UploadCursor.lookback));
+    expect(c.done.keys, {'b'}); // a vor dem Fenster verarbeitet: weg.
   });
 
   test('Zielordner nach Schema', () {
@@ -56,7 +71,7 @@ void main() {
       wifiOnly: false,
       includeVideos: true,
       chargingOnly: true,
-      cursor: UploadCursor(t0, {'a', 'b'}),
+      cursor: UploadCursor(t0, checked: t0, done: {'a': t0, 'b': t0}),
     );
     final back = AutoUploadConfig.decode(config.encode());
     expect(back.encode(), config.encode());

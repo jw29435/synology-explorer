@@ -35,6 +35,11 @@ class FakeCameraRoll implements CameraRoll {
       if (since == null || !a.created.isBefore(since)) a,
   ];
 
+  var cleared = 0;
+
+  @override
+  Future<void> clearCache() async => cleared++;
+
   @override
   Future<({File file, String name})?> original(String id) async {
     final file = File('${dir.path}/$id.jpg')
@@ -94,7 +99,12 @@ void main() {
   late Directory tmp;
   var unmetered = true;
   var connects = 0;
-  final t0 = DateTime(2026, 9, 26, 17, 40);
+  // Relativ zu jetzt: Das Abfragefenster hängt an der echten Uhr.
+  final t0 = DateTime.fromMillisecondsSinceEpoch(
+    DateTime.now().millisecondsSinceEpoch ~/ 1000 * 1000,
+  ).subtract(const Duration(hours: 1));
+  String folder(DateTime d) =>
+      '/photo/Handy/${FolderScheme.yearMonth.subfolder(d)}';
 
   AutoUploader uploader() => AutoUploader(
     repo,
@@ -124,7 +134,7 @@ void main() {
         enabled: true,
         serverId: 1,
         targetPath: '/photo/Handy',
-        cursor: UploadCursor(t0, const {}),
+        cursor: UploadCursor(t0),
       ),
     );
   });
@@ -135,30 +145,36 @@ void main() {
     tmp.deleteSync(recursive: true);
   });
 
-  test('lädt neue Aufnahmen nach Schema hoch, rückt den Cursor vor', () async {
-    camera.assets.addAll([
-      CameraAsset('old', t0.subtract(const Duration(days: 1))),
-      CameraAsset('a', t0.add(const Duration(minutes: 1))),
-      CameraAsset('b', DateTime(2026, 10, 1)),
-    ]);
-    await uploader().run(connect);
+  test(
+    'lädt neue Aufnahmen nach Schema hoch, merkt sie als erledigt',
+    () async {
+      final later = t0.add(const Duration(days: 40));
+      camera.assets.addAll([
+        CameraAsset('old', t0.subtract(const Duration(days: 1))),
+        CameraAsset('a', t0.add(const Duration(minutes: 1))),
+        CameraAsset('b', later),
+      ]);
+      await uploader().run(connect);
 
-    expect(api.uploads, [
-      '/photo/Handy/2026/09/IMG_a.jpg',
-      '/photo/Handy/2026/10/IMG_b.jpg',
-    ]);
-    final config = await repo.read();
-    expect(config.cursor!.ids, {'b'});
-    final run = (await repo.watchRuns().first).single;
-    expect((run.files, run.failed, run.bytes, run.note), (2, 0, 20, null));
-    expect(await repo.watchTotals().first, (files: 2, bytes: 20));
+      expect(api.uploads, [
+        '${folder(t0)}/IMG_a.jpg',
+        '${folder(later)}/IMG_b.jpg',
+      ]);
+      final config = await repo.read();
+      expect(config.cursor!.done.keys, {'a', 'b'});
+      expect(config.cursor!.checked, isNotNull);
+      expect(camera.cleared, 1); // Temp-Kopien weg, nichts mehr offen.
+      final run = (await repo.watchRuns().first).single;
+      expect((run.files, run.failed, run.bytes, run.note), (2, 0, 20, null));
+      expect(await repo.watchTotals().first, (files: 2, bytes: 20));
 
-    // Zweiter Lauf: nichts Neues, kein Login, kein weiterer Eintrag.
-    await uploader().run(connect);
-    expect((connects, api.uploads.length), (1, 2));
-    expect(await repo.watchRuns().first, hasLength(1));
-    expect(await repo.watchLastCheck().first, isNotNull);
-  });
+      // Zweiter Lauf: nichts Neues, kein Login, kein weiterer Eintrag.
+      await uploader().run(connect);
+      expect((connects, api.uploads.length), (1, 2));
+      expect(await repo.watchRuns().first, hasLength(1));
+      expect(await repo.watchLastCheck().first, isNotNull);
+    },
+  );
 
   test(
     '„Nur im WLAN“ ohne WLAN: wartet, ein Protokolleintrag; manuell läuft',
@@ -192,7 +208,7 @@ void main() {
         AutoUploadNote.noWritePermission,
       );
       // Cursor unverändert: Nach dem Korrigieren wird nachgeholt.
-      expect((await repo.read()).cursor!.ids, isEmpty);
+      expect((await repo.read()).cursor!.done, isEmpty);
     },
   );
 
@@ -247,5 +263,52 @@ void main() {
     await uploader().run(connect, manual: true);
     expect(connects, 0);
     expect(await repo.watchRuns().first, isEmpty);
+  });
+
+  test(
+    'spät sichtbare Aufnahme mit älterer Aufnahmezeit wird gesichert',
+    () async {
+      // A um 10:04 aufgenommen, aber erst nach B (10:05) sichtbar.
+      final a = CameraAsset('a', t0.add(const Duration(minutes: 4)));
+      final b = CameraAsset('b', t0.add(const Duration(minutes: 5)));
+      camera.assets.add(b);
+      await uploader().run(connect);
+      camera.assets.add(a);
+      await uploader().run(connect);
+
+      expect(api.uploads, [
+        '${folder(b.created)}/IMG_b.jpg',
+        '${folder(a.created)}/IMG_a.jpg',
+      ]);
+    },
+  );
+
+  test('liegengebliebene Uploads laufen ohne neue Aufnahme weiter', () async {
+    final file = File('${tmp.path}/rest.jpg')..writeAsBytesSync([1, 2, 3]);
+    // Wie nach einem beendeten Hintergrundlauf: eingereiht, nie gestartet.
+    await TransferQueue(db, serverId: 1).enqueueUpload(
+      localPath: file.path,
+      remotePath: '/photo/Handy/rest.jpg',
+      overwrite: false,
+    );
+    await uploader().run(connect);
+
+    expect(connects, 1);
+    expect(api.uploads, ['/photo/Handy/rest.jpg']);
+    final t = (await db.select(db.transfers).get()).single;
+    expect(t.state, TransferState.done);
+  });
+
+  test('Einreihen und Fortschritt in einer Transaktion', () async {
+    camera.assets.add(CameraAsset('a', t0.add(const Duration(minutes: 1))));
+    api.failWith = null;
+    // Fortschritt schreiben scheitert → auch kein Transfer eingereiht.
+    await db.customStatement(
+      "CREATE TRIGGER no_cursor BEFORE UPDATE ON settings "
+      "WHEN NEW.key = 'autoUpload' AND NEW.value LIKE '%\"a\"%' "
+      "BEGIN SELECT RAISE(ABORT, 'kaputt'); END",
+    );
+    await expectLater(uploader().run(connect), throwsA(anything));
+    expect(await db.select(db.transfers).get(), isEmpty);
   });
 }

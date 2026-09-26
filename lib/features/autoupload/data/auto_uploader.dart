@@ -70,25 +70,37 @@ class AutoUploader {
   }) async {
     final config = await _repo.read();
     if (!config.ready || !await _repo.tryLock()) return;
-    late final int run;
-    late final UploadTarget target;
+    final serverId = config.serverId!;
+    UploadTarget? target;
+    int? run;
     final ids = <int>[];
+    var leftover = const <int>[];
     try {
       if (!await _camera.hasAccess(videos: config.includeVideos)) {
         await _repo.log(note: AutoUploadNote.noPermission);
         return;
       }
+      // Zeitpunkt vor der Abfrage: Was währenddessen sichtbar wird, liegt
+      // im Fenster des nächsten Laufs.
+      final checkedAt = DateTime.now();
+      final cursor = config.cursor ?? UploadCursor(checkedAt);
       final pending = pendingAssets(
-        await _camera.since(
-          config.cursor?.created,
-          videos: config.includeVideos,
-        ),
-        config.cursor,
+        await _camera.since(cursor.windowStart, videos: config.includeVideos),
+        cursor,
         includeVideos: config.includeVideos,
       );
       await _repo.markChecked();
-      if (pending.isEmpty) return;
+      // Übrig gebliebene Uploads (Hintergrundlauf beendet) laufen auch ohne
+      // neue Aufnahme weiter.
+      leftover = await _repo.queuedUploads(serverId);
+      if (pending.isEmpty && leftover.isEmpty) {
+        await _repo.update(
+          (c) => c.copyWith(cursor: cursor.checkedAt(checkedAt)),
+        );
+        return;
+      }
 
+      final waiting = pending.length + leftover.length;
       final blocked = manual
           ? null
           : config.wifiOnly && !await isUnmetered()
@@ -97,56 +109,73 @@ class AutoUploader {
           ? AutoUploadNote.notCharging
           : null;
       if (blocked != null) {
-        await _repo.log(waiting: pending.length, note: blocked);
+        await _repo.log(waiting: waiting, note: blocked);
         return;
       }
 
+      final UploadTarget t;
       try {
-        target = await connect(config.serverId!);
-        final folder = await target.listApi.getInfo(config.targetPath!);
+        t = target = await connect(serverId);
+        final folder = await t.listApi.getInfo(config.targetPath!);
         if (folder.perm == NasPerm.readOnly) {
           throw const SynoPermissionDenied(407);
         }
       } catch (e) {
-        await _repo.log(waiting: pending.length, note: AutoUploadNote.of(e));
+        await _repo.log(waiting: waiting, note: AutoUploadNote.of(e));
         return;
       }
 
       for (final asset in pending) {
-        final original = await _camera.original(asset.id);
-        if (original != null) {
-          ids.add(
-            await target.queue.enqueueUpload(
-              localPath: original.file.path,
-              remotePath: '${config.folderFor(asset.created)}/${original.name}',
-              overwrite: false,
-              size: await original.file.length(),
-            ),
-          );
-        }
-        // Gelöschte Aufnahmen gelten als erledigt.
-        await _repo.update(
+        // Einreihen und Fortschritt in einer Transaktion: Stirbt der Prozess
+        // dazwischen, gibt es weder Lücke noch Doppel.
+        Future<void> markDone() => _repo.update(
           (c) => c.copyWith(
-            cursor:
-                c.cursor?.advance(asset) ??
-                UploadCursor(asset.created, {asset.id}),
+            cursor: (c.cursor ?? cursor).advance(asset, DateTime.now()),
+          ),
+        );
+        final original = await _camera.original(asset.id);
+        if (original == null) {
+          await markDone(); // Inzwischen gelöscht: gilt als erledigt.
+          continue;
+        }
+        ids.add(
+          await t.queue.enqueueUpload(
+            localPath: original.file.path,
+            remotePath: '${config.folderFor(asset.created)}/${original.name}',
+            overwrite: false,
+            size: await original.file.length(),
+            alsoWrite: markDone,
           ),
         );
       }
-      run = await _repo.log(files: ids.length);
+      await _repo.update(
+        (c) => c.copyWith(cursor: (c.cursor ?? cursor).checkedAt(checkedAt)),
+      );
+      if (ids.isNotEmpty) run = await _repo.log(files: ids.length);
     } finally {
       await _repo.unlock();
     }
 
     // Warten ohne Sperre: Der nächste Lauf darf schon neue Aufnahmen
     // einreihen.
-    final result = await _await(target.queue, ids, wait);
-    await _repo.finish(
-      run,
-      failed: result.failed,
-      bytes: result.bytes,
-      note: result.denied ? AutoUploadNote.noWritePermission : null,
-    );
+    final queue = target.queue..kick();
+    final result = await _await(queue, [...ids, ...leftover], wait);
+    if (run != null) {
+      await _repo.finish(
+        run,
+        failed: result.failed,
+        bytes: result.bytes,
+        note: result.denied ? AutoUploadNote.noWritePermission : null,
+      );
+    }
+    // Temporäre Kopien der Originale erst weg, wenn nichts sie mehr braucht.
+    if (!await _repo.hasOpenUploads(serverId)) {
+      try {
+        await _camera.clearCache();
+      } catch (_) {
+        // Aufräumen ist Zusatz.
+      }
+    }
   }
 
   /// Wartet, bis keiner der Transfers [ids] mehr wartet oder läuft

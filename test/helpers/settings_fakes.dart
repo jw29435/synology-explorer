@@ -42,6 +42,9 @@ class FakeAccessCameraRoll implements CameraRoll {
 
   @override
   Future<void> openSettings() async {}
+
+  @override
+  Future<void> clearCache() async {}
 }
 
 List<Override> settingsOverrides({

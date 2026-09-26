@@ -32,6 +32,10 @@ class CameraRoll {
 
   Future<void> openSettings() => PhotoManager.openSetting();
 
+  /// Löscht die Kopien, die photo_manager für [original] anlegt (iOS immer,
+  /// Android ab 10 teils). Nur aufrufen, wenn kein Upload sie mehr braucht.
+  Future<void> clearCache() => PhotoManager.clearFileCache();
+
   /// Aufnahmen seit [since] (einschließlich), älteste zuerst. Auf Android nur
   /// aus `DCIM/` (Kamera), nicht Screenshots oder Messenger-Bilder.
   Future<List<CameraAsset>> since(DateTime? since, {required bool videos}) =>

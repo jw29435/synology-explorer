@@ -19,34 +19,79 @@ enum FolderScheme {
   };
 }
 
-/// Bis wohin die Kamera-Rolle verarbeitet ist: Aufnahmezeit der zuletzt
-/// verarbeiteten Aufnahme und alle IDs mit genau dieser Zeit (mehrere
-/// Aufnahmen in derselben Sekunde).
+/// Was aus der Kamera-Rolle schon verarbeitet ist.
+///
+/// Aufnahmen tauchen nicht in Aufnahmereihenfolge auf: Android filtert nach
+/// dem Zeitpunkt, an dem die Datei sichtbar wurde (`DATE_ADDED`), meldet aber
+/// die Aufnahmezeit (`DATE_TAKEN`); Nachtmodus, lange Videos und noch
+/// schreibende Apps (`IS_PENDING`) werden erst später sichtbar. Deshalb
+/// fragt ein Lauf ab [windowStart] (letzte Prüfung minus [lookback]) und
+/// merkt sich die dort verarbeiteten IDs in [done], statt „älter als der
+/// Cursor = erledigt“ anzunehmen.
 class UploadCursor {
-  const UploadCursor(this.created, this.ids);
+  const UploadCursor(this.since, {this.checked, this.done = const {}});
 
-  final DateTime created;
-  final Set<String> ids;
+  /// Aktivierung: Ältere Aufnahmen werden nie gesichert.
+  final DateTime since;
+
+  /// Letzte vollständig abgearbeitete Abfrage.
+  final DateTime? checked;
+
+  /// Verarbeitete Asset-IDs mit dem Zeitpunkt der Verarbeitung.
+  final Map<String, DateTime> done;
+
+  // ponytail: Wer später als einen Tag nach dem letzten Lauf sichtbar wird,
+  // fällt aus dem Fenster; größeres Fenster, falls das vorkommt.
+  static const lookback = Duration(days: 1);
+
+  /// Ab hier fragt der nächste Lauf die Kamera-Rolle ab.
+  DateTime get windowStart {
+    final from = checked?.subtract(lookback);
+    return from == null || from.isBefore(since) ? since : from;
+  }
 
   bool covers(CameraAsset a) =>
-      a.created.isBefore(created) ||
-      (a.created.isAtSameMomentAs(created) && ids.contains(a.id));
+      a.created.isBefore(since) || done.containsKey(a.id);
 
-  UploadCursor advance(CameraAsset a) => a.created.isAtSameMomentAs(created)
-      ? UploadCursor(created, {...ids, a.id})
-      : a.created.isAfter(created)
-      ? UploadCursor(a.created, {a.id})
-      : this;
+  /// [a] ist verarbeitet (eingereiht oder inzwischen gelöscht).
+  UploadCursor advance(CameraAsset a, DateTime at) =>
+      UploadCursor(since, checked: checked, done: {...done, a.id: at});
+
+  /// Abfrage bis [at] vollständig abgearbeitet. IDs, die vor dem neuen
+  /// Fenster verarbeitet wurden, fragt kein Lauf mehr ab – sie fallen weg.
+  UploadCursor checkedAt(DateTime at) {
+    final keepFrom = at.subtract(lookback);
+    return UploadCursor(
+      since,
+      checked: at,
+      done: {
+        for (final MapEntry(:key, :value) in done.entries)
+          if (!value.isBefore(keepFrom)) key: value,
+      },
+    );
+  }
 
   Map<String, Object> toJson() => {
-    'created': created.millisecondsSinceEpoch,
-    'ids': [...ids],
+    'since': since.millisecondsSinceEpoch,
+    'checked': ?checked?.millisecondsSinceEpoch,
+    'done': {
+      for (final MapEntry(:key, :value) in done.entries)
+        key: value.millisecondsSinceEpoch,
+    },
   };
 
-  static UploadCursor fromJson(Map<String, dynamic> json) => UploadCursor(
-    DateTime.fromMillisecondsSinceEpoch(json['created'] as int),
-    {...(json['ids'] as List).cast<String>()},
-  );
+  static UploadCursor fromJson(Map<String, dynamic> json) {
+    DateTime at(Object? ms) => DateTime.fromMillisecondsSinceEpoch(ms! as int);
+    return UploadCursor(
+      at(json['since'] ?? json['created']),
+      checked: json['checked'] == null ? null : at(json['checked']),
+      done: {
+        for (final MapEntry(:key, :value)
+            in ((json['done'] as Map?) ?? const {}).entries)
+          key as String: at(value),
+      },
+    );
+  }
 }
 
 /// Eine Aufnahme der Kamera-Rolle (Metadaten ohne Datei).

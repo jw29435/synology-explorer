@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:battery_plus/battery_plus.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:workmanager/workmanager.dart';
 
 import '../../../core/auth/session_manager.dart';
@@ -84,7 +83,7 @@ void autoUploadDispatcher() {
 /// Uploads eingereiht und laufen im nächsten Lauf oder in der App weiter.
 Future<void> runAutoUploadInBackground() async {
   final db = openAppDatabase();
-  const storage = FlutterSecureStorage();
+  const storage = appSecureStorage;
   SessionManager? session;
   TransferQueue? queue;
   try {
@@ -106,10 +105,13 @@ Future<void> runAutoUploadInBackground() async {
         if (profile == null) throw const SynoNotFound();
         final s = session = await servers.connect(profile);
         if (!s.isLoggedIn) throw const SynoSessionExpired();
+        // Heartbeat: Die App reiht beim Start nicht neu ein, was diese
+        // Queue gerade hochlädt.
         final q = queue = TransferQueue(
           db,
           api: TransferApi(s.client),
           serverId: serverId,
+          heartbeat: true,
         );
         return (queue: q, listApi: FileStationListApi(s.client));
       },
