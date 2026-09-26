@@ -66,9 +66,8 @@ void main() {
           mockPhotoName(1),
       'Liste nach Größe sortiert',
     );
-    // E2E-Finding H-101: Nach dem Sortierwechsel bleibt die Scrollposition
-    // stehen – man landet mitten in der neu sortierten Liste statt am Anfang.
-    // expect(find.text(mockPhotoName(1)), findsOneWidget);
+    // Nach dem Sortierwechsel wieder am Listenanfang (E2E-064).
+    expect(find.text(mockPhotoName(1)), findsOneWidget);
 
     // Grid (07) und zurück zur Liste.
     await app.tap(find.byTooltip(l10n.viewGrid));

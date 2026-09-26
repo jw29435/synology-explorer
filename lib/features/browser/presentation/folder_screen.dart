@@ -520,6 +520,8 @@ class _FolderList extends ConsumerWidget {
     );
     final entries = state.entries;
     return ListView.builder(
+      // Neue Sortierung: neue Scrollposition, also wieder am Anfang.
+      key: ValueKey(ref.watch(sortProvider)),
       padding: const EdgeInsets.only(bottom: 96),
       itemCount: entries.length + (state.hasMore ? 1 : 0),
       itemBuilder: (context, i) {
@@ -591,6 +593,7 @@ class _FolderGrid extends ConsumerWidget {
     final selection = ref.watch(selectionProvider(path));
     final entries = state.entries;
     return GridView.builder(
+      key: ValueKey(ref.watch(sortProvider)),
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 96),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 3,
