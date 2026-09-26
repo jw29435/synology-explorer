@@ -31,11 +31,9 @@ void main() {
     await app.tapThen(find.text('Bonus'), find.text(_albumName));
     expect(app.location, contains('Bonus'));
     await app.waitFor(find.text('cover.jpg'));
-    // E2E-Finding: H-004 – list, getinfo und Thumb laufen parallel mit der
-    // alten SID; kommt die 119 von Thumb erst nach dem gemeinsamen Re-Login
-    // an, meldet sich die App ein zweites Mal an (SID war schon erneuert).
-    // expect(logins(app), before + 1, reason: 'genau ein Re-Login');
-    expect(logins(app), inInclusiveRange(before + 1, before + 2));
+    // E2E-063: list, getinfo und Thumb laufen parallel mit der alten SID –
+    // trotzdem genau ein Re-Login.
+    expect(logins(app), before + 1, reason: 'genau ein Re-Login');
     // Stiller Re-Login mit Geräte-Token: kein OTP.
     expect(app.nas.calls('SYNO.API.Auth', 'login').last['otp_code'], isNull);
     expect(find.text(l10n.errorSessionExpired), findsNothing);
@@ -44,9 +42,7 @@ void main() {
     final mid = logins(app);
     app.nas.control.expireSessions();
     await app.tapThen(find.text('booklet.pdf'), find.byType(PdfViewer));
-    // E2E-Finding: H-004 (s. o.)
-    // expect(logins(app), mid + 1);
-    expect(logins(app), inInclusiveRange(mid + 1, mid + 2));
+    expect(logins(app), mid + 1);
     await app.backButton();
 
     // Zurück bis zum Start (05): Zurückknopf, dann Zurück-Geste.

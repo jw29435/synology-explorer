@@ -230,6 +230,7 @@ class SynoApiClient {
     // 102 = API existiert nicht, wie DSM es selbst meldet.
     if (info == null) throw SynoException.fromCode(102, api: api);
 
+    final usedSid = sid;
     try {
       return await send(base, info);
     } on SynoException catch (e) {
@@ -239,6 +240,8 @@ class SynoApiClient {
           !SynoException.reloginCodes.contains(e.code)) {
         rethrow;
       }
+      // Ein paralleler Request hat die SID schon erneuert: nur wiederholen.
+      if (sid != null && sid != usedSid) return send(base, info);
       // Genau ein Re-Login je Request-Kette; ein zweiter Fehler geht raus.
       await relogin(e);
       return send(base, info);

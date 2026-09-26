@@ -166,6 +166,27 @@ void main() {
     await api.listShares();
   });
 
+  test('SID schon erneuert: kein zweiter Re-Login für späte 119', () async {
+    final s = await session();
+    await s.login(mockUser, mockPassword, otp: mockOtp, rememberPassword: true);
+    final fresh = s.client.sid;
+    s.client.sid = 'abgelaufen';
+    var late119 = true;
+    nas.intercept = (p) {
+      if (p['method'] != 'list_share' || !late119) return null;
+      late119 = false;
+      // Ein paralleler Request hat inzwischen neu angemeldet.
+      s.client.sid = fresh;
+      return Response.ok(
+        '{"success": false, "error": {"code": 119}}',
+        headers: {'content-type': 'application/json'},
+      );
+    };
+
+    await FileStationListApi(s.client).listShares();
+    expect(logins(), hasLength(1), reason: 'Retry mit der neuen SID reicht');
+  });
+
   test('logout ruft die API und löscht SID, DID und Passwort', () async {
     final s = await session();
     await s.login(mockUser, mockPassword, otp: mockOtp, rememberPassword: true);
