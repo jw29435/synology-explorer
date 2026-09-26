@@ -7,12 +7,16 @@ import '../../../core/utils/format.dart';
 import '../../../l10n/app_localizations.dart';
 import '../domain/server_profile.dart';
 import 'certificate_sheet.dart';
+import 'server_form_screen.dart' show ErrorBox;
 import 'server_providers.dart';
 
 /// Screen 01: Server wählen. Beim App-Start wird still mit dem zuletzt
 /// genutzten Server verbunden, wenn dafür eine SID vorliegt.
 class ServerListScreen extends ConsumerStatefulWidget {
-  const ServerListScreen({super.key});
+  const ServerListScreen({super.key, this.sessionExpired = false});
+
+  /// Hierher umgeleitet, weil der stille Re-Login scheiterte.
+  final bool sessionExpired;
 
   @override
   ConsumerState<ServerListScreen> createState() => _ServerListScreenState();
@@ -22,7 +26,10 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
   int? _connecting;
 
   Future<void> _open(ServerProfile profile) async {
-    if (ref.read(sessionProvider)?.client.profile.id == profile.id) {
+    final active = ref.read(sessionProvider);
+    if (active != null &&
+        active.client.profile.id == profile.id &&
+        active.isLoggedIn) {
       context.go('/files');
       return;
     }
@@ -147,6 +154,11 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
         children: [
+          if (widget.sessionExpired && session == null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: ErrorBox(l10n.errorSessionExpired),
+            ),
           if (servers.isEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 24),

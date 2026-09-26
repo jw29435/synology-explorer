@@ -121,6 +121,8 @@ void main() {
     // Passwort wurde inzwischen am NAS geändert.
     secure['server:7:password'] = 'veraltet';
     s.client.sid = 'abgelaufen';
+    var lost = 0;
+    s.onSessionLost = () => lost++;
     final api = FileStationListApi(s.client);
 
     await expectLater(api.listShares(), throwsA(isA<SynoSessionExpired>()));
@@ -131,6 +133,9 @@ void main() {
     expect(logins(), hasLength(2), reason: 'danach kein Login mehr');
     expect(s.isLoggedIn, isFalse);
     expect(secure, isNot(contains('server:7:password')));
+    // E2E-012: gemeldet, und die alte SID kommt beim Verbinden nicht zurück.
+    expect(lost, greaterThan(0));
+    expect(secure, isNot(contains('server:7:sid')));
   });
 
   test('abgelaufene SID ohne Passwort → sessionExpired, kein Login', () async {

@@ -21,8 +21,14 @@ import '../features/viewers/presentation/viewer_screen.dart';
 import 'shell.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
+  // Session-Wechsel (auch der Verlust nach gescheitertem Re-Login) prüft die
+  // Umleitung sofort, nicht erst bei der nächsten Navigation.
+  final sessionChanged = ValueNotifier(0);
+  ref.listen(sessionProvider, (_, _) => sessionChanged.value++);
+  ref.onDispose(sessionChanged.dispose);
   final router = GoRouter(
     initialLocation: '/servers',
+    refreshListenable: sessionChanged,
     // Dateien (inkl. Suche, Papierkorb), Viewer und Freigabelinks nur mit
     // angemeldetem Server; Offline und Transfers gehen auch ohne.
     redirect: (context, state) {
@@ -31,14 +37,17 @@ final routerProvider = Provider<GoRouter>((ref) {
           location.startsWith('/files') ||
           (location.startsWith('/view') && state.extra is! LocalView) ||
           location.startsWith('/settings/shares');
-      return needsSession && ref.read(sessionProvider) == null
-          ? '/servers'
-          : null;
+      if (!needsSession || ref.read(sessionProvider) != null) return null;
+      return ref.read(sessionProvider.notifier).expired
+          ? '/servers?expired=1'
+          : '/servers';
     },
     routes: [
       GoRoute(
         path: '/servers',
-        builder: (context, state) => const ServerListScreen(),
+        builder: (context, state) => ServerListScreen(
+          sessionExpired: state.uri.queryParameters['expired'] == '1',
+        ),
         routes: [
           GoRoute(
             path: 'new',

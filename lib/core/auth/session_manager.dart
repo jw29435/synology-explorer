@@ -21,6 +21,10 @@ class SessionManager {
 
   Future<void>? _pendingRelogin;
 
+  /// Wird gerufen, wenn der stille Re-Login scheitert: Die Session ist dann
+  /// endgültig weg, der Nutzer muss sich aktiv anmelden.
+  void Function()? onSessionLost;
+
   static const _secrets = ['sid', 'did', 'password'];
 
   static String _key(int serverId, String name) => 'server:$serverId:$name';
@@ -119,17 +123,22 @@ class SessionManager {
   /// bis sich der Nutzer aktiv anmeldet (DSM-Auto-Block).
   Future<void> _silentLogin() async {
     final password = await _read('password');
-    if (password == null) {
-      client.sid = null;
-      throw const SynoSessionExpired();
-    }
+    if (password == null) await _lose();
     try {
       await login(client.profile.user, password, rememberPassword: true);
     } on SynoException catch (e) {
       if (e is SynoNetworkError) rethrow;
-      client.sid = null;
       await _storage.delete(key: _key(_serverId, 'password'));
-      throw const SynoSessionExpired();
+      await _lose();
     }
+  }
+
+  /// Session verwerfen – auch die gespeicherte SID, sonst übernähme der
+  /// nächste Verbindungsaufbau sie wieder – und [onSessionLost] melden.
+  Future<Never> _lose() async {
+    client.sid = null;
+    await _storage.delete(key: _key(_serverId, 'sid'));
+    onSessionLost?.call();
+    throw const SynoSessionExpired();
   }
 }

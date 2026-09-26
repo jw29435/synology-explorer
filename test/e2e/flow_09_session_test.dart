@@ -64,33 +64,24 @@ void main() {
     app.nas.control
       ..expireSessions()
       ..rejectLogin = true;
+    // E2E-012: Die App verwirft die Session und führt mit Meldung zu 01.
     await app.tapThen(find.text('Bonus'), find.text(l10n.errorSessionExpired));
+    await app.settle();
+    expect(app.location, '/servers?expired=1');
     expect(logins(app), before + 1, reason: 'kein zweiter Login-Versuch');
+    expect(find.text(l10n.serverNotConnected), findsOneWidget);
 
-    // Weitere Requests versuchen keinen Login mehr (DSM-Auto-Block).
-    await app.backButton();
-    await app.tapThen(find.text('Bonus'), find.text(l10n.errorSessionExpired));
-    expect(logins(app), before + 1);
-
-    // E2E-Finding: E2E-012 – nach gescheitertem Re-Login bleibt die App in
-    // der Shell; laut CONCEPT (Abschnitt 4: „danach Abbruch mit Meldung“)
-    // und Flow-Erwartung geht es zurück zur Anmeldung (01).
-    // expect(app.location, startsWith('/servers'));
-    expect(app.location, isNot(startsWith('/servers')));
-
-    // Weg über „Anmelden“ im Fehlerpanel: Formular 02 des Servers.
-    await app.tap(find.widgetWithText(OutlinedButton, l10n.signIn));
-    expect(app.location, startsWith('/servers/'));
+    // E2E-014: Die Karte führt zur Anmeldung (02), nicht in die Fehlerseite.
     app.nas.control.rejectLogin = false;
+    await app.tapThen(find.text('Heim-NAS'), find.text(l10n.connect));
+    expect(app.location, startsWith('/servers/'));
+    expect(logins(app), before + 1, reason: 'Verbinden allein meldet nicht an');
     await app.type(find.byType(TextFormField).at(4), mockPassword);
     await app.tapThen(
       find.text(l10n.connect),
       find.text(l10n.sectionShares.toUpperCase()),
     );
     expect(logins(app), before + 2);
-    // E2E-Finding: E2E-013 – „Anmelden“ springt per go() aus dem Stack:
-    // nach dem Login landet man auf dem Dateien-Start statt im Ordner.
-    // expect(app.location, contains('Bonus'));
     expect(app.location, '/files');
     expect(await app.systemBack(), isFalse);
     await app.dispose();
@@ -104,16 +95,10 @@ void main() {
 
     app.nas.control.expireSessions();
     await app.tapThen(find.text('Bonus'), find.text(l10n.errorSessionExpired));
+    await app.settle();
     expect(logins(app), before, reason: 'ohne Passwort kein stiller Login');
-    expect(find.widgetWithText(OutlinedButton, l10n.signIn), findsOneWidget);
-    // E2E-Finding: E2E-012 – keine Rückkehr zu 01, nur die lokale Meldung.
-    // expect(app.location, startsWith('/servers'));
-
-    // Zurück bis zum Start (05) funktioniert trotzdem.
-    await app.backButton();
-    expect(app.location, startsWith('/files/folder'));
-    expect(await app.systemBack(), isTrue);
-    expect(app.location, '/files');
+    // E2E-012: zurück zu 01 mit Meldung; 01 ist jetzt der Einstieg.
+    expect(app.location, '/servers?expired=1');
     expect(await app.systemBack(), isFalse);
     await app.dispose();
   });
