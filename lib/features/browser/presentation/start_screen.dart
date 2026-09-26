@@ -10,6 +10,7 @@ import '../domain/nas_entry.dart';
 import 'browser_providers.dart';
 import 'entry_sheets.dart';
 import 'entry_widgets.dart';
+import 'file_actions.dart';
 
 /// Screen 05: Shared Folders, Favoriten, Zuletzt geöffnet.
 class StartScreen extends ConsumerWidget {
@@ -24,6 +25,8 @@ class StartScreen extends ConsumerWidget {
     final viaLan = session.client.activeUrl == Uri.parse(profile.lanUrl);
     final shares = ref.watch(sharesProvider);
     final favorites = ref.watch(favoritesProvider).value ?? const [];
+    // Favoriten des NAS-Kontos nachladen, solange 05 offen ist.
+    ref.watch(favoritesSyncProvider);
     final recent = ref.watch(recentProvider).value ?? const [];
     final text = Theme.of(context).textTheme;
 
@@ -35,19 +38,25 @@ class StartScreen extends ConsumerWidget {
           children: [
             Text(
               profile.name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: text.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
             ),
             Row(
               children: [
                 const Icon(Icons.circle, size: 8, color: AppColors.success),
                 const SizedBox(width: 6),
-                Text(
-                  l10n.serverStatus(
-                    viaLan ? l10n.viaLan : l10n.viaExternal,
-                    profile.user,
-                  ),
-                  style: text.bodyMedium?.copyWith(
-                    color: AppColors.textSecondary,
+                Flexible(
+                  child: Text(
+                    l10n.serverStatus(
+                      viaLan ? l10n.viaLan : l10n.viaExternal,
+                      profile.user,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: text.bodyMedium?.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 ),
               ],
@@ -68,13 +77,18 @@ class StartScreen extends ConsumerWidget {
           IconButton(
             tooltip: l10n.switchServer,
             icon: const Icon(Icons.dns_outlined),
-            onPressed: () => context.go('/servers'),
+            // push: 01 bekommt einen Zurückknopf, der Ordner-Stack bleibt.
+            onPressed: () => context.push('/servers'),
           ),
           const SizedBox(width: 8),
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: () => ref.refresh(sharesProvider.future),
+        onRefresh: () => Future.wait([
+          ref.refresh(sharesProvider.future),
+          // Ohne NAS bleiben die Favoriten aus dem Cache stehen.
+          ref.refresh(favoritesSyncProvider.future).catchError((_) {}),
+        ]),
         child: ListView(
           padding: const EdgeInsets.only(bottom: 24),
           children: [
@@ -83,6 +97,15 @@ class StartScreen extends ConsumerWidget {
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 4),
             ),
             ...switch (shares) {
+              AsyncData(value: []) => [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
+                  child: Text(
+                    l10n.sharesEmpty,
+                    style: TextStyle(color: AppColors.textSecondary),
+                  ),
+                ),
+              ],
               AsyncData(:final value) => [
                 for (final share in value)
                   ListTile(
@@ -130,13 +153,31 @@ class StartScreen extends ConsumerWidget {
                   itemCount: favorites.length,
                   separatorBuilder: (_, _) => const SizedBox(width: 10),
                   itemBuilder: (context, i) {
-                    final fav = favorites[i];
+                    final (:entry, :name, :broken) = favorites[i];
+                    if (broken) {
+                      // Gedämpft, nicht zu öffnen, aber entfernbar.
+                      return Tooltip(
+                        message: l10n.favoriteBroken,
+                        child: InputChip(
+                          avatar: Icon(
+                            Icons.star_border,
+                            color: AppColors.textMuted,
+                          ),
+                          label: Text(
+                            name,
+                            style: TextStyle(color: AppColors.textMuted),
+                          ),
+                          deleteButtonTooltipMessage: l10n.actionFavoriteRemove,
+                          onDeleted: () =>
+                              setNasFavorite(context, ref, entry, false),
+                        ),
+                      );
+                    }
                     return ActionChip(
                       avatar: const Icon(Icons.star, color: AppColors.accent),
-                      label: Text(fav.name),
-                      onPressed: () => fav.isDir
-                          ? openEntry(context, ref, fav)
-                          : context.push(folderLocation(parentPath(fav.path))),
+                      label: Text(name),
+                      // Ordner öffnen 06, Dateien Viewer bzw. Player.
+                      onPressed: () => openEntry(context, ref, entry),
                     );
                   },
                 ),
@@ -160,8 +201,8 @@ class StartScreen extends ConsumerWidget {
                     '${formatRelative(openedAt, l10n)}',
                     overflow: TextOverflow.ellipsis,
                   ),
-                  onTap: () =>
-                      context.push(folderLocation(parentPath(entry.path))),
+                  // Die Datei selbst öffnen (Viewer bzw. Ordner abspielen).
+                  onTap: () => openEntry(context, ref, entry),
                 ),
             ],
           ],

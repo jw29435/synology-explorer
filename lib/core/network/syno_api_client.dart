@@ -139,8 +139,9 @@ class SynoApiClient {
   /// Aktuelle Session-ID; setzt der SessionManager.
   String? sid;
 
-  /// Erneuert die Session (Re-Login). Wirft, wenn das nicht still geht.
-  Future<void> Function()? onSessionExpired;
+  /// Erneuert die Session (Re-Login) nach [cause]. Wirft, wenn das nicht
+  /// still geht.
+  Future<void> Function(SynoException cause)? onSessionExpired;
 
   Uri? get activeUrl => _baseUrl;
   Stream<Uri> get activeUrlChanges => _activeUrl.stream;
@@ -229,17 +230,23 @@ class SynoApiClient {
     // 102 = API existiert nicht, wie DSM es selbst meldet.
     if (info == null) throw SynoException.fromCode(102, api: api);
 
+    final usedSid = sid;
     try {
       return await send(base, info);
     } on SynoException catch (e) {
       final relogin = onSessionExpired;
       if (relogin == null ||
           api == 'SYNO.API.Auth' ||
-          !SynoException.reloginCodes.contains(e.code)) {
+          !SynoException.reloginCodes.contains(e.code) ||
+          // Favoriten: 105 heißt „für dieses Konto nicht verfügbar“, kein
+          // Sessionablauf – sonst ein Login bei jedem Öffnen von 05.
+          (api == 'SYNO.FileStation.Favorite' && e.code == 105)) {
         rethrow;
       }
+      // Ein paralleler Request hat die SID schon erneuert: nur wiederholen.
+      if (sid != null && sid != usedSid) return send(base, info);
       // Genau ein Re-Login je Request-Kette; ein zweiter Fehler geht raus.
-      await relogin();
+      await relogin(e);
       return send(base, info);
     }
   }
@@ -305,7 +312,7 @@ class SynoApiClient {
       }
       return total;
     } on DioException catch (e) {
-      throw _networkError(url, e);
+      throw await _downloadError(url, e, params);
     }
   });
 
@@ -349,7 +356,7 @@ class SynoApiClient {
           ? body
           : ResponseBody(data.cast(), body.statusCode, headers: body.headers);
     } on DioException catch (e) {
-      throw _networkError(url, e);
+      throw await _downloadError(url, e, params);
     }
   });
 
@@ -445,6 +452,34 @@ class SynoApiClient {
       nested?['code'] as int? ?? error?['code'] as int? ?? 100,
       api: api,
     );
+  }
+
+  /// Wie [_networkError], für `SYNO.FileStation.Download`: DSM meldet eine
+  /// fehlende Datei dort mit HTTP 502 und HTML statt JSON (SPIKE M4). Ein
+  /// Reverse-Proxy meldet Ausfälle genauso – deshalb per `getinfo` nachsehen,
+  /// ob die Datei wirklich fehlt.
+  Future<Exception> _downloadError(
+    Uri url,
+    DioException e,
+    Map<String, Object?> params,
+  ) async {
+    final path = params['path'];
+    if (e.response?.statusCode == 502 && path is String) {
+      try {
+        final data = await request('SYNO.FileStation.List', 'getinfo', {
+          'path': jsonEncode([path]),
+        }) as Map;
+        final files = data['files'] as List;
+        if (files.isNotEmpty && (files.first as Map)['code'] == 408) {
+          return const SynoNotFound(408);
+        }
+      } on SynoNotFound catch (notFound) {
+        return notFound;
+      } on SynoException {
+        // NAS selbst nicht erreichbar: bleibt ein Netzwerkfehler.
+      }
+    }
+    return _networkError(url, e);
   }
 
   Exception _networkError(Uri url, DioException e) {

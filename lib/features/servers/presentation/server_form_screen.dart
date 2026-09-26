@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/theme.dart';
 import '../../../core/auth/session_manager.dart';
 import '../../../core/network/syno_exception.dart';
+import '../../../core/storage/storage_providers.dart';
 import '../../../core/utils/format.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../browser/presentation/entry_widgets.dart';
@@ -46,6 +47,7 @@ class _ServerFormScreenState extends ConsumerState<ServerFormScreen> {
   final _password = TextEditingController();
   late int? _id = widget.serverId;
   bool _remember = false;
+  bool _rememberTouched = false;
   bool _busy = false;
   bool _validated = false;
   Object? _error;
@@ -54,6 +56,16 @@ class _ServerFormScreenState extends ConsumerState<ServerFormScreen> {
   void initState() {
     super.initState();
     if (_id case final id?) {
+      // Sonst löschte ein Speichern das gemerkte Passwort still.
+      SessionManager.hasRememberedPassword(
+        ref.read(secureStorageProvider),
+        id,
+      ).then((remembered) {
+        // Hat der Nutzer schon umgeschaltet, gilt seine Wahl.
+        if (mounted && !_rememberTouched) {
+          setState(() => _remember = remembered);
+        }
+      });
       ref.read(serversProvider.future).then((servers) {
         final p = servers.where((s) => s.id == id).firstOrNull;
         if (p == null || !mounted) return;
@@ -104,10 +116,9 @@ class _ServerFormScreenState extends ConsumerState<ServerFormScreen> {
         profile = await repo.add(profile);
         _id = profile.id;
       } else {
+        // Eine laufende Session dieses Servers bleibt aktiv, bis der neue
+        // Login klappt; activate() ersetzt sie dann.
         await repo.update(profile);
-        if (ref.read(sessionProvider)?.client.profile.id == _id) {
-          await ref.read(sessionProvider.notifier).close();
-        }
       }
       ref.invalidate(serversProvider);
       if (!mounted) return;
@@ -245,7 +256,10 @@ class _ServerFormScreenState extends ConsumerState<ServerFormScreen> {
                 title: l10n.rememberPassword,
                 subtitle: l10n.rememberPasswordHint,
                 value: _remember,
-                onChanged: (v) => setState(() => _remember = v),
+                onChanged: (v) => setState(() {
+                  _remember = v;
+                  _rememberTouched = true;
+                }),
               ),
               const SizedBox(height: 16),
               _NoticeBox(
@@ -257,10 +271,16 @@ class _ServerFormScreenState extends ConsumerState<ServerFormScreen> {
           ),
         ),
       ),
-      // Fehler direkt über dem Button, damit er ohne Scrollen sichtbar ist.
+      // Fehler direkt über dem Button, damit er ohne Scrollen sichtbar ist;
+      // beides über der Tastatur (Scaffold legt die Leiste sonst darunter).
       bottomNavigationBar: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+          padding: EdgeInsets.fromLTRB(
+            20,
+            8,
+            20,
+            16 + MediaQuery.viewInsetsOf(context).bottom,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -310,12 +330,16 @@ class _Field extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.only(bottom: 16),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SectionLabel(label, padding: const EdgeInsets.only(bottom: 8)),
-        child,
-      ],
+    // Beschriftung und Feld als ein Knoten: TalkBack liest „Name,
+    // Eingabefeld“ statt nur „Eingabefeld“.
+    child: MergeSemantics(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SectionLabel(label, padding: const EdgeInsets.only(bottom: 8)),
+          child,
+        ],
+      ),
     ),
   );
 }
@@ -484,21 +508,31 @@ class _OtpScreenState extends State<OtpScreen> {
             style: TextStyle(color: AppColors.textSecondary),
           ),
           const SizedBox(height: 24),
-          SectionLabel(l10n.otpCode, padding: const EdgeInsets.only(bottom: 8)),
-          TextField(
-            controller: _code,
-            autofocus: true,
-            keyboardType: TextInputType.number,
-            autofillHints: const [AutofillHints.oneTimeCode],
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            maxLength: 6,
-            textAlign: TextAlign.center,
-            style: AppTheme.mono(
-              const TextStyle(fontSize: 28, letterSpacing: 12),
+          MergeSemantics(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                SectionLabel(
+                  l10n.otpCode,
+                  padding: const EdgeInsets.only(bottom: 8),
+                ),
+                TextField(
+                  controller: _code,
+                  autofocus: true,
+                  keyboardType: TextInputType.number,
+                  autofillHints: const [AutofillHints.oneTimeCode],
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  maxLength: 6,
+                  textAlign: TextAlign.center,
+                  style: AppTheme.mono(
+                    const TextStyle(fontSize: 28, letterSpacing: 12),
+                  ),
+                  decoration: const InputDecoration(counterText: ''),
+                  onChanged: (_) => setState(() {}),
+                  onSubmitted: (_) => _submit(),
+                ),
+              ],
             ),
-            decoration: const InputDecoration(counterText: ''),
-            onChanged: (_) => setState(() {}),
-            onSubmitted: (_) => _submit(),
           ),
           const SizedBox(height: 16),
           _SwitchCard(
@@ -513,9 +547,15 @@ class _OtpScreenState extends State<OtpScreen> {
           ],
         ],
       ),
+      // Über der Tastatur, wie auf Screen 02.
       bottomNavigationBar: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
+          padding: EdgeInsets.fromLTRB(
+            20,
+            8,
+            20,
+            8 + MediaQuery.viewInsetsOf(context).bottom,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,

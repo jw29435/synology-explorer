@@ -73,6 +73,15 @@ class AppLocalizationsEn extends AppLocalizations {
       'The LAN address is tried first, then the external one. QuickConnect is not supported.';
 
   @override
+  String get serverManageHint => 'Press and hold to edit, sign out or delete.';
+
+  @override
+  String get serverManageAction => 'Edit, sign out, delete';
+
+  @override
+  String get serverResuming => 'Connecting to the last used server …';
+
+  @override
   String get serverEdit => 'Edit';
 
   @override
@@ -218,6 +227,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String errorCertUntrusted(String host) {
+    return '$host uses an unknown certificate. Reconnect from the server list and check it there.';
+  }
+
+  @override
   String errorCode(int code) {
     return 'Error $code from the NAS.';
   }
@@ -229,10 +243,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sectionShares => 'Shared folders';
 
   @override
+  String get sharesEmpty =>
+      'No shared folders visible. Check in DSM that the account has read access to shares and may use File Station.';
+
+  @override
   String get sectionFavorites => 'Favorites';
 
   @override
   String get sectionRecent => 'Recently opened';
+
+  @override
+  String get favoriteBroken => 'No longer on the NAS';
+
+  @override
+  String get favoritesUnavailable =>
+      'Favorites are not available for this account.';
 
   @override
   String get permReadWrite => 'Read/write';
@@ -381,6 +406,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get infoFolder => 'Folder';
+
+  @override
+  String get infoType => 'Type';
+
+  @override
+  String infoTypeValue(String ext, String kind) {
+    String _temp0 = intl.Intl.selectLogic(kind, {
+      'audio': 'audio',
+      'image': 'image',
+      'video': 'video',
+      'document': 'document',
+      'other': 'file',
+    });
+    return '$ext $_temp0';
+  }
 
   @override
   String get computeSize => 'Calculate size';
@@ -838,6 +878,26 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cleanUp => 'Clean up';
+
+  @override
+  String shareLinkDeleteConfirm(String name) {
+    return 'Delete the share link for “$name”?';
+  }
+
+  @override
+  String shareLinksCleanUpConfirm(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Delete $count expired links?',
+      one: 'Delete 1 expired link?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get shareLinkDeleteHint =>
+      'The link stops working. The files on the NAS are kept.';
 
   @override
   String get trashTitle => 'Recycle bin';

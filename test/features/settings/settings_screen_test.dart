@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:synology_explorer/app/theme.dart';
 import 'package:synology_explorer/features/settings/data/settings_repository.dart';
+import 'package:synology_explorer/features/transfers/presentation/transfer_providers.dart';
 
 import '../../helpers/app_harness.dart';
 import '../../helpers/settings_fakes.dart';
@@ -95,6 +97,29 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Manage servers'), findsOne);
     expect(find.text('Settings'), findsWidgets);
+  });
+
+  testWidgets('360 dp: Cache-Wert wird nicht gekürzt (E2E-065)', (
+    tester,
+  ) async {
+    await pumpApp(
+      tester,
+      location: '/settings',
+      overrides: [
+        ...settingsOverrides(),
+        storageUsageProvider.overrideWith(
+          (ref) async => (offline: 0, cache: 364032),
+        ),
+      ],
+    );
+    tester.view.physicalSize = const Size(1080, 3600);
+    await tester.pumpAndSettle();
+    final value = find.text('500 MB · 355,5 KB belegt');
+    expect(value, findsOne);
+    final paragraph = tester.renderObject<RenderParagraph>(
+      find.descendant(of: value, matching: find.byType(RichText)),
+    );
+    expect(paragraph.didExceedMaxLines, isFalse);
   });
 
   testWidgets('Cache-Limit: Slider speichert den Wert', (tester) async {

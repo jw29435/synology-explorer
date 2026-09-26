@@ -7,6 +7,8 @@ import '../../../core/auth/session_manager.dart';
 import '../../../core/network/certificate_pinning.dart';
 import '../../../core/network/syno_api_client.dart';
 import '../../../core/storage/app_database.dart';
+import '../../autoupload/data/auto_upload_repository.dart';
+import '../../transfers/domain/transfer.dart';
 import '../domain/server_profile.dart';
 
 class ServerRepository {
@@ -33,9 +35,34 @@ class ServerRepository {
     _db.servers,
   )..where((s) => s.id.equals(profile.id!))).write(_toCompanion(profile));
 
-  /// Löscht Profil, Favoriten, Verlauf und Secrets. Zertifikat-Pins bleiben
-  /// (je Host).
+  /// Löscht Profil, alle Daten mit dieser Server-ID (Favoriten, Verlauf,
+  /// Transfers, Offline-Dateien samt `offline/<id>/` auf der Platte,
+  /// Wiedergabepositionen, Hörbuch-Ordner, eine Auto-Upload-Konfiguration)
+  /// und Secrets. Zertifikat-Pins bleiben (je Host).
   Future<void> remove(int id) async {
+    // Offline-Ordner `<root>/<id>` aus den lokalen Pfaden ableiten
+    // (`<root>/<id><NAS-Pfad>`, siehe OfflineStore.localPathFor); fertige
+    // Dateien und `.part`-Reste laufender Downloads liegen dort.
+    final offline = await (_db.select(
+      _db.offlineFiles,
+    )..where((f) => f.serverId.equals(id))).get();
+    final downloads =
+        await (_db.select(_db.transfers)..where(
+              (t) =>
+                  t.serverId.equals(id) &
+                  t.kind.equalsValue(TransferKind.download),
+            ))
+            .get();
+    final dirs = <String>{
+      for (final (local, remote) in [
+        for (final f in offline) (f.localPath, f.remotePath),
+        for (final t in downloads) (t.localPath, t.remotePath),
+      ])
+        if (local.endsWith(remote))
+          if (local.substring(0, local.length - remote.length) case final dir
+              when dir.endsWith('/$id'))
+            dir,
+    };
     await _db.transaction(() async {
       await (_db.delete(_db.servers)..where((s) => s.id.equals(id))).go();
       await (_db.delete(
@@ -44,7 +71,27 @@ class ServerRepository {
       await (_db.delete(
         _db.recentFiles,
       )..where((r) => r.serverId.equals(id))).go();
+      await (_db.delete(
+        _db.transfers,
+      )..where((t) => t.serverId.equals(id))).go();
+      await (_db.delete(
+        _db.offlineFiles,
+      )..where((f) => f.serverId.equals(id))).go();
+      await (_db.delete(
+        _db.playbackPositions,
+      )..where((p) => p.serverId.equals(id))).go();
+      await (_db.delete(
+        _db.audiobookFolders,
+      )..where((a) => a.serverId.equals(id))).go();
+      await AutoUploadRepository(_db).forgetServer(id);
     });
+    for (final dir in dirs) {
+      try {
+        await Directory(dir).delete(recursive: true);
+      } on FileSystemException {
+        // Schon weg.
+      }
+    }
     await SessionManager.clearSecrets(_storage, id);
   }
 

@@ -73,6 +73,16 @@ class AppLocalizationsDe extends AppLocalizations {
       'Beim Start wird zuerst die LAN-Adresse probiert, dann die externe. QuickConnect wird nicht unterstützt.';
 
   @override
+  String get serverManageHint =>
+      'Gedrückt halten zum Bearbeiten, Abmelden oder Löschen.';
+
+  @override
+  String get serverManageAction => 'Bearbeiten, Abmelden, Löschen';
+
+  @override
+  String get serverResuming => 'Verbinde mit dem zuletzt genutzten Server …';
+
+  @override
   String get serverEdit => 'Bearbeiten';
 
   @override
@@ -218,6 +228,11 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String errorCertUntrusted(String host) {
+    return '$host nutzt ein unbekanntes Zertifikat. Über die Server-Liste neu verbinden und es dort prüfen.';
+  }
+
+  @override
   String errorCode(int code) {
     return 'Fehler $code vom NAS.';
   }
@@ -229,10 +244,21 @@ class AppLocalizationsDe extends AppLocalizations {
   String get sectionShares => 'Freigegebene Ordner';
 
   @override
+  String get sharesEmpty =>
+      'Keine freigegebenen Ordner sichtbar. In DSM prüfen, ob das Konto Leserechte auf Freigaben und Zugriff auf File Station hat.';
+
+  @override
   String get sectionFavorites => 'Favoriten';
 
   @override
   String get sectionRecent => 'Zuletzt geöffnet';
+
+  @override
+  String get favoriteBroken => 'Auf dem NAS nicht mehr vorhanden';
+
+  @override
+  String get favoritesUnavailable =>
+      'Favoriten sind für dieses Konto nicht verfügbar.';
 
   @override
   String get permReadWrite => 'Lesen/Schreiben';
@@ -381,6 +407,21 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get infoFolder => 'Ordner';
+
+  @override
+  String get infoType => 'Typ';
+
+  @override
+  String infoTypeValue(String ext, String kind) {
+    String _temp0 = intl.Intl.selectLogic(kind, {
+      'audio': 'Audio',
+      'image': 'Bild',
+      'video': 'Video',
+      'document': 'Dokument',
+      'other': 'Datei',
+    });
+    return '$ext-$_temp0';
+  }
 
   @override
   String get computeSize => 'Größe berechnen';
@@ -838,6 +879,26 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get cleanUp => 'Aufräumen';
+
+  @override
+  String shareLinkDeleteConfirm(String name) {
+    return 'Freigabelink für „$name“ löschen?';
+  }
+
+  @override
+  String shareLinksCleanUpConfirm(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count abgelaufene Links löschen?',
+      one: '1 abgelaufenen Link löschen?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get shareLinkDeleteHint =>
+      'Der Link funktioniert danach nicht mehr. Die Dateien auf dem NAS bleiben erhalten.';
 
   @override
   String get trashTitle => 'Papierkorb';

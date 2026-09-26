@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/auth/session_manager.dart';
@@ -35,11 +37,28 @@ class SessionNotifier extends Notifier<SessionManager?> {
   @override
   SessionManager? build() => null;
 
+  /// Die letzte Session endete, weil der stille Re-Login scheiterte (für die
+  /// Meldung auf Screen 01).
+  bool expired = false;
+
+  /// [expired] einmal abholen – die Meldung erscheint nur einmal.
+  bool consumeExpired() {
+    final e = expired;
+    expired = false;
+    return e;
+  }
+
   /// Macht [session] zur aktiven Session und merkt den Server für den
   /// nächsten App-Start.
   Future<void> activate(SessionManager session) async {
     final old = state;
     if (old != null && !identical(old, session)) await _suspendTransfers();
+    expired = false;
+    session.onSessionLost = () {
+      if (!identical(state, session)) return;
+      expired = true;
+      unawaited(close());
+    };
     state = session;
     if (old != null && !identical(old, session)) old.client.close();
     await ref

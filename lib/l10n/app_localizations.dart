@@ -218,6 +218,24 @@ abstract class AppLocalizations {
   /// **'Beim Start wird zuerst die LAN-Adresse probiert, dann die externe. QuickConnect wird nicht unterstützt.'**
   String get serverInfo;
 
+  /// No description provided for @serverManageHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Gedrückt halten zum Bearbeiten, Abmelden oder Löschen.'**
+  String get serverManageHint;
+
+  /// No description provided for @serverManageAction.
+  ///
+  /// In de, this message translates to:
+  /// **'Bearbeiten, Abmelden, Löschen'**
+  String get serverManageAction;
+
+  /// No description provided for @serverResuming.
+  ///
+  /// In de, this message translates to:
+  /// **'Verbinde mit dem zuletzt genutzten Server …'**
+  String get serverResuming;
+
   /// No description provided for @serverEdit.
   ///
   /// In de, this message translates to:
@@ -470,6 +488,12 @@ abstract class AppLocalizations {
   /// **'Das Zertifikat von {host} hat sich geändert. Verbindung blockiert.'**
   String errorCertMismatch(String host);
 
+  /// No description provided for @errorCertUntrusted.
+  ///
+  /// In de, this message translates to:
+  /// **'{host} nutzt ein unbekanntes Zertifikat. Über die Server-Liste neu verbinden und es dort prüfen.'**
+  String errorCertUntrusted(String host);
+
   /// No description provided for @errorCode.
   ///
   /// In de, this message translates to:
@@ -488,6 +512,12 @@ abstract class AppLocalizations {
   /// **'Freigegebene Ordner'**
   String get sectionShares;
 
+  /// No description provided for @sharesEmpty.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine freigegebenen Ordner sichtbar. In DSM prüfen, ob das Konto Leserechte auf Freigaben und Zugriff auf File Station hat.'**
+  String get sharesEmpty;
+
   /// No description provided for @sectionFavorites.
   ///
   /// In de, this message translates to:
@@ -499,6 +529,18 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Zuletzt geöffnet'**
   String get sectionRecent;
+
+  /// No description provided for @favoriteBroken.
+  ///
+  /// In de, this message translates to:
+  /// **'Auf dem NAS nicht mehr vorhanden'**
+  String get favoriteBroken;
+
+  /// No description provided for @favoritesUnavailable.
+  ///
+  /// In de, this message translates to:
+  /// **'Favoriten sind für dieses Konto nicht verfügbar.'**
+  String get favoritesUnavailable;
 
   /// No description provided for @permReadWrite.
   ///
@@ -757,6 +799,18 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Ordner'**
   String get infoFolder;
+
+  /// No description provided for @infoType.
+  ///
+  /// In de, this message translates to:
+  /// **'Typ'**
+  String get infoType;
+
+  /// Zeile „Typ“ im Info-Sheet, z. B. FLAC-Audio.
+  ///
+  /// In de, this message translates to:
+  /// **'{ext}-{kind, select, audio{Audio} image{Bild} video{Video} document{Dokument} other{Datei}}'**
+  String infoTypeValue(String ext, String kind);
 
   /// No description provided for @computeSize.
   ///
@@ -1423,6 +1477,24 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Aufräumen'**
   String get cleanUp;
+
+  /// No description provided for @shareLinkDeleteConfirm.
+  ///
+  /// In de, this message translates to:
+  /// **'Freigabelink für „{name}“ löschen?'**
+  String shareLinkDeleteConfirm(String name);
+
+  /// No description provided for @shareLinksCleanUpConfirm.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 abgelaufenen Link löschen?} other{{count} abgelaufene Links löschen?}}'**
+  String shareLinksCleanUpConfirm(int count);
+
+  /// No description provided for @shareLinkDeleteHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Link funktioniert danach nicht mehr. Die Dateien auf dem NAS bleiben erhalten.'**
+  String get shareLinkDeleteHint;
 
   /// No description provided for @trashTitle.
   ///

@@ -8,6 +8,29 @@ import '../../../l10n/app_localizations.dart';
 import '../../browser/domain/nas_entry.dart';
 import 'viewer_common.dart';
 
+/// Zurück (auch die Geste) beendet während [searching] nur die Suche.
+class SearchPopScope extends StatelessWidget {
+  const SearchPopScope({
+    super.key,
+    required this.searching,
+    required this.onEndSearch,
+    required this.child,
+  });
+
+  final bool searching;
+  final VoidCallback onEndSearch;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => PopScope(
+    canPop: !searching,
+    onPopInvokedWithResult: (didPop, _) {
+      if (!didPop) onEndSearch();
+    },
+    child: child,
+  );
+}
+
 /// Screen 17: PDF erst komplett in den Cache laden (mit Fortschritt), dann
 /// lokal mit pdfrx rendern – Seiten-Scroll, Zoom, Seitensprung, Text-Suche.
 class PdfViewerScreen extends ConsumerStatefulWidget {
@@ -55,96 +78,100 @@ class _PdfViewerScreenState extends ConsumerState<PdfViewerScreen> {
     setState(() => _setPage(target));
   }
 
+  void _endSearch() {
+    _searcher?.resetTextSearch();
+    setState(() => _searching = false);
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final entry = widget.entry;
     final searcher = _searching ? _searcher : null;
-    return Scaffold(
-      appBar: searcher != null
-          ? AppBar(
-              titleSpacing: 0,
-              leading: BackButton(
-                onPressed: () {
-                  searcher.resetTextSearch();
-                  setState(() => _searching = false);
-                },
-              ),
-              title: TextField(
-                autofocus: true,
-                decoration: InputDecoration(
-                  hintText: l10n.searchInDocument,
-                  border: InputBorder.none,
-                ),
-                onChanged: searcher.startTextSearch,
-              ),
-              actions: [
-                Center(
-                  child: Text(
-                    searcher.matches.isEmpty
-                        ? (searcher.isSearching || searcher.pattern == null
-                              ? ''
-                              : l10n.noMatches)
-                        : '${(searcher.currentIndex ?? 0) + 1}/'
-                              '${searcher.matches.length}',
-                    style: AppTheme.mono(),
+    return SearchPopScope(
+      searching: searcher != null,
+      onEndSearch: _endSearch,
+      child: Scaffold(
+        appBar: searcher != null
+            ? AppBar(
+                titleSpacing: 0,
+                leading: BackButton(onPressed: _endSearch),
+                title: TextField(
+                  autofocus: true,
+                  decoration: InputDecoration(
+                    hintText: l10n.searchInDocument,
+                    border: InputBorder.none,
                   ),
+                  onChanged: searcher.startTextSearch,
                 ),
-                IconButton(
-                  tooltip: l10n.previousMatch,
-                  icon: const Icon(Icons.keyboard_arrow_up),
-                  onPressed: searcher.matches.isEmpty
-                      ? null
-                      : searcher.goToPrevMatch,
-                ),
-                IconButton(
-                  tooltip: l10n.nextMatch,
-                  icon: const Icon(Icons.keyboard_arrow_down),
-                  onPressed: searcher.matches.isEmpty
-                      ? null
-                      : searcher.goToNextMatch,
-                ),
-              ],
-            )
-          : AppBar(
-              titleSpacing: 0,
-              title: ViewerTitle(entry.name, entrySubtitle(entry, l10n)),
-              actions: [
-                IconButton(
-                  tooltip: l10n.searchInDocument,
-                  icon: const Icon(Icons.search),
-                  onPressed: _searcher == null
-                      ? null
-                      : () => setState(() => _searching = true),
-                ),
-                ShareButton(entry, local: widget.local),
-                const SizedBox(width: 8),
+                actions: [
+                  Center(
+                    child: Text(
+                      searcher.matches.isEmpty
+                          ? (searcher.isSearching || searcher.pattern == null
+                                ? ''
+                                : l10n.noMatches)
+                          : '${(searcher.currentIndex ?? 0) + 1}/'
+                                '${searcher.matches.length}',
+                      style: AppTheme.mono(),
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: l10n.previousMatch,
+                    icon: const Icon(Icons.keyboard_arrow_up),
+                    onPressed: searcher.matches.isEmpty
+                        ? null
+                        : searcher.goToPrevMatch,
+                  ),
+                  IconButton(
+                    tooltip: l10n.nextMatch,
+                    icon: const Icon(Icons.keyboard_arrow_down),
+                    onPressed: searcher.matches.isEmpty
+                        ? null
+                        : searcher.goToNextMatch,
+                  ),
+                ],
+              )
+            : AppBar(
+                titleSpacing: 0,
+                title: ViewerTitle(entry.name, entrySubtitle(entry, l10n)),
+                actions: [
+                  IconButton(
+                    tooltip: l10n.searchInDocument,
+                    icon: const Icon(Icons.search),
+                    onPressed: _searcher == null
+                        ? null
+                        : () => setState(() => _searching = true),
+                  ),
+                  ShareButton(entry, local: widget.local),
+                  const SizedBox(width: 8),
+                ],
+              ),
+        body: CachedFileView(
+          entry: entry,
+          local: widget.local,
+          builder: (context, file) => PdfViewer.file(
+            file.path,
+            controller: _controller,
+            params: PdfViewerParams(
+              backgroundColor: AppColors.background,
+              onViewerReady: (document, controller) => setState(() {
+                _pages = document.pages.length;
+                _setPage(controller.pageNumber ?? 1);
+                _searcher ??= PdfTextSearcher(controller)..addListener(_update);
+              }),
+              onPageChanged: (page) {
+                if (page != null) setState(() => _setPage(page));
+              },
+              pagePaintCallbacks: [
+                (canvas, rect, page) =>
+                    _searcher?.pageTextMatchPaintCallback(canvas, rect, page),
               ],
             ),
-      body: CachedFileView(
-        entry: entry,
-        local: widget.local,
-        builder: (context, file) => PdfViewer.file(
-          file.path,
-          controller: _controller,
-          params: PdfViewerParams(
-            backgroundColor: AppColors.background,
-            onViewerReady: (document, controller) => setState(() {
-              _pages = document.pages.length;
-              _setPage(controller.pageNumber ?? 1);
-              _searcher ??= PdfTextSearcher(controller)..addListener(_update);
-            }),
-            onPageChanged: (page) {
-              if (page != null) setState(() => _setPage(page));
-            },
-            pagePaintCallbacks: [
-              (canvas, rect, page) =>
-                  _searcher?.pageTextMatchPaintCallback(canvas, rect, page),
-            ],
           ),
         ),
+        bottomNavigationBar: _pages == 0 ? null : _pageBar(l10n),
       ),
-      bottomNavigationBar: _pages == 0 ? null : _pageBar(l10n),
     );
   }
 

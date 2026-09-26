@@ -203,3 +203,19 @@ false, CreateFolder → 407). Gemessen wurde deshalb die Trefferliste der Suche 
 - Nach dem Sperren per Power-Taste verlangt das Gerät die PIN; weitere Bedienung per adb war deshalb nicht möglich.
   Die App-Daten wurden beim Schema-Wechsel gelöscht (`pm clear`), die Anmeldung muss am Gerät neu erfolgen.
 - Offen auf dem OnePlus: 15-min-Hintergrundlauf, Sperrbildschirm, Kopfhörer, App-Kill, WLAN→Mobil (SIM vorhanden).
+
+## Nachtrag E2E (26.09.2026)
+
+Capability-Matrix des Testkontos: `docs/E2E-RUN.md`, Abschnitt „Phase 1“. Neu gegenüber den bisherigen Nachträgen:
+
+- **Range nur bei GET.** `Download mode=open` per POST ignoriert den `Range`-Header und liefert `200` mit der ganzen
+  Datei; per GET kommt `206`. Der Client lädt Downloads und Streams per GET – so muss es bleiben.
+- **Favorite:** `list` akzeptiert `status_filter=all` und `additional=["real_path","perm"]`; Einträge haben
+  `name, path, isdir, status, additional`. `add` nimmt `path`/`name` roh **und** als JSON-Array. Zweites `add` auf
+  denselben Pfad → 800 mit `errors: [{code: 800, name, path}]`. `delete` auf einen Pfad ohne Favorit → success.
+  `add` auf eine **Datei** oder einen nicht existierenden Pfad → success, danach `status: "broken"`, `isdir: false` –
+  Favoriten sind in DSM nur für Ordner gedacht.
+- **Upload** in einen fehlenden Ordner: 408 ohne `create_parents`, 407 mit `create_parents=true` (keine Schreibrechte).
+- **CopyMove `status`** auf einen fehlenden Quellpfad → 599 schon nach 2 s (Task fertig und weg), kein `FAIL`-Status.
+- **Sharing `delete`** mit unbekannter ID → 401 mit `errors: [{id}]`.
+- **DirSize** nach `stop` → `status` 599.

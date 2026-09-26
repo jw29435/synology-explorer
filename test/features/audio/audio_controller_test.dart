@@ -540,6 +540,28 @@ void main() {
     },
   );
 
+  test(
+    'Anmelden/Abmelden beendet nur Streaming, nicht Offline-Audio (E2E-046)',
+    () async {
+      final session = container.read(sessionProvider.notifier);
+      final local = File('${Directory.systemTemp.path}/01 Ebbe.flac');
+      await controller.playLocal(entry(ebbe), local, 1);
+      await settle();
+
+      await session.close();
+      await session.activate(_connectableSession());
+      await settle();
+      expect(state().track!.path, ebbe);
+      expect(state().playing, isTrue);
+
+      await controller.playFolder(album, startPath: strandgut);
+      await settle();
+      await session.activate(_connectableSession());
+      await settle();
+      expect(state().active, isFalse, reason: 'Streaming vom alten Server');
+    },
+  );
+
   test('„Nur WLAN“ bremst Offline-Audio nicht (Zug ohne WLAN)', () async {
     await repo.setWifiOnly(true);
     net.now = [ConnectivityResult.none];

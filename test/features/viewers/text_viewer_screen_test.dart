@@ -94,6 +94,24 @@ void main() {
     expect(find.byTooltip('Teilen'), findsOne);
   });
 
+  testWidgets('E2E-033: fehlende Offline-Datei zeigt Fehler statt Spinner', (
+    tester,
+  ) async {
+    final app = await pumpApp(tester, location: '/offline', loggedIn: false);
+    final entry = _text('weg.md', 10);
+    routerOf(app.container).push(
+      viewerLocation(entry.path),
+      extra: LocalView(entry, LocalFile(File('test/fixtures/text/weg.md'), 1)),
+    );
+    await pumpWithIo(
+      tester,
+      until: () => find.byType(CircularProgressIndicator).evaluate().isEmpty,
+    );
+    await tester.pumpAndSettle();
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+    expect(find.text('Erneut versuchen'), findsOne);
+  });
+
   test('16: Zeitformat des Players', () {
     expect(formatDuration(const Duration(seconds: 102)), '1:42');
     expect(formatDuration(const Duration(hours: 1, seconds: 5)), '1:00:05');

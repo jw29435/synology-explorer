@@ -218,10 +218,16 @@ class AudioController extends Notifier<AudioState> {
 
   @override
   AudioState build() {
-    // Server gewechselt oder abgemeldet: Wiedergabe endet. Positionen sind
-    // höchstens 5 s alt; sichern ginge hier schon auf den neuen Server.
+    // Server gewechselt, angemeldet oder abgemeldet: Streaming vom alten
+    // Server endet. Offline-Kopien spielen weiter, sie brauchen keine
+    // Session. Positionen sind höchstens 5 s alt; sichern ginge hier schon
+    // auf den neuen Server.
     ref.listen(sessionProvider, (previous, next) {
-      if (!identical(previous, next)) unawaited(clear(save: false));
+      if (identical(previous, next)) return;
+      if (state.queue.tracks.every((t) => _localFiles.containsKey(t.path))) {
+        return;
+      }
+      unawaited(clear(save: false));
     });
     ref.onDispose(_detach);
     return const AudioState();

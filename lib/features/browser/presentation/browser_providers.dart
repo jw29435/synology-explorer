@@ -9,6 +9,7 @@ import '../../../core/network/syno_exception.dart';
 import '../../../core/storage/storage_providers.dart';
 import '../../servers/presentation/server_providers.dart';
 import '../../settings/presentation/settings_providers.dart';
+import '../data/favorite_api.dart';
 import '../data/file_station_list_api.dart';
 import '../data/file_station_ops_api.dart';
 import '../data/file_station_task_api.dart';
@@ -54,9 +55,26 @@ final sharesProvider = FutureProvider<List<NasEntry>>(
   (ref) => ref.watch(fileStationListApiProvider).listShares(),
 );
 
-final favoritesProvider = StreamProvider<List<NasEntry>>(
+final favoriteApiProvider = Provider<FileStationFavoriteApi>(
+  (ref) => FileStationFavoriteApi(_client(ref)),
+);
+
+/// Favoriten aus dem Cache (sofort, auch offline); [favoritesSyncProvider]
+/// lädt sie vom NAS nach.
+final favoritesProvider = StreamProvider<List<FavoriteItem>>(
   (ref) =>
       ref.watch(localLibraryProvider).favorites(ref.watch(serverIdProvider)),
+);
+
+/// Holt die Favoriten des NAS-Kontos in den Cache – beim Öffnen von 05 und
+/// per Pull-to-Refresh. Scheitert das, bleibt der Cache stehen.
+final favoritesSyncProvider = FutureProvider.autoDispose<void>(
+  (ref) => ref
+      .watch(localLibraryProvider)
+      .syncFavorites(
+        ref.watch(serverIdProvider),
+        ref.watch(favoriteApiProvider),
+      ),
 );
 
 final isFavoriteProvider = StreamProvider.autoDispose.family<bool, String>(
@@ -344,6 +362,11 @@ final recycleBinProvider = FutureProvider.autoDispose
         return RecycleBin.available;
       } on SynoNotFound {
         return RecycleBin.missing;
+      } on SynoNetworkError {
+        // Netz/Session sagen nichts über den Papierkorb: als Fehler melden.
+        rethrow;
+      } on SynoSessionExpired {
+        rethrow;
       } on SynoException {
         return RecycleBin.unknown;
       }

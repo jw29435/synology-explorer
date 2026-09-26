@@ -27,6 +27,9 @@
   "viaExternal": "extern",
   "serverNotConnected": "Nicht verbunden",
   "serverInfo": "Beim Start wird zuerst die LAN-Adresse probiert, dann die externe. QuickConnect wird nicht unterstützt.",
+  "serverManageHint": "Gedrückt halten zum Bearbeiten, Abmelden oder Löschen.",
+  "serverManageAction": "Bearbeiten, Abmelden, Löschen",
+  "serverResuming": "Verbinde mit dem zuletzt genutzten Server …",
   "serverEdit": "Bearbeiten",
   "serverLogout": "Abmelden",
   "serverDelete": "Löschen",
@@ -97,6 +100,14 @@
     }
   },
   "errorCertMismatch": "Das Zertifikat von {host} hat sich geändert. Verbindung blockiert.",
+  "errorCertUntrusted": "{host} nutzt ein unbekanntes Zertifikat. Über die Server-Liste neu verbinden und es dort prüfen.",
+  "@errorCertUntrusted": {
+    "placeholders": {
+      "host": {
+        "type": "String"
+      }
+    }
+  },
   "@errorCertMismatch": {
     "placeholders": {
       "host": {
@@ -114,8 +125,11 @@
   },
   "errorGeneric": "Unerwarteter Fehler.",
   "sectionShares": "Freigegebene Ordner",
+  "sharesEmpty": "Keine freigegebenen Ordner sichtbar. In DSM prüfen, ob das Konto Leserechte auf Freigaben und Zugriff auf File Station hat.",
   "sectionFavorites": "Favoriten",
   "sectionRecent": "Zuletzt geöffnet",
+  "favoriteBroken": "Auf dem NAS nicht mehr vorhanden",
+  "favoritesUnavailable": "Favoriten sind für dieses Konto nicht verfügbar.",
   "permReadWrite": "Lesen/Schreiben",
   "permReadOnly": "Nur Lesen",
   "serverStatus": "{via} · {user}",
@@ -207,6 +221,15 @@
   "infoOwner": "Besitzer",
   "infoPerm": "Rechte",
   "infoFolder": "Ordner",
+  "infoType": "Typ",
+  "infoTypeValue": "{ext}-{kind, select, audio{Audio} image{Bild} video{Video} document{Dokument} other{Datei}}",
+  "@infoTypeValue": {
+    "description": "Zeile „Typ“ im Info-Sheet, z. B. FLAC-Audio.",
+    "placeholders": {
+      "ext": {"type": "String"},
+      "kind": {"type": "String"}
+    }
+  },
   "computeSize": "Größe berechnen",
   "dirSizeResult": "{size} · {files} Dateien · {dirs} Ordner",
   "@dirSizeResult": {
@@ -557,6 +580,23 @@
   "shareLinksFooter": "Quelle: SYNO.FileStation.Sharing list. Ablauf oder Passwort ändern geht über Link neu erstellen.",
   "passwordBadge": "Passwort",
   "cleanUp": "Aufräumen",
+  "shareLinkDeleteConfirm": "Freigabelink für „{name}“ löschen?",
+  "@shareLinkDeleteConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "shareLinksCleanUpConfirm": "{count, plural, =1{1 abgelaufenen Link löschen?} other{{count} abgelaufene Links löschen?}}",
+  "@shareLinksCleanUpConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shareLinkDeleteHint": "Der Link funktioniert danach nicht mehr. Die Dateien auf dem NAS bleiben erhalten.",
   "trashTitle": "Papierkorb",
   "trashEmptyAction": "Leeren",
   "trashChecking": "Prüfe Papierkörbe …",

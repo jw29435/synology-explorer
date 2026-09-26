@@ -46,21 +46,23 @@ void main() {
     expect(names, isNot(contains('f0.mp3')), reason: 'älteste fällt raus');
   });
 
-  test('Favoriten setzen und entfernen', () async {
+  test('lokale Datei-Favoriten setzen und entfernen', () async {
     final db = AppDatabase(NativeDatabase.memory());
     addTearDown(db.close);
     final repo = LocalLibraryRepository(db);
-    const folder = NasEntry(
-      path: '/photo/Urlaub 2026',
-      name: 'Urlaub 2026',
-      isDir: true,
-      type: NasFileType.folder,
+    const file = NasEntry(
+      path: '/photo/Urlaub 2026/strand.jpg',
+      name: 'strand.jpg',
+      isDir: false,
+      type: NasFileType.image,
     );
-    await repo.setFavorite(1, folder, true);
-    await repo.setFavorite(1, folder, true);
-    expect(await repo.favorites(1).first, [folder]);
-    expect(await repo.isFavorite(1, folder.path).first, isTrue);
-    await repo.setFavorite(1, folder, false);
+    await repo.setFavorite(1, file, true);
+    await repo.setFavorite(1, file, true);
+    expect(await repo.favorites(1).first, [
+      (entry: file, name: 'strand.jpg', broken: false),
+    ]);
+    expect(await repo.isFavorite(1, file.path).first, isTrue);
+    await repo.setFavorite(1, file, false);
     expect(await repo.favorites(1).first, isEmpty);
   });
 

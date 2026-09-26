@@ -53,14 +53,17 @@ void main() {
     await tester.scrollUntilVisible(find.text('Halle reservieren'), 200);
     expect(find.text('Halle reservieren'), findsOne);
 
-    // Herunterladen kommt mit M4 und ist bis dahin aus.
-    final download = tester.widget<OutlinedButton>(
-      find.ancestor(
-        of: find.text('Herunterladen'),
-        matching: find.byWidgetPredicate((w) => w is OutlinedButton),
-      ),
+    // E2E-004: „Herunterladen“ reiht die Datei wie Sheet 09 in die Queue.
+    await tester.tap(find.text('Herunterladen'));
+    await pumpWithIo(tester);
+    final transfers = await tester.runAsync(
+      () => app.db.select(app.db.transfers).get(),
     );
-    expect(download.onPressed, isNull);
+    expect(transfers!.single.remotePath, entry.path);
+    expect(find.text('1 Download eingereiht.'), findsOne);
+    ScaffoldMessenger.of(tester.element(find.byType(SnackBar)))
+        .removeCurrentSnackBar();
+    await tester.pumpAndSettle();
 
     // „Aa“ vergrößert die Schrift.
     final before = tester.getSize(find.text('Halle reservieren')).height;

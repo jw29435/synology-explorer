@@ -43,7 +43,10 @@ class ViewerTitle extends StatelessWidget {
         Text(
           subtitle,
           overflow: TextOverflow.ellipsis,
-          style: text.bodyMedium?.copyWith(color: AppColors.textSecondary),
+          // Aus dem Theme: über Bild/Video gilt immer das dunkle (E2E-047).
+          style: text.bodyMedium?.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
       ],
     );

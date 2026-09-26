@@ -21,6 +21,10 @@ class SessionManager {
 
   Future<void>? _pendingRelogin;
 
+  /// Wird gerufen, wenn der stille Re-Login scheitert: Die Session ist dann
+  /// endgültig weg, der Nutzer muss sich aktiv anmelden.
+  void Function()? onSessionLost;
+
   static const _secrets = ['sid', 'did', 'password'];
 
   static String _key(int serverId, String name) => 'server:$serverId:$name';
@@ -31,6 +35,12 @@ class SessionManager {
   ) => Future.wait([
     for (final name in _secrets) storage.delete(key: _key(serverId, name)),
   ]);
+
+  /// Ob für [serverId] ein Passwort gemerkt ist („Passwort merken“).
+  static Future<bool> hasRememberedPassword(
+    FlutterSecureStorage storage,
+    int serverId,
+  ) => storage.containsKey(key: _key(serverId, 'password'));
 
   int get _serverId =>
       client.profile.id ?? (throw StateError('Profil nicht gespeichert'));
@@ -100,9 +110,22 @@ class SessionManager {
   }
 
   /// Parallele Requests mit abgelaufener SID teilen sich einen Re-Login.
-  Future<void> _relogin() => _pendingRelogin ??= _silentLogin().whenComplete(
-    () => _pendingRelogin = null,
-  );
+  ///
+  /// 105 („keine Berechtigung“) kann auch ein reiner Rechtefehler sein: Ohne
+  /// gemerktes Passwort bleibt die Session dann bestehen und der Fehler geht
+  /// als solcher raus, statt den Nutzer abzumelden.
+  Future<void> _relogin(SynoException cause) async {
+    final before = client.sid;
+    if (cause is SynoPermissionDenied && !await _hasPassword()) throw cause;
+    // Während des Nachsehens hat ein paralleler Request neu angemeldet.
+    if (client.sid != before && client.sid != null) return;
+    return _pendingRelogin ??= _silentLogin().whenComplete(
+      () => _pendingRelogin = null,
+    );
+  }
+
+  Future<bool> _hasPassword() =>
+      _storage.containsKey(key: _key(_serverId, 'password'));
 
   /// Scheitert der stille Login an der Anmeldung selbst (Passwort geändert,
   /// Konto gesperrt, OTP nötig), wird das gemerkte Passwort verworfen: Jeder
@@ -110,17 +133,22 @@ class SessionManager {
   /// bis sich der Nutzer aktiv anmeldet (DSM-Auto-Block).
   Future<void> _silentLogin() async {
     final password = await _read('password');
-    if (password == null) {
-      client.sid = null;
-      throw const SynoSessionExpired();
-    }
+    if (password == null) await _lose();
     try {
       await login(client.profile.user, password, rememberPassword: true);
     } on SynoException catch (e) {
       if (e is SynoNetworkError) rethrow;
-      client.sid = null;
       await _storage.delete(key: _key(_serverId, 'password'));
-      throw const SynoSessionExpired();
+      await _lose();
     }
+  }
+
+  /// Session verwerfen – auch die gespeicherte SID, sonst übernähme der
+  /// nächste Verbindungsaufbau sie wieder – und [onSessionLost] melden.
+  Future<Never> _lose() async {
+    client.sid = null;
+    await _storage.delete(key: _key(_serverId, 'sid'));
+    onSessionLost?.call();
+    throw const SynoSessionExpired();
   }
 }

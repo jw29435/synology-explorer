@@ -168,9 +168,7 @@ class _EntryActionsSheet extends ConsumerWidget {
               favorite ? Icons.star : Icons.star_border,
               favorite ? l10n.actionFavoriteRemove : l10n.actionFavoriteAdd,
               color: favorite ? AppColors.accent : null,
-              onTap: () => ref
-                  .read(localLibraryProvider)
-                  .setFavorite(ref.read(serverIdProvider), entry, !favorite),
+              onTap: () => toggleFavorite(outer, outerRef, entry, !favorite),
             ),
             item(
               Icons.link,
@@ -297,8 +295,28 @@ class _EntryInfoSheet extends ConsumerWidget {
     final e = info.value ?? entry;
     final locale = l10n.localeName;
 
+    final ext = e.name.contains('.')
+        ? e.name.substring(e.name.lastIndexOf('.') + 1).toUpperCase()
+        : '';
     final rows = <(String, Widget)>[
       (l10n.infoPath, Text(e.path, style: AppTheme.mono())),
+      if (e.isDir)
+        (l10n.infoType, Text(l10n.infoFolder))
+      else if (ext.isNotEmpty)
+        (
+          l10n.infoType,
+          Text(
+            l10n.infoTypeValue(ext, switch (e.type) {
+              NasFileType.audio => 'audio',
+              NasFileType.image => 'image',
+              NasFileType.video => 'video',
+              NasFileType.pdf ||
+              NasFileType.docx ||
+              NasFileType.text => 'document',
+              _ => 'other',
+            }),
+          ),
+        ),
       if (e.isDir)
         (l10n.infoSize, _DirSizeRow(path: e.path))
       else if (e.size case final size?)

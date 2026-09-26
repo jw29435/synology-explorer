@@ -275,10 +275,19 @@ class _FileRow extends ConsumerWidget {
       subtitle: changed == null
           ? null
           : InkWell(
+              key: const Key('offline-changed'),
               onTap: () => _update(context, ref, changed),
-              child: Text(
-                l10n.offlineChanged,
-                style: TextStyle(color: AppColors.errorSoft),
+              // Touch-Ziel ≥ 44 px.
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(minHeight: 44),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  widthFactor: 1,
+                  child: Text(
+                    l10n.offlineChanged,
+                    style: TextStyle(color: AppColors.errorSoft),
+                  ),
+                ),
               ),
             ),
       trailing: onRemove != null

@@ -13,6 +13,7 @@ import '../../viewers/presentation/viewer_screen.dart';
 import '../../audio/presentation/audio_widgets.dart';
 import '../data/thumbnail_cache.dart';
 import '../domain/nas_entry.dart';
+import '../../servers/presentation/server_providers.dart';
 import 'browser_providers.dart';
 
 /// Route des Ordner-Screens (06/07) für [path].
@@ -208,8 +209,14 @@ class ErrorPanel extends ConsumerWidget {
           OutlinedButton(
             onPressed: expired
                 ? () {
-                    final id = ref.read(serverIdProvider);
-                    context.go('/servers/$id');
+                    // Session schon verworfen (E2E-012): Server-Liste.
+                    // Sonst Formular per push, Zurück führt hierher.
+                    final session = ref.read(sessionProvider);
+                    if (session == null) {
+                      context.go('/servers');
+                    } else {
+                      context.push('/servers/${session.client.profile.id}');
+                    }
                   }
                 : onRetry,
             child: Text(expired ? l10n.signIn : l10n.retry),

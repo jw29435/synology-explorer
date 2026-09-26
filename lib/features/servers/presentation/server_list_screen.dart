@@ -7,12 +7,16 @@ import '../../../core/utils/format.dart';
 import '../../../l10n/app_localizations.dart';
 import '../domain/server_profile.dart';
 import 'certificate_sheet.dart';
+import 'server_form_screen.dart' show ErrorBox;
 import 'server_providers.dart';
 
 /// Screen 01: Server wählen. Beim App-Start wird still mit dem zuletzt
 /// genutzten Server verbunden, wenn dafür eine SID vorliegt.
 class ServerListScreen extends ConsumerStatefulWidget {
-  const ServerListScreen({super.key});
+  const ServerListScreen({super.key, this.sessionExpired = false});
+
+  /// Hierher umgeleitet, weil der stille Re-Login scheiterte.
+  final bool sessionExpired;
 
   @override
   ConsumerState<ServerListScreen> createState() => _ServerListScreenState();
@@ -21,9 +25,21 @@ class ServerListScreen extends ConsumerStatefulWidget {
 class _ServerListScreenState extends ConsumerState<ServerListScreen> {
   int? _connecting;
 
+  /// Nutzer wartet nicht auf die stille Verbindung beim Start (bis zum
+  /// Timeout, bei unerreichbarem NAS 15 s).
+  bool _skipStartup = false;
+
   Future<void> _open(ServerProfile profile) async {
-    if (ref.read(sessionProvider)?.client.profile.id == profile.id) {
-      context.go('/files');
+    final active = ref.read(sessionProvider);
+    if (active != null &&
+        active.client.profile.id == profile.id &&
+        active.isLoggedIn) {
+      // Aus der Shell geöffnet: zurück an die alte Stelle.
+      if (context.canPop()) {
+        context.pop();
+      } else {
+        context.go('/files');
+      }
       return;
     }
     setState(() => _connecting = profile.id);
@@ -88,6 +104,8 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
         context.push('/servers/${profile.id}');
       case 'logout':
         await ref.read(sessionProvider.notifier).logout();
+        // Unter einem gepushten 01 liegt die Shell der alten Session.
+        if (mounted) context.go('/servers');
       case 'delete':
         final ok = await showDialog<bool>(
           context: context,
@@ -112,6 +130,7 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
         if (active) await ref.read(sessionProvider.notifier).logout();
         await ref.read(serverRepositoryProvider).remove(profile.id!);
         ref.invalidate(serversProvider);
+        if (active && mounted) context.go('/servers');
     }
   }
 
@@ -119,12 +138,33 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     ref.listen(startupProvider, (_, next) {
-      if (next.value == true) context.go('/files');
+      if (next.value == true && !_skipStartup) context.go('/files');
     });
-    if (ref.watch(startupProvider).isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    if (ref.watch(startupProvider).isLoading && !_skipStartup) {
+      return Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const CircularProgressIndicator(),
+              const SizedBox(height: 20),
+              Text(
+                l10n.serverResuming,
+                textAlign: TextAlign.center,
+                style: TextStyle(color: AppColors.textSecondary),
+              ),
+              const SizedBox(height: 12),
+              TextButton(
+                onPressed: () => setState(() => _skipStartup = true),
+                child: Text(l10n.cancel),
+              ),
+            ],
+          ),
+        ),
+      );
     }
-    final servers = ref.watch(serversProvider).value ?? const [];
+    final serversAsync = ref.watch(serversProvider);
+    final servers = serversAsync.value ?? const [];
     final session = ref.watch(sessionProvider);
     final text = Theme.of(context).textTheme;
 
@@ -136,6 +176,20 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
           style: text.headlineMedium?.copyWith(fontWeight: FontWeight.w700),
         ),
         actions: [
+          // Ohne Session sonst unerreichbar: Offline-Dateien (auch ohne Netz)
+          // und Einstellungen.
+          if (session == null) ...[
+            IconButton(
+              tooltip: l10n.tabOffline,
+              icon: const Icon(Icons.cloud_download_outlined),
+              onPressed: () => context.go('/offline'),
+            ),
+            IconButton(
+              tooltip: l10n.tabSettings,
+              icon: const Icon(Icons.settings_outlined),
+              onPressed: () => context.go('/settings'),
+            ),
+          ],
           IconButton(
             tooltip: l10n.serverAdd,
             icon: const Icon(Icons.add),
@@ -147,7 +201,15 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
         children: [
-          if (servers.isEmpty)
+          if (widget.sessionExpired && session == null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: ErrorBox(l10n.errorSessionExpired),
+            ),
+          if (serversAsync.hasError && !serversAsync.hasValue)
+            // Eine kaputte DB ist nicht „kein Server“.
+            ErrorBox(describeError(serversAsync.error!, l10n))
+          else if (servers.isEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 24),
               child: Text(
@@ -180,7 +242,9 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
                 const SizedBox(width: 14),
                 Expanded(
                   child: Text(
-                    l10n.serverInfo,
+                    servers.isEmpty
+                        ? l10n.serverInfo
+                        : '${l10n.serverInfo} ${l10n.serverManageHint}',
                     style: TextStyle(color: AppColors.textSecondary),
                   ),
                 ),
@@ -236,92 +300,96 @@ class _ServerCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
         ),
         clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
-          onLongPress: onLongPress,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: active
-                            ? AppColors.accentSurface
-                            : AppColors.surfaceRaised,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        Icons.dns_outlined,
-                        color: active
-                            ? AppColors.accent
-                            : AppColors.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            profile.name,
-                            style: text.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          Text(
-                            profile.user,
-                            style: TextStyle(color: AppColors.textSecondary),
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (connecting)
-                      const SizedBox.square(
-                        dimension: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    else
-                      const Icon(Icons.chevron_right),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.circle,
-                      size: 8,
-                      color: active ? AppColors.success : AppColors.textMuted,
-                    ),
-                    const SizedBox(width: 8),
-                    if (url != null) ...[
-                      Text(
-                        l10n.serverConnectedVia(
-                          viaLan ? l10n.viaLan : l10n.viaExternal,
+        // TalkBack: „doppeltippen und halten, um … zu …“.
+        child: Semantics(
+          onLongPressHint: l10n.serverManageAction,
+          child: InkWell(
+            onTap: onTap,
+            onLongPress: onLongPress,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: active
+                              ? AppColors.accentSurface
+                              : AppColors.surfaceRaised,
+                          borderRadius: BorderRadius.circular(12),
                         ),
+                        child: Icon(
+                          Icons.dns_outlined,
+                          color: active
+                              ? AppColors.accent
+                              : AppColors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              profile.name,
+                              style: text.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            Text(
+                              profile.user,
+                              style: TextStyle(color: AppColors.textSecondary),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (connecting)
+                        const SizedBox.square(
+                          dimension: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      else
+                        const Icon(Icons.chevron_right),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.circle,
+                        size: 8,
+                        color: active ? AppColors.success : AppColors.textMuted,
                       ),
                       const SizedBox(width: 8),
-                      Flexible(
-                        child: Text(
-                          url.hasPort ? '${url.host}:${url.port}' : url.host,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTheme.mono(
-                            TextStyle(color: AppColors.textSecondary),
+                      if (url != null) ...[
+                        Text(
+                          l10n.serverConnectedVia(
+                            viaLan ? l10n.viaLan : l10n.viaExternal,
                           ),
                         ),
-                      ),
-                    ] else
-                      Text(
-                        l10n.serverNotConnected,
-                        style: TextStyle(color: AppColors.textSecondary),
-                      ),
-                  ],
-                ),
-              ],
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: Text(
+                            url.hasPort ? '${url.host}:${url.port}' : url.host,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTheme.mono(
+                              TextStyle(color: AppColors.textSecondary),
+                            ),
+                          ),
+                        ),
+                      ] else
+                        Text(
+                          l10n.serverNotConnected,
+                          style: TextStyle(color: AppColors.textSecondary),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),

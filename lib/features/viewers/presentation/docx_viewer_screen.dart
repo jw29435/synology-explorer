@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../app/theme.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../browser/domain/nas_entry.dart';
+import '../../browser/presentation/file_actions.dart';
 import '../docx/docx_parser.dart';
 import '../docx/docx_view.dart';
 import 'viewer_common.dart';
@@ -82,20 +83,19 @@ class _DocxViewerScreenState extends ConsumerState<DocxViewerScreen> {
             padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
             child: Row(
               children: [
-                Expanded(
-                  // Die Transfer-Queue (Download, Offline) kommt mit M4.
-                  child: Tooltip(
-                    message: l10n.availableFrom('M4'),
-                    triggerMode: TooltipTriggerMode.tap,
+                // Wie „Download“ in Sheet 09; eine Offline-Kopie ist schon
+                // geladen.
+                if (widget.local == null) ...[
+                  Expanded(
                     child: OutlinedButton.icon(
                       style: _buttonStyle,
                       icon: const Icon(Icons.download_outlined),
                       label: Text(l10n.actionDownload),
-                      onPressed: null,
+                      onPressed: () => downloadEntries(context, ref, [entry]),
                     ),
                   ),
-                ),
-                const SizedBox(width: 12),
+                  const SizedBox(width: 12),
+                ],
                 Expanded(
                   child: FilledButton.icon(
                     style: _buttonStyle,

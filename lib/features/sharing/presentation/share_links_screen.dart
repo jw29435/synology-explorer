@@ -17,9 +17,36 @@ class ShareLinksScreen extends ConsumerWidget {
   Future<void> _delete(
     BuildContext context,
     WidgetRef ref,
-    List<ShareLink> links,
-  ) async {
+    List<ShareLink> links, {
+    bool cleanUp = false,
+  }) async {
     final l10n = AppLocalizations.of(context);
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          cleanUp
+              ? l10n.shareLinksCleanUpConfirm(links.length)
+              : l10n.shareLinkDeleteConfirm(links.single.name),
+        ),
+        content: Text(l10n.shareLinkDeleteHint),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.error,
+              foregroundColor: AppColors.text,
+            ),
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(l10n.actionDeleteShort),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !context.mounted) return;
     try {
       await ref.read(sharingApiProvider).delete([for (final l in links) l.id]);
     } catch (e) {
@@ -85,7 +112,8 @@ class ShareLinksScreen extends ConsumerWidget {
               if (expired.isNotEmpty)
                 _ExpiredCard(
                   links: expired,
-                  onCleanUp: () => _delete(context, ref, expired),
+                  onCleanUp: () =>
+                      _delete(context, ref, expired, cleanUp: true),
                 ),
               Padding(
                 padding: const EdgeInsets.all(8),
@@ -170,7 +198,7 @@ class _LinkCard extends StatelessWidget {
                   ),
                 ),
                 IconButton(
-                  tooltip: l10n.actionDelete,
+                  tooltip: l10n.actionDeleteShort,
                   icon: const Icon(Icons.delete_outline),
                   onPressed: onDelete,
                 ),
