@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:media_kit/media_kit.dart';
 import 'package:synology_explorer/app/theme.dart';
 import 'package:synology_explorer/features/audio/presentation/playback_providers.dart';
 import 'package:synology_explorer/features/viewers/presentation/video_player_screen.dart';
@@ -56,6 +57,14 @@ Future<_Audio> _startVideo(WidgetTester tester, {required bool playing}) async {
 }
 
 void main() {
+  test('E2E-041: Ladeanzeige beim Öffnen und Puffern', () {
+    const open = PlayerState(duration: Duration(minutes: 6));
+    expect(videoLoading(const PlayerState(), failed: false), isTrue);
+    expect(videoLoading(open, failed: false), isFalse);
+    expect(videoLoading(open.copyWith(buffering: true), failed: false), isTrue);
+    expect(videoLoading(const PlayerState(), failed: true), isFalse);
+  });
+
   testWidgets('E2E-045: Videostart pausiert laufende Musik', (tester) async {
     expect((await _startVideo(tester, playing: true)).calls, ['pause']);
     expect((await _startVideo(tester, playing: false)).calls, isEmpty);

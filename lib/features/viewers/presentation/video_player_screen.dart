@@ -28,6 +28,11 @@ void pauseMusicForVideo(WidgetRef ref) {
   }
 }
 
+/// Ladeanzeige statt der Knöpfe in der Mitte: bis das Video geöffnet ist
+/// (Dauer bekannt) und solange es puffert – nicht bei einem Fehler.
+bool videoLoading(PlayerState s, {required bool failed}) =>
+    !failed && (s.buffering || s.duration == Duration.zero);
+
 /// Screen 16: Streaming mit media_kit (Seek per HTTP-Range) im
 /// Landscape-Vollbild. Doppeltipp ±10 s, Wischen rechts Lautstärke, links
 /// Helligkeit; Position wie bei Audio alle 5 s und bei Pause gespeichert.
@@ -87,6 +92,7 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
       s.position,
       s.duration,
       s.buffer,
+      s.buffering,
       s.rate,
       s.tracks,
       s.track,
@@ -251,6 +257,8 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
                   onVerticalDragUpdate: (d) => _drag(d, box),
                   onVerticalDragEnd: (_) => setState(() => _gesture = null),
                 ),
+                if (videoLoading(state, failed: _error))
+                  const Center(child: CircularProgressIndicator()),
                 if (_error)
                   Center(
                     child: _Pill(
@@ -269,7 +277,8 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
                   ),
                 if (_controls) ...[
                   _topBar(context, l10n, state),
-                  _centerControls(l10n, state),
+                  if (!videoLoading(state, failed: _error))
+                    _centerControls(l10n, state),
                   Align(
                     alignment: Alignment.bottomCenter,
                     child: _bottomBar(context, l10n, state),
