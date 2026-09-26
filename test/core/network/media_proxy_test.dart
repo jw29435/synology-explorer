@@ -102,6 +102,35 @@ void main() {
     expect(body, data);
   });
 
+  test(
+    'allow=false (Streaming nur im WLAN) → 403, ohne das NAS zu fragen',
+    () async {
+      var allowed = false;
+      final gated = await MediaProxy.start(
+        client,
+        '/music/a.mp3',
+        allow: () async => allowed,
+      );
+      addTearDown(gated.close);
+      final (res, _) = await get(gated.url, range: 'bytes=0-');
+      expect(res.statusCode, 403);
+      verifyNever(
+        () => client.requestStream(
+          any(),
+          any(),
+          any(),
+          start: any(named: 'start'),
+          end: any(named: 'end'),
+          cancelToken: any(named: 'cancelToken'),
+        ),
+      );
+      allowed = true;
+      final (ok, body) = await get(gated.url, range: 'bytes=0-9');
+      expect(ok.statusCode, 206);
+      expect(body, data.sublist(0, 10));
+    },
+  );
+
   test('falsches Token → 403, ohne das NAS zu fragen', () async {
     final wrong = proxy.url.replace(
       pathSegments: [base64Url.encode(List.filled(32, 7)), 'x.mp4'],

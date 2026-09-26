@@ -16,24 +16,37 @@ import 'syno_exception.dart';
 /// verlässt nie die App: Der Player sieht nur eine URL mit einem zufälligen
 /// Token, das je Wiedergabe neu ist. Andere Pfade bekommen 403.
 class MediaProxy {
-  MediaProxy._(this._server, this._client, this._path, this._token) {
+  MediaProxy._(
+    this._server,
+    this._client,
+    this._path,
+    this._token,
+    this._allow,
+  ) {
     _server.listen(_handle);
   }
 
-  /// Startet den Proxy für die Datei [path] auf dem NAS.
-  static Future<MediaProxy> start(SynoApiClient client, String path) async {
+  /// Startet den Proxy für die Datei [path] auf dem NAS. [allow] wird vor
+  /// jedem Request gefragt (z. B. „Streaming nur im WLAN“); `false` = 403,
+  /// ohne das NAS zu fragen.
+  static Future<MediaProxy> start(
+    SynoApiClient client,
+    String path, {
+    Future<bool> Function()? allow,
+  }) async {
     final random = Random.secure();
     final token = base64Url
         .encode([for (var i = 0; i < 32; i++) random.nextInt(256)])
         .replaceAll('=', '');
     final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
-    return MediaProxy._(server, client, path, token);
+    return MediaProxy._(server, client, path, token, allow);
   }
 
   final HttpServer _server;
   final SynoApiClient _client;
   final String _path;
   final String _token;
+  final Future<bool> Function()? _allow;
 
   InternetAddress get address => _server.address;
 
@@ -61,6 +74,10 @@ class MediaProxy {
       }
       if (request.method != 'GET' && request.method != 'HEAD') {
         res.statusCode = HttpStatus.methodNotAllowed;
+        return;
+      }
+      if (_allow != null && !await _allow()) {
+        res.statusCode = HttpStatus.forbidden;
         return;
       }
       final range = request.headers.value(HttpHeaders.rangeHeader);
