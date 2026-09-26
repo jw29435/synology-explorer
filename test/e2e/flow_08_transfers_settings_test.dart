@@ -85,15 +85,9 @@ void main() {
     await app.tapText(l10n.clearList);
     expect(find.text(l10n.transfersNoneDone), findsOneWidget);
 
-    // Tab-Root: Zurück-Geste sollte an das System gehen.
-    // E2E-Finding: H-002 – ist im Dateien-Tab ein Ordner offen, meldet die
-    // Zurück-Geste auf einem anderen Tab-Root „verarbeitet“, ohne dass sich
-    // etwas ändert (weder Tab-Wechsel noch App in den Hintergrund).
-    // expect(await app.systemBack(), isFalse);
-    await app.systemBack();
-    expect(app.location, '/transfers');
-    // Dateien-Tab behält den Ordner.
-    await app.tap(tab(Icons.folder_outlined));
+    // Tab-Root: Zurück führt zum Dateien-Tab, der den Ordner behält
+    // (E2E-059).
+    expect(await app.systemBack(), isTrue);
     expect(app.location, startsWith('/files/folder'));
     await app.backButton();
     expect(app.location, '/files');
@@ -143,8 +137,8 @@ void main() {
     await app.waitFor(find.text(l10n.offlineEmpty));
     expect((await tester.runAsync(local.exists))!, isFalse);
 
-    expect(await app.systemBack(), isFalse);
-    await app.tap(tab(Icons.folder_outlined));
+    // Tab-Root: Zurück führt zum Dateien-Tab (E2E-059).
+    expect(await app.systemBack(), isTrue);
     expect(app.location, '/files');
     await app.dispose();
   });
@@ -195,11 +189,9 @@ void main() {
     expect(app.location, '/settings/shares');
     expect(await app.systemBack(), isTrue);
     expect(app.location, '/settings');
-    // E2E-Finding: H-002 – Zurück auf dem Tab-Root wird verschluckt, solange
-    // im Dateien-Tab ein Ordner offen ist.
-    // expect(await app.systemBack(), isFalse);
-
-    await app.tap(tab(Icons.folder_outlined));
+    // Tab-Root: Zurück führt zum Dateien-Tab (E2E-059).
+    expect(await app.systemBack(), isTrue);
+    expect(app.location, startsWith('/files/folder'));
     await app.backButton();
     expect(app.location, '/files');
     await app.dispose();
@@ -309,6 +301,9 @@ void main() {
     expect(await app.systemBack(), isTrue);
     expect(app.location, '/settings');
     expect(find.text(l10n.settingsOff), findsOneWidget);
+    // Tab-Root: Zurück führt zum Dateien-Tab (E2E-059), dort ans System.
+    expect(await app.systemBack(), isTrue);
+    expect(app.location, '/files');
     expect(await app.systemBack(), isFalse);
     await app.dispose();
   });

@@ -21,6 +21,23 @@ class AppShell extends ConsumerWidget {
     ref.watch(transferQueueProvider);
     // Auto-Upload beim Start bzw. nach der Anmeldung nachholen.
     ref.watch(autoUploadCatchUpProvider);
+    // Zurück auf dem Root eines anderen Tabs führt zum Dateien-Tab (Material-
+    // Konvention). Ohne das „verarbeitete“ go_router die Geste, ohne dass
+    // etwas passierte, sobald im Dateien-Tab ein Ordner offen war.
+    return BackButtonListener(
+      onBackButtonPressed: () async {
+        if (navigationShell.currentIndex == 0 ||
+            GoRouter.of(context).canPop()) {
+          return false;
+        }
+        navigationShell.goBranch(0);
+        return true;
+      },
+      child: _scaffold(context, ref, l10n),
+    );
+  }
+
+  Widget _scaffold(BuildContext context, WidgetRef ref, AppLocalizations l10n) {
     return Scaffold(
       body: navigationShell,
       bottomNavigationBar: Column(
