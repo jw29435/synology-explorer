@@ -6,6 +6,7 @@
       "package-name": "synology_explorer",
       "changelog-path": "CHANGELOG.md",
       "include-component-in-tag": false,
+      "release-as": "1.0.0",
       "changelog-sections": [
         { "type": "feat", "section": "Neue Funktionen" },
         { "type": "fix", "section": "Fehlerbehebungen" },

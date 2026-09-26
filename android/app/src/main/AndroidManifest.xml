@@ -25,6 +25,9 @@
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"/>
+    <!-- workmanager bringt das für beschleunigte (expedited) Tasks mit; der
+         Auto-Upload nutzt nur einen normalen periodischen Task. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SHORT_SERVICE" tools:node="remove"/>
     <application
         android:label="Synology Explorer"
         android:name="${applicationName}"

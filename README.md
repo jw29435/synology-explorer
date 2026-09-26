@@ -77,7 +77,8 @@ curl "http://127.0.0.1:5000/webapi/entry.cgi?api=SYNO.API.Info&version=1&method=
 Tags `v*` bauen signierte Artefakte (`.github/workflows/release-android.yml`, `release-ios.yml`). Normalerweise
 entstehen Tags über [release-please](https://github.com/googleapis/release-please): Conventional Commits auf `main`
 ergeben einen Release-PR mit `CHANGELOG.md` und neuer Version; sein Merge legt Tag und GitHub-Release an und startet
-beide Release-Workflows. Die erste Version bekommt 1.0.0 über `Release-As: 1.0.0` im Commit-Text.
+beide Release-Workflows. Die erste Version ist über `"release-as": "1.0.0"` in `release-please-config.json` festgelegt; nach dem
+ersten Release den Eintrag entfernen. Die Build-Nummer ist die Zahl der Commits bis zum Tag (steigt monoton).
 
 Benötigte Repository-Secrets (Settings › Secrets and variables › Actions):
 

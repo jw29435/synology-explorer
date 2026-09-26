@@ -12,6 +12,14 @@ import workmanager_apple
     // registrieren (UIScene-Lebenszyklus) und Plugins in der
     // Hintergrund-Engine verfügbar machen.
     WorkmanagerPlugin.registerLaunchHandlers()
+    // Den Handler immer hier registrieren: BGTaskScheduler lässt das nur
+    // bis zum Ende von didFinishLaunching zu. Sonst täte es das Plugin erst
+    // beim ersten Einplanen aus Dart – Absturz beim Einschalten des
+    // Auto-Uploads. Gleiche ID wie in Info.plist und background.dart.
+    WorkmanagerPlugin.registerPeriodicTask(
+      withIdentifier: "de.jw29435.synologyExplorer.autoUpload",
+      earliestBeginInSeconds: NSNumber(value: 15 * 60)
+    )
     WorkmanagerPlugin.setPluginRegistrantCallback { registry in
       GeneratedPluginRegistrant.register(with: registry)
     }
