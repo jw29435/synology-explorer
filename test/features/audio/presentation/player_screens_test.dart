@@ -254,5 +254,36 @@ void main() {
       await tester.tap(find.byTooltip('Nächster Titel'));
       expect(controller.calls, ['toggle', 'next']);
     });
+
+    testWidgets('zeigt Wiedergabefehler statt der Zeit (E2E-031)', (
+      tester,
+    ) async {
+      final controller = FakeAudioController(
+        playingAlbum(playing: false).copyWith(error: const StreamFailed()),
+      );
+      await pumpApp(
+        tester,
+        location: '/files',
+        overrides: audioOverrides(controller),
+      );
+      final mini = find.byKey(const Key('mini-player'));
+      final error = find.descendant(
+        of: mini,
+        matching: find.byKey(const Key('mini-player-error')),
+      );
+      expect(error, findsOne);
+      expect(
+        find.descendant(of: error, matching: find.byIcon(Icons.error_outline)),
+        findsOne,
+      );
+      expect(
+        find.byTooltip(
+          'Datei konnte nicht geladen werden – Verbindung zum NAS prüfen.',
+        ),
+        findsOne,
+      );
+      expect(tester.getSize(mini).height, 64);
+      expect(tester.takeException(), isNull);
+    });
   });
 }

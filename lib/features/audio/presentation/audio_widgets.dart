@@ -197,18 +197,21 @@ class MiniPlayer extends ConsumerWidget {
                               fontWeight: FontWeight.w700,
                             ),
                           ),
-                          Text(
-                            [
-                              ?s.artist,
-                              if (duration != null)
-                                '${formatDuration(position)} / ${formatDuration(duration)}',
-                            ].join(' · '),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: text.bodySmall?.copyWith(
-                              color: AppColors.textSecondary,
+                          if (s.error case final error?)
+                            _MiniPlayerError(describePlaybackError(error, l10n))
+                          else
+                            Text(
+                              [
+                                ?s.artist,
+                                if (duration != null)
+                                  '${formatDuration(position)} / ${formatDuration(duration)}',
+                              ].join(' · '),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: text.bodySmall?.copyWith(
+                                color: AppColors.textSecondary,
+                              ),
                             ),
-                          ),
                         ],
                       ),
                     ),
@@ -228,6 +231,35 @@ class MiniPlayer extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// Wiedergabefehler statt der Zeitzeile im Mini-Player; der volle Text
+/// steht im Tooltip und auf Now Playing.
+class _MiniPlayerError extends StatelessWidget {
+  const _MiniPlayerError(this.message);
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) => Tooltip(
+    message: message,
+    child: Row(
+      key: const Key('mini-player-error'),
+      children: [
+        Icon(Icons.error_outline, size: 14, color: AppColors.errorSoft),
+        const SizedBox(width: 4),
+        Expanded(
+          child: Text(
+            message,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.bodySmall
+                ?.copyWith(color: AppColors.errorSoft),
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 /// Play/Pause mit Ladeanzeige; [large] ist der runde Knopf in Screen 12.
