@@ -476,7 +476,7 @@ class _SortButton extends ConsumerWidget {
 }
 
 /// Lädt die nächste Seite, sobald das Ende der Liste näher kommt – nicht
-/// nach einem Fehler (dann „Erneut versuchen“ in [_PageFooter]).
+/// nach einem Fehler (dann „Erneut versuchen“ in [PageFooter]).
 void _maybeLoadMore(WidgetRef ref, String path, FolderState state, int index) {
   if (state.hasMore &&
       state.loadMoreError == null &&
@@ -485,9 +485,9 @@ void _maybeLoadMore(WidgetRef ref, String path, FolderState state, int index) {
   }
 }
 
-/// Letzte Zeile/Kachel beim Paging: Spinner oder Fehler mit Retry.
-class _PageFooter extends ConsumerWidget {
-  const _PageFooter({required this.path, required this.state});
+/// Letzte Zeile/Kachel beim Paging (06/07, 24): Spinner oder Fehler mit Retry.
+class PageFooter extends ConsumerWidget {
+  const PageFooter({super.key, required this.path, required this.state});
 
   final String path;
   final FolderState state;
@@ -535,7 +535,7 @@ class _FolderList extends ConsumerWidget {
       itemBuilder: (context, i) {
         _maybeLoadMore(ref, path, state, i);
         if (i == entries.length) {
-          return _PageFooter(path: path, state: state);
+          return PageFooter(path: path, state: state);
         }
         final e = entries[i];
         final selected = selection.contains(e.path);
@@ -612,7 +612,7 @@ class _FolderGrid extends ConsumerWidget {
       itemBuilder: (context, i) {
         _maybeLoadMore(ref, path, state, i);
         if (i == entries.length) {
-          return _PageFooter(path: path, state: state);
+          return PageFooter(path: path, state: state);
         }
         final e = entries[i];
         final selected = selection.contains(e.path);

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -9,6 +11,7 @@ import '../domain/recycle.dart';
 import 'browser_providers.dart';
 import 'entry_widgets.dart';
 import 'file_actions.dart';
+import 'folder_screen.dart';
 
 /// Screen 24: `#recycle` je Share. Nur Shares, deren Papierkorb sich listen
 /// lässt. Wiederherstellen = Verschieben an den Ursprungspfad; endgültig
@@ -164,6 +167,21 @@ class _TrashScreenState extends ConsumerState<TrashScreen> {
                         : null,
                     onRestore: () => _restore(e, share!),
                     onDelete: () => _deleteForever([e], folder!),
+                  ),
+                // Paging wie in 06: erreicht man das Ende, kommt die nächste
+                // Seite (nach einem Fehler nur über „Erneut versuchen“).
+                if (value.hasMore)
+                  Builder(
+                    builder: (context) {
+                      if (value.loadMoreError == null) {
+                        scheduleMicrotask(
+                          () => ref
+                              .read(folderProvider(folder!).notifier)
+                              .loadMore(),
+                        );
+                      }
+                      return PageFooter(path: folder!, state: value);
+                    },
                   ),
               ],
               AsyncError(:final error) => [
