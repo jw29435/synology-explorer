@@ -2,12 +2,12 @@ import 'dart:io';
 
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:synology_explorer/features/autoupload/data/background.dart';
-import 'package:synology_explorer/features/autoupload/data/camera_roll.dart';
-import 'package:synology_explorer/features/autoupload/domain/auto_upload_config.dart';
-import 'package:synology_explorer/features/autoupload/presentation/auto_upload_providers.dart';
-import 'package:synology_explorer/features/settings/presentation/settings_providers.dart';
-import 'package:synology_explorer/features/sharing/presentation/sharing_providers.dart';
+import 'package:nuvo_explorer/features/autoupload/data/background.dart';
+import 'package:nuvo_explorer/features/autoupload/data/camera_roll.dart';
+import 'package:nuvo_explorer/features/autoupload/domain/auto_upload_config.dart';
+import 'package:nuvo_explorer/features/autoupload/presentation/auto_upload_providers.dart';
+import 'package:nuvo_explorer/features/settings/presentation/settings_providers.dart';
+import 'package:nuvo_explorer/features/sharing/presentation/sharing_providers.dart';
 
 /// Merkt sich, was eingeplant würde, statt WorkManager aufzurufen.
 class FakeScheduler implements AutoUploadScheduler {
@@ -58,8 +58,8 @@ List<Override> settingsOverrides({
   cameraRollProvider.overrideWithValue(camera ?? FakeAccessCameraRoll()),
   packageInfoProvider.overrideWith(
     (ref) async => PackageInfo(
-      appName: 'Synology Explorer',
-      packageName: 'de.jw29435.synology_explorer',
+      appName: 'Nuvo Explorer',
+      packageName: 'de.jw29435.nuvo_explorer',
       version: '1.0.0',
       buildNumber: '42',
     ),

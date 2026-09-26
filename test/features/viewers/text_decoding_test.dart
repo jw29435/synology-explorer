@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:synology_explorer/features/viewers/presentation/text_viewer_screen.dart';
+import 'package:nuvo_explorer/features/viewers/presentation/text_viewer_screen.dart';
 
 void main() {
   Uint8List b(List<int> bytes) => Uint8List.fromList(bytes);

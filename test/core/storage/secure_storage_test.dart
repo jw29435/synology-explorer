@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:synology_explorer/core/storage/storage_providers.dart';
+import 'package:nuvo_explorer/core/storage/storage_providers.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

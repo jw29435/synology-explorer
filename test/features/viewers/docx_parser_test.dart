@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:archive/archive.dart';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:synology_explorer/features/viewers/docx/docx_parser.dart';
+import 'package:nuvo_explorer/features/viewers/docx/docx_parser.dart';
 
 DocxDocument fixture(String name) =>
     parseDocx(File('test/fixtures/docx/$name').readAsBytesSync());

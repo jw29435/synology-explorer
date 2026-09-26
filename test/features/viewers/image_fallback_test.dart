@@ -5,8 +5,8 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:synology_explorer/features/browser/domain/nas_entry.dart';
-import 'package:synology_explorer/features/viewers/presentation/nas_image.dart';
+import 'package:nuvo_explorer/features/browser/domain/nas_entry.dart';
+import 'package:nuvo_explorer/features/viewers/presentation/nas_image.dart';
 
 import '../../helpers/app_harness.dart';
 import 'fake_media.dart';

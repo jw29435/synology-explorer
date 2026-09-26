@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:synology_explorer/features/browser/data/file_station_ops_api.dart';
-import 'package:synology_explorer/features/browser/presentation/browser_providers.dart';
-import 'package:synology_explorer/features/browser/presentation/entry_widgets.dart';
+import 'package:nuvo_explorer/features/browser/data/file_station_ops_api.dart';
+import 'package:nuvo_explorer/features/browser/presentation/browser_providers.dart';
+import 'package:nuvo_explorer/features/browser/presentation/entry_widgets.dart';
 
 import '../../../helpers/app_harness.dart';
 

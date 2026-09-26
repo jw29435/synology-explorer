@@ -13,8 +13,7 @@ import '../domain/server_profile.dart';
 
 class ServerRepository {
   ServerRepository(this._db, this._storage, this._pins, {String? deviceName})
-    : deviceName =
-          deviceName ?? 'Synology Explorer (${Platform.operatingSystem})';
+    : deviceName = deviceName ?? 'Nuvo Explorer (${Platform.operatingSystem})';
 
   final AppDatabase _db;
   final FlutterSecureStorage _storage;

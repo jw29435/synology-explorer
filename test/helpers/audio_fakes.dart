@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/misc.dart' show Override;
-import 'package:synology_explorer/features/audio/data/track_info_loader.dart';
-import 'package:synology_explorer/features/audio/domain/playback_queue.dart';
-import 'package:synology_explorer/features/audio/presentation/playback_providers.dart';
-import 'package:synology_explorer/features/browser/domain/nas_entry.dart';
+import 'package:nuvo_explorer/features/audio/data/track_info_loader.dart';
+import 'package:nuvo_explorer/features/audio/domain/playback_queue.dart';
+import 'package:nuvo_explorer/features/audio/presentation/playback_providers.dart';
+import 'package:nuvo_explorer/features/browser/domain/nas_entry.dart';
 
 NasEntry audioFile(String name, {int size = 30 << 20}) => NasEntry(
   path: '/music/Alben/Nordlicht – Treibholz/$name',

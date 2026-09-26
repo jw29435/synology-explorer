@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:synology_explorer/features/audio/domain/playback_queue.dart';
-import 'package:synology_explorer/features/audio/presentation/playback_providers.dart';
+import 'package:nuvo_explorer/features/audio/domain/playback_queue.dart';
+import 'package:nuvo_explorer/features/audio/presentation/playback_providers.dart';
 
 import 'e2e_harness.dart';
 

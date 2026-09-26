@@ -5,7 +5,7 @@ require "plist"
 
 default_platform(:ios)
 
-APP_ID = "de.jw29435.synologyExplorer"
+APP_ID = "de.jw29435.nuvoExplorer"
 ROOT = File.expand_path("../..", __dir__)
 
 platform :ios do

@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:synology_explorer/features/autoupload/domain/auto_upload_config.dart';
+import 'package:nuvo_explorer/features/autoupload/domain/auto_upload_config.dart';
 
 void main() {
   final t0 = DateTime(2026, 9, 26, 17, 40);

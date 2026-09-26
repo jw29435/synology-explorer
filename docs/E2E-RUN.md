@@ -57,7 +57,7 @@ Findings, dedupliziert in `docs/E2E-FINDINGS.md` (E2E-001 bis E2E-056). Ausgangs
 
 ## Phase 3 – Headless E2E gegen den Mock-NAS
 
-`test/e2e/` startet die komplette App (`SynologyExplorerApp` in einem `ProviderScope`) mit echtem HTTP gegen
+`test/e2e/` startet die komplette App (`NuvoExplorerApp` in einem `ProviderScope`) mit echtem HTTP gegen
 `tool/mock_nas` auf einem freien Loopback-Port. Gefaked sind nur Plattform-Teile: drift in-memory, Secure Storage,
 path_provider, AudioController (Zustände), Benachrichtigungen, WorkManager, Fotozugriff, file_picker. Jeder Flow endet
 mit Zurück per Zurück-Pfeil **und** per `handlePopRoute()` (Android-Zurück); danach baut `E2E.dispose()` die App ab,

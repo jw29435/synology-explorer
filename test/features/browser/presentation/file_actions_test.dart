@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:synology_explorer/features/browser/presentation/entry_widgets.dart';
-import 'package:synology_explorer/features/browser/presentation/file_actions.dart';
-import 'package:synology_explorer/l10n/app_localizations.dart';
+import 'package:nuvo_explorer/features/browser/presentation/entry_widgets.dart';
+import 'package:nuvo_explorer/features/browser/presentation/file_actions.dart';
+import 'package:nuvo_explorer/l10n/app_localizations.dart';
 
 import '../../../helpers/app_harness.dart';
 

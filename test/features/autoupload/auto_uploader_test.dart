@@ -3,17 +3,17 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:synology_explorer/core/network/syno_exception.dart';
-import 'package:synology_explorer/core/storage/app_database.dart';
-import 'package:synology_explorer/features/autoupload/data/auto_upload_repository.dart';
-import 'package:synology_explorer/features/autoupload/data/auto_uploader.dart';
-import 'package:synology_explorer/features/autoupload/data/camera_roll.dart';
-import 'package:synology_explorer/features/autoupload/domain/auto_upload_config.dart';
-import 'package:synology_explorer/features/browser/data/file_station_list_api.dart';
-import 'package:synology_explorer/features/browser/domain/nas_entry.dart';
-import 'package:synology_explorer/features/transfers/data/transfer_api.dart';
-import 'package:synology_explorer/features/transfers/data/transfer_queue.dart';
-import 'package:synology_explorer/features/transfers/domain/transfer.dart';
+import 'package:nuvo_explorer/core/network/syno_exception.dart';
+import 'package:nuvo_explorer/core/storage/app_database.dart';
+import 'package:nuvo_explorer/features/autoupload/data/auto_upload_repository.dart';
+import 'package:nuvo_explorer/features/autoupload/data/auto_uploader.dart';
+import 'package:nuvo_explorer/features/autoupload/data/camera_roll.dart';
+import 'package:nuvo_explorer/features/autoupload/domain/auto_upload_config.dart';
+import 'package:nuvo_explorer/features/browser/data/file_station_list_api.dart';
+import 'package:nuvo_explorer/features/browser/domain/nas_entry.dart';
+import 'package:nuvo_explorer/features/transfers/data/transfer_api.dart';
+import 'package:nuvo_explorer/features/transfers/data/transfer_queue.dart';
+import 'package:nuvo_explorer/features/transfers/domain/transfer.dart';
 
 /// Kamera-Rolle im Speicher; Originale sind kleine Dateien im Temp-Ordner.
 class FakeCameraRoll implements CameraRoll {

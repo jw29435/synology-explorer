@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:synology_explorer/features/browser/domain/nas_entry.dart';
+import 'package:nuvo_explorer/features/browser/domain/nas_entry.dart';
 
 /// Parser gegen anonymisierte echte Antworten von DSM 7.2.1 (Spike, docs/SPIKE.md).
 void main() {

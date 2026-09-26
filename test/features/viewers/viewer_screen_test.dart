@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:synology_explorer/features/browser/domain/nas_entry.dart';
-import 'package:synology_explorer/features/viewers/presentation/viewer_screen.dart';
+import 'package:nuvo_explorer/features/browser/domain/nas_entry.dart';
+import 'package:nuvo_explorer/features/viewers/presentation/viewer_screen.dart';
 
 import '../../helpers/app_harness.dart';
 

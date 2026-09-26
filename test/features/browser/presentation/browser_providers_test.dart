@@ -2,11 +2,11 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:synology_explorer/core/network/syno_exception.dart';
-import 'package:synology_explorer/features/browser/data/file_station_list_api.dart';
-import 'package:synology_explorer/features/browser/data/file_station_task_api.dart';
-import 'package:synology_explorer/features/browser/domain/nas_entry.dart';
-import 'package:synology_explorer/features/browser/presentation/browser_providers.dart';
+import 'package:nuvo_explorer/core/network/syno_exception.dart';
+import 'package:nuvo_explorer/features/browser/data/file_station_list_api.dart';
+import 'package:nuvo_explorer/features/browser/data/file_station_task_api.dart';
+import 'package:nuvo_explorer/features/browser/domain/nas_entry.dart';
+import 'package:nuvo_explorer/features/browser/presentation/browser_providers.dart';
 
 import '../../../helpers/app_harness.dart';
 

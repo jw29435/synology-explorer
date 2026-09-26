@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:synology_explorer/core/auth/session_manager.dart';
-import 'package:synology_explorer/core/network/syno_exception.dart';
-import 'package:synology_explorer/features/servers/data/server_repository.dart';
-import 'package:synology_explorer/features/servers/domain/server_profile.dart';
-import 'package:synology_explorer/features/servers/presentation/server_form_screen.dart';
-import 'package:synology_explorer/features/servers/presentation/server_providers.dart';
+import 'package:nuvo_explorer/core/auth/session_manager.dart';
+import 'package:nuvo_explorer/core/network/syno_exception.dart';
+import 'package:nuvo_explorer/features/servers/data/server_repository.dart';
+import 'package:nuvo_explorer/features/servers/domain/server_profile.dart';
+import 'package:nuvo_explorer/features/servers/presentation/server_form_screen.dart';
+import 'package:nuvo_explorer/features/servers/presentation/server_providers.dart';
 
 import '../../../helpers/app_harness.dart';
 

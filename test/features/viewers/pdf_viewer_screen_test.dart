@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pdfrx/pdfrx.dart';
-import 'package:synology_explorer/features/browser/presentation/entry_widgets.dart';
-import 'package:synology_explorer/features/viewers/presentation/pdf_viewer_screen.dart';
-import 'package:synology_explorer/features/viewers/presentation/viewer_providers.dart';
+import 'package:nuvo_explorer/features/browser/presentation/entry_widgets.dart';
+import 'package:nuvo_explorer/features/viewers/presentation/pdf_viewer_screen.dart';
+import 'package:nuvo_explorer/features/viewers/presentation/viewer_providers.dart';
 
 import '../../helpers/app_harness.dart';
 import 'fake_media.dart';

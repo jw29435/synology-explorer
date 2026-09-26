@@ -6,13 +6,13 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:synology_explorer/core/network/certificate_pinning.dart';
-import 'package:synology_explorer/core/network/syno_api_client.dart';
-import 'package:synology_explorer/core/network/syno_exception.dart';
-import 'package:synology_explorer/core/storage/media_cache.dart';
-import 'package:synology_explorer/features/browser/domain/nas_entry.dart';
-import 'package:synology_explorer/features/servers/domain/server_profile.dart';
-import 'package:synology_explorer/features/viewers/data/media_repository.dart';
+import 'package:nuvo_explorer/core/network/certificate_pinning.dart';
+import 'package:nuvo_explorer/core/network/syno_api_client.dart';
+import 'package:nuvo_explorer/core/network/syno_exception.dart';
+import 'package:nuvo_explorer/core/storage/media_cache.dart';
+import 'package:nuvo_explorer/features/browser/domain/nas_entry.dart';
+import 'package:nuvo_explorer/features/servers/domain/server_profile.dart';
+import 'package:nuvo_explorer/features/viewers/data/media_repository.dart';
 
 import '../../helpers/app_harness.dart' show testProfile;
 import '../../helpers/mock_nas_server.dart';

@@ -3,8 +3,8 @@ import 'dart:io';
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:synology_explorer/core/storage/app_database.dart';
-import 'package:synology_explorer/features/servers/presentation/server_providers.dart';
+import 'package:nuvo_explorer/core/storage/app_database.dart';
+import 'package:nuvo_explorer/features/servers/presentation/server_providers.dart';
 
 import 'e2e_harness.dart';
 

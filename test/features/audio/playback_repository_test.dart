@@ -1,7 +1,7 @@
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:synology_explorer/core/storage/app_database.dart';
-import 'package:synology_explorer/features/audio/data/playback_repository.dart';
+import 'package:nuvo_explorer/core/storage/app_database.dart';
+import 'package:nuvo_explorer/features/audio/data/playback_repository.dart';
 
 void main() {
   late AppDatabase db;

@@ -3,11 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:media_kit/media_kit.dart';
-import 'package:synology_explorer/app/theme.dart';
-import 'package:synology_explorer/core/network/syno_exception.dart';
-import 'package:synology_explorer/features/audio/presentation/playback_providers.dart';
-import 'package:synology_explorer/features/viewers/presentation/video_player_screen.dart';
-import 'package:synology_explorer/l10n/app_localizations.dart';
+import 'package:nuvo_explorer/app/theme.dart';
+import 'package:nuvo_explorer/core/network/syno_exception.dart';
+import 'package:nuvo_explorer/features/audio/presentation/playback_providers.dart';
+import 'package:nuvo_explorer/features/viewers/presentation/video_player_screen.dart';
+import 'package:nuvo_explorer/l10n/app_localizations.dart';
 
 import '../../helpers/audio_fakes.dart';
 

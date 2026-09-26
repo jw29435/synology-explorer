@@ -41,7 +41,7 @@ Future<void> migrateSecureStorage({
 /// Hintergrund (eigene Engine) nutzt dieselbe Verbindung wie die App.
 AppDatabase openAppDatabase() => AppDatabase(
   driftDatabase(
-    name: 'synology_explorer',
+    name: 'nuvo_explorer',
     native: const DriftNativeOptions(shareAcrossIsolates: true),
   ),
 );

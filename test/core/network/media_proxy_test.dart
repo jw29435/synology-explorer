@@ -6,9 +6,9 @@ import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:synology_explorer/core/network/media_proxy.dart';
-import 'package:synology_explorer/core/network/syno_api_client.dart';
-import 'package:synology_explorer/core/network/syno_exception.dart';
+import 'package:nuvo_explorer/core/network/media_proxy.dart';
+import 'package:nuvo_explorer/core/network/syno_api_client.dart';
+import 'package:nuvo_explorer/core/network/syno_exception.dart';
 
 class _MockClient extends Mock implements SynoApiClient {}
 

@@ -11,13 +11,13 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shelf/shelf.dart' show Response;
-import 'package:synology_explorer/app/app.dart';
-import 'package:synology_explorer/app/router.dart';
-import 'package:synology_explorer/core/storage/app_database.dart';
-import 'package:synology_explorer/core/storage/storage_providers.dart';
-import 'package:synology_explorer/features/audio/presentation/playback_providers.dart';
-import 'package:synology_explorer/features/transfers/presentation/transfer_providers.dart';
-import 'package:synology_explorer/l10n/app_localizations.dart';
+import 'package:nuvo_explorer/app/app.dart';
+import 'package:nuvo_explorer/app/router.dart';
+import 'package:nuvo_explorer/core/storage/app_database.dart';
+import 'package:nuvo_explorer/core/storage/storage_providers.dart';
+import 'package:nuvo_explorer/features/audio/presentation/playback_providers.dart';
+import 'package:nuvo_explorer/features/transfers/presentation/transfer_providers.dart';
+import 'package:nuvo_explorer/l10n/app_localizations.dart';
 
 import '../../tool/mock_nas/mock_nas.dart';
 import '../helpers/app_harness.dart' show NoNotifications;
@@ -107,7 +107,7 @@ class E2E {
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: const SynologyExplorerApp(),
+        child: const NuvoExplorerApp(),
       ),
     );
     final e2e = E2E._(tester, nas, container, db, audio);

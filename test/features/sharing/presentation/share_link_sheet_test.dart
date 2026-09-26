@@ -1,9 +1,9 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:synology_explorer/features/browser/presentation/entry_widgets.dart';
-import 'package:synology_explorer/features/sharing/data/sharing_api.dart';
-import 'package:synology_explorer/features/sharing/domain/share_link.dart';
-import 'package:synology_explorer/features/sharing/presentation/sharing_providers.dart';
+import 'package:nuvo_explorer/features/browser/presentation/entry_widgets.dart';
+import 'package:nuvo_explorer/features/sharing/data/sharing_api.dart';
+import 'package:nuvo_explorer/features/sharing/domain/share_link.dart';
+import 'package:nuvo_explorer/features/sharing/presentation/sharing_providers.dart';
 
 import '../../../helpers/app_harness.dart';
 

@@ -5,12 +5,12 @@ import 'package:dio/dio.dart';
 import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:synology_explorer/core/network/syno_exception.dart';
-import 'package:synology_explorer/core/storage/app_database.dart';
-import 'package:synology_explorer/features/transfers/data/transfer_api.dart';
-import 'package:synology_explorer/features/transfers/data/transfer_queue.dart';
-import 'package:synology_explorer/features/transfers/domain/transfer.dart';
-import 'package:synology_explorer/features/transfers/presentation/transfer_notifications.dart';
+import 'package:nuvo_explorer/core/network/syno_exception.dart';
+import 'package:nuvo_explorer/core/storage/app_database.dart';
+import 'package:nuvo_explorer/features/transfers/data/transfer_api.dart';
+import 'package:nuvo_explorer/features/transfers/data/transfer_queue.dart';
+import 'package:nuvo_explorer/features/transfers/domain/transfer.dart';
+import 'package:nuvo_explorer/features/transfers/presentation/transfer_notifications.dart';
 
 /// Download schreibt [content] ab `offset`; jeder Aufruf wartet auf ein
 /// eigenes Tor, bis der Test es öffnet (oder wirft [failWith]).

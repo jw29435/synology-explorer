@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:synology_explorer/core/storage/app_database.dart';
-import 'package:synology_explorer/features/transfers/presentation/transfer_providers.dart';
+import 'package:nuvo_explorer/core/storage/app_database.dart';
+import 'package:nuvo_explorer/features/transfers/presentation/transfer_providers.dart';
 
 import '../../../helpers/app_harness.dart';
 

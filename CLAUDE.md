@@ -1,4 +1,4 @@
-# CLAUDE.md – Synology Explorer
+# CLAUDE.md – Nuvo Explorer
 
 Flutter-Client für Synology NAS (File-Station-API), Fokus Audio-Wiedergabe. Android + iOS.
 Konzept: `docs/CONCEPT.md` (Architektur, API-Mapping, Screen-Katalog, Roadmap). Mockups: `docs/mockups/*.png`
@@ -47,7 +47,7 @@ Konzept: `docs/CONCEPT.md` (Architektur, API-Mapping, Screen-Katalog, Roadmap). 
   ```sh
   flutter build apk --debug
   adb.exe -s <id> install -r "$(wslpath -w build/app/outputs/flutter-apk/app-debug.apk)"
-  adb.exe -s <id> shell am start -n de.jw29435.synology_explorer/.MainActivity
+  adb.exe -s <id> shell am start -n de.jw29435.nuvo_explorer/.MainActivity
   adb.exe -s <id> logcat -s flutter           # Logs
   adb.exe -s <id> exec-out screencap -p > screen.png
   ```

@@ -5,10 +5,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:synology_explorer/app/theme.dart';
-import 'package:synology_explorer/features/servers/presentation/server_list_screen.dart';
-import 'package:synology_explorer/features/servers/presentation/server_providers.dart';
-import 'package:synology_explorer/l10n/app_localizations.dart';
+import 'package:nuvo_explorer/app/theme.dart';
+import 'package:nuvo_explorer/features/servers/presentation/server_list_screen.dart';
+import 'package:nuvo_explorer/features/servers/presentation/server_providers.dart';
+import 'package:nuvo_explorer/l10n/app_localizations.dart';
 
 void main() {
   final l10n = lookupAppLocalizations(const Locale('de'));

@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:synology_explorer/features/sharing/domain/share_link.dart';
-import 'package:synology_explorer/features/sharing/presentation/share_link_sheet.dart';
+import 'package:nuvo_explorer/features/sharing/domain/share_link.dart';
+import 'package:nuvo_explorer/features/sharing/presentation/share_link_sheet.dart';
 
 void main() {
   final now = DateTime(2026, 9, 25, 18, 5);

@@ -3,10 +3,10 @@ import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:synology_explorer/core/network/syno_api_client.dart';
-import 'package:synology_explorer/core/network/syno_exception.dart';
-import 'package:synology_explorer/features/browser/data/thumbnail_cache.dart';
-import 'package:synology_explorer/features/browser/domain/nas_entry.dart';
+import 'package:nuvo_explorer/core/network/syno_api_client.dart';
+import 'package:nuvo_explorer/core/network/syno_exception.dart';
+import 'package:nuvo_explorer/features/browser/data/thumbnail_cache.dart';
+import 'package:nuvo_explorer/features/browser/domain/nas_entry.dart';
 
 import '../../helpers/app_harness.dart';
 

@@ -1,4 +1,4 @@
-package de.jw29435.synology_explorer
+package de.jw29435.nuvo_explorer
 
 import com.ryanheise.audioservice.AudioServiceActivity
 

@@ -51,7 +51,7 @@ Future<void> main() async {
       // Kein automatischer Retry fehlgeschlagener Provider: ein Login-Fehler
       // darf nie wiederholt werden (DSM-Auto-Block).
       retry: (_, _) => null,
-      child: const SynologyExplorerApp(),
+      child: const NuvoExplorerApp(),
     ),
   );
 }

@@ -1,10 +1,10 @@
-# Synology Explorer – Konzept v1
+# Nuvo Explorer – Konzept v1
 
 Sep 25, 2026 · @Johann
 
 ## 1. Ziel und Rahmen
 
-Synology Explorer ist ein Flutter-Client für Android und iOS, der Dateien auf einem Synology NAS über die File-Station-API browst, verwaltet und direkt wiedergibt – mit Musik als Kernfunktion. Funktionales Vorbild ist DS File; Optik und Bedienung werden eigenständig entworfen.
+Nuvo Explorer ist ein Flutter-Client für Android und iOS, der Dateien auf einem Synology NAS über die File-Station-API browst, verwaltet und direkt wiedergibt – mit Musik als Kernfunktion. Funktionales Vorbild ist DS File; Optik und Bedienung werden eigenständig entworfen.
 
 | Punkt | Festlegung |
 | --- | --- |
@@ -325,5 +325,5 @@ Die drei Punkte mit dem größten Einfluss auf den Aufwand sind Range-Streaming,
 - [ ] Ist 2FA auf dem Konto aktiv, und sind vertrauenswürdige Geräte erlaubt?
 - [ ] Sind HEIC-Thumbnails auf dem NAS bereits sichtbar (z. B. in File Station)?
 - [ ] Reicht der DOCX-Lesemodus, oder soll der Konverter-Container früher kommen?
-- [ ] App-Name für die Stores: „Synology Explorer" enthält eine fremde Marke – für Play/App Store ist ein neutraler Name (z. B. „NAS Explorer") sicherer.
+- [x] App-Name für die Stores: der bisherige Name enthielt die fremde Marke „Synology" – für Play/App Store ist ein neutraler Name sicherer. Entscheidung: **„Nuvo Explorer"** (Paket-ID `de.jw29435.nuvo_explorer`, iOS `de.jw29435.nuvoExplorer`).
 - [ ] Farbwelt und Icon: Die Mockups nutzen eine dunkle Basis mit Akzentfarbe; bitte in den Mockups kommentieren.

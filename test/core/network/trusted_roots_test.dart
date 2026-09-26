@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:crypto/crypto.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:synology_explorer/core/network/trusted_roots.dart';
+import 'package:nuvo_explorer/core/network/trusted_roots.dart';
 
 String _fingerprint(String pem) => sha256
     .convert(
