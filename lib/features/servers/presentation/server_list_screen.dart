@@ -30,7 +30,12 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
     if (active != null &&
         active.client.profile.id == profile.id &&
         active.isLoggedIn) {
-      context.go('/files');
+      // Aus der Shell geöffnet: zurück an die alte Stelle.
+      if (context.canPop()) {
+        context.pop();
+      } else {
+        context.go('/files');
+      }
       return;
     }
     setState(() => _connecting = profile.id);
@@ -95,6 +100,8 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
         context.push('/servers/${profile.id}');
       case 'logout':
         await ref.read(sessionProvider.notifier).logout();
+        // Unter einem gepushten 01 liegt die Shell der alten Session.
+        if (mounted) context.go('/servers');
       case 'delete':
         final ok = await showDialog<bool>(
           context: context,
@@ -119,6 +126,7 @@ class _ServerListScreenState extends ConsumerState<ServerListScreen> {
         if (active) await ref.read(sessionProvider.notifier).logout();
         await ref.read(serverRepositoryProvider).remove(profile.id!);
         ref.invalidate(serversProvider);
+        if (active && mounted) context.go('/servers');
     }
   }
 

@@ -68,7 +68,8 @@ class StartScreen extends ConsumerWidget {
           IconButton(
             tooltip: l10n.switchServer,
             icon: const Icon(Icons.dns_outlined),
-            onPressed: () => context.go('/servers'),
+            // push: 01 bekommt einen Zurückknopf, der Ordner-Stack bleibt.
+            onPressed: () => context.push('/servers'),
           ),
           const SizedBox(width: 8),
         ],

@@ -102,7 +102,8 @@ class SettingsScreen extends ConsumerWidget {
                 icon: Icons.dns_outlined,
                 title: l10n.settingsServers,
                 trailing: SettingsValue(servers == null ? '' : '$servers'),
-                onTap: () => context.go('/servers'),
+                // push: 01 bekommt einen Zurückknopf, die Tabs bleiben.
+                onTap: () => context.push('/servers'),
               ),
               row(
                 key: const Key('settings-share-links'),
