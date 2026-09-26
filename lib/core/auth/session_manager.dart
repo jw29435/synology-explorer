@@ -36,6 +36,12 @@ class SessionManager {
     for (final name in _secrets) storage.delete(key: _key(serverId, name)),
   ]);
 
+  /// Ob für [serverId] ein Passwort gemerkt ist („Passwort merken“).
+  static Future<bool> hasRememberedPassword(
+    FlutterSecureStorage storage,
+    int serverId,
+  ) async => await storage.read(key: _key(serverId, 'password')) != null;
+
   int get _serverId =>
       client.profile.id ?? (throw StateError('Profil nicht gespeichert'));
 

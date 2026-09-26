@@ -135,4 +135,17 @@ void main() {
     expect(find.text('music'), findsOneWidget);
     await app.dispose();
   });
+
+  testWidgets('E2E-034: Bearbeiten übernimmt „Passwort merken“', (
+    tester,
+  ) async {
+    final app = await E2E.start(tester);
+    await app.addServerAndLogin(rememberPassword: true);
+    await app.tap(find.byTooltip(l10n.switchServer));
+    await tester.longPress(find.text('Heim-NAS'));
+    await app.settle();
+    await app.tap(find.text(l10n.serverEdit));
+    expect(tester.widget<Switch>(find.byType(Switch)).value, isTrue);
+    await app.dispose();
+  });
 }

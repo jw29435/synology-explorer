@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/theme.dart';
 import '../../../core/auth/session_manager.dart';
 import '../../../core/network/syno_exception.dart';
+import '../../../core/storage/storage_providers.dart';
 import '../../../core/utils/format.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../browser/presentation/entry_widgets.dart';
@@ -54,6 +55,13 @@ class _ServerFormScreenState extends ConsumerState<ServerFormScreen> {
   void initState() {
     super.initState();
     if (_id case final id?) {
+      // Sonst löschte ein Speichern das gemerkte Passwort still.
+      SessionManager.hasRememberedPassword(
+        ref.read(secureStorageProvider),
+        id,
+      ).then((remembered) {
+        if (mounted) setState(() => _remember = remembered);
+      });
       ref.read(serversProvider.future).then((servers) {
         final p = servers.where((s) => s.id == id).firstOrNull;
         if (p == null || !mounted) return;
