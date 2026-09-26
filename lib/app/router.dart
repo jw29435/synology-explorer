@@ -37,10 +37,17 @@ final routerProvider = Provider<GoRouter>((ref) {
           location.startsWith('/files') ||
           (location.startsWith('/view') && state.extra is! LocalView) ||
           location.startsWith('/settings/shares');
-      if (!needsSession || ref.read(sessionProvider) != null) return null;
-      return ref.read(sessionProvider.notifier).expired
-          ? '/servers?expired=1'
-          : '/servers';
+      if (ref.read(sessionProvider) != null) return null;
+      // Auch wenn 01 schon oben liegt (per push über der Shell): die
+      // Ablauf-Meldung einmal zeigen.
+      final onList =
+          location == '/servers' &&
+          !state.uri.queryParameters.containsKey('expired');
+      if (!needsSession && !onList) return null;
+      if (ref.read(sessionProvider.notifier).consumeExpired()) {
+        return '/servers?expired=1';
+      }
+      return needsSession ? '/servers' : null;
     },
     routes: [
       GoRoute(

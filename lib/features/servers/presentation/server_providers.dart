@@ -41,6 +41,13 @@ class SessionNotifier extends Notifier<SessionManager?> {
   /// Meldung auf Screen 01).
   bool expired = false;
 
+  /// [expired] einmal abholen – die Meldung erscheint nur einmal.
+  bool consumeExpired() {
+    final e = expired;
+    expired = false;
+    return e;
+  }
+
   /// Macht [session] zur aktiven Session und merkt den Server für den
   /// nächsten App-Start.
   Future<void> activate(SessionManager session) async {

@@ -3,6 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:synology_explorer/features/servers/presentation/server_providers.dart';
 
+import 'package:synology_explorer/features/browser/domain/nas_entry.dart';
+import 'package:synology_explorer/features/browser/presentation/browser_providers.dart';
+
 import 'e2e_harness.dart';
 
 /// Regressionen aus dem E2E-Lauf rund um Screen 01 (Server-Liste).
@@ -169,5 +172,41 @@ void main() {
     }
     await app.dispose();
     semantics.dispose();
+  });
+
+  testWidgets('Review R-05: Abmelden unter gepushtem 01 räumt den Stack', (
+    tester,
+  ) async {
+    final app = await E2E.start(tester);
+    await app.addServerAndLogin();
+    await app.tap(find.text(l10n.tabSettings));
+    await app.tap(find.text(l10n.settingsServers));
+    await tester.longPress(find.text('Heim-NAS'));
+    await app.settle();
+    await app.tap(find.text(l10n.serverLogout));
+    expect(app.location, '/servers');
+    expect(await app.systemBack(), isFalse, reason: 'keine Shell darunter');
+    await app.dispose();
+  });
+
+  testWidgets('Review R-04: Session geht verloren, während 01 offen ist', (
+    tester,
+  ) async {
+    final app = await E2E.start(tester);
+    await app.addServerAndLogin();
+    await app.tap(find.byTooltip(l10n.switchServer));
+    app.nas.control.expireSessions();
+    // Etwas im Hintergrund (z. B. Wiedergabe) stellt eine Anfrage.
+    await tester.runAsync(
+      () => app.container
+          .read(fileStationListApiProvider)
+          .listShares()
+          .catchError((_) => <NasEntry>[]),
+    );
+    await app.settle();
+    expect(app.location, '/servers?expired=1');
+    expect(find.text(l10n.errorSessionExpired), findsOneWidget);
+    expect(await app.systemBack(), isFalse, reason: 'keine Shell darunter');
+    await app.dispose();
   });
 }
