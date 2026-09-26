@@ -385,12 +385,15 @@ class PlayFolderChip extends ConsumerWidget {
       ),
       icon: const Icon(Icons.play_arrow),
       // Kurz, damit Sortierung, Chip und Anzahl auf 390 dp nebeneinander
-      // passen; Screenreader hören den vollen Text.
-      label: Text(
-        l10n.playFolderShort,
-        semanticsLabel: l10n.playFolder,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
+      // passen; schmaler (360 dp) wird die Schrift kleiner statt gekürzt.
+      // Screenreader hören den vollen Text.
+      label: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Text(
+          l10n.playFolderShort,
+          semanticsLabel: l10n.playFolder,
+          maxLines: 1,
+        ),
       ),
       onPressed: () => startPlayback(context, path),
     );
