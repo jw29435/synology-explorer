@@ -46,6 +46,14 @@ class FolderScreen extends ConsumerWidget {
               .firstOrNull
         : null;
 
+    // Refresh/Sortierung gescheitert: alte Liste bleibt, Fehler als Meldung.
+    ref.listen(folderProvider(path), (_, next) {
+      if (next case AsyncError(:final error, hasValue: true)
+          when !next.isLoading) {
+        showSnack(context, describeError(error, l10n));
+      }
+    });
+
     // Fertiger Upload in diesen Ordner: neu laden, damit die Datei erscheint.
     ref.listen(transfersProvider, (prev, next) {
       final before = prev?.value;
@@ -192,7 +200,10 @@ class FolderScreen extends ConsumerWidget {
             ),
             Expanded(
               child: RefreshIndicator(
-                onRefresh: () => ref.refresh(folderProvider(path).future),
+                // Fehler meldet der Listener oben.
+                onRefresh: () => ref
+                    .refresh(folderProvider(path).future)
+                    .then((_) {}, onError: (_) {}),
                 child: switch (folder) {
                   AsyncValue(value: final state?) when state.entries.isEmpty =>
                     ListView(

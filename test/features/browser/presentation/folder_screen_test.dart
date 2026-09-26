@@ -167,6 +167,28 @@ void main() {
     expect(routerOf(app.container).state.matchedLocation, '/servers/1');
   });
 
+  testWidgets('06: Refresh-/Sortierfehler als Meldung, Liste bleibt '
+      '(E2E-025)', (tester) async {
+    final api = _FailingApi(const SynoNetworkError(), firstCall: true);
+    await pumpApp(tester, listApi: api, location: folderLocation(album));
+    expect(find.text('01 Ebbe.flac'), findsOne);
+
+    await tester.fling(find.text('01 Ebbe.flac'), const Offset(0, 400), 1000);
+    await tester.pumpAndSettle();
+    expect(find.text('Server nicht erreichbar.'), findsOne);
+    expect(find.text('01 Ebbe.flac'), findsOne);
+
+    ScaffoldMessenger.of(tester.element(find.byType(SnackBar)))
+        .removeCurrentSnackBar();
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Name'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Größe'));
+    await tester.pumpAndSettle();
+    expect(find.text('Server nicht erreichbar.'), findsOne);
+    expect(find.text('01 Ebbe.flac'), findsOne);
+  });
+
   testWidgets('06: Fehler beim Nachladen zeigt Retry am Listenende', (
     tester,
   ) async {
@@ -191,12 +213,14 @@ void main() {
   });
 }
 
-/// Scheitert immer bzw. mit [firstPage] erst ab der zweiten Seite.
+/// Scheitert immer bzw. mit [firstPage] erst ab der zweiten Seite, mit
+/// [firstCall] erst ab dem zweiten Aufruf (Fixtures davor).
 class _FailingApi extends FakeListApi {
-  _FailingApi(this.error, {this.firstPage = false});
+  _FailingApi(this.error, {this.firstPage = false, this.firstCall = false});
 
   final Object error;
   final bool firstPage;
+  final bool firstCall;
 
   @override
   Future<NasPage> list(
@@ -212,6 +236,14 @@ class _FailingApi extends FakeListApi {
       descending: descending,
       offset: offset,
     ));
+    if (firstCall) {
+      if (calls.length > 1) throw error;
+      final entries = fixtureEntries(
+        'SYNO.FileStation.List/list.json',
+        'files',
+      );
+      return (entries: entries, total: entries.length);
+    }
     if (!firstPage || offset > 0) throw error;
     return (
       entries: [
