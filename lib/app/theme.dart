@@ -205,11 +205,14 @@ abstract final class AppTheme {
         showCheckmark: false,
         selectedColor: scheme.primary.withValues(alpha: 0.16),
         backgroundColor: scheme.surface,
-        labelStyle: WidgetStateTextStyle.resolveWith(
-          (states) => GoogleFonts.manrope(
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-            color: states.contains(WidgetState.selected)
+        // Chips lösen nur die Farbe nach Zustand auf (WidgetStateColor), einen
+        // WidgetStateTextStyle ignorieren sie – Schrift und Farbe gingen
+        // sonst verloren (im hellen Design weiße Schrift).
+        labelStyle: GoogleFonts.manrope(
+          fontSize: 15,
+          fontWeight: FontWeight.w600,
+          color: WidgetStateColor.resolveWith(
+            (states) => states.contains(WidgetState.selected)
                 ? scheme.primary
                 : scheme.onSurface,
           ),
