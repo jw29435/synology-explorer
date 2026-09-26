@@ -3,9 +3,9 @@ import 'dart:typed_data';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:synology_explorer/core/network/certificate_pinning.dart';
-import 'package:synology_explorer/core/utils/format.dart';
-import 'package:synology_explorer/l10n/app_localizations.dart';
+import 'package:nuvo_explorer/core/network/certificate_pinning.dart';
+import 'package:nuvo_explorer/core/utils/format.dart';
+import 'package:nuvo_explorer/l10n/app_localizations.dart';
 
 void main() {
   final l10n = lookupAppLocalizations(const Locale('de'));

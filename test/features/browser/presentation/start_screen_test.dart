@@ -1,13 +1,13 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:synology_explorer/core/auth/session_manager.dart';
-import 'package:synology_explorer/core/network/certificate_pinning.dart';
-import 'package:synology_explorer/core/network/syno_api_client.dart';
-import 'package:synology_explorer/features/servers/presentation/server_providers.dart';
-import 'package:synology_explorer/l10n/app_localizations.dart';
-import 'package:synology_explorer/features/browser/data/local_library_repository.dart';
-import 'package:synology_explorer/features/browser/domain/nas_entry.dart';
+import 'package:nuvo_explorer/core/auth/session_manager.dart';
+import 'package:nuvo_explorer/core/network/certificate_pinning.dart';
+import 'package:nuvo_explorer/core/network/syno_api_client.dart';
+import 'package:nuvo_explorer/features/servers/presentation/server_providers.dart';
+import 'package:nuvo_explorer/l10n/app_localizations.dart';
+import 'package:nuvo_explorer/features/browser/data/local_library_repository.dart';
+import 'package:nuvo_explorer/features/browser/domain/nas_entry.dart';
 
 import '../../../helpers/app_harness.dart';
 

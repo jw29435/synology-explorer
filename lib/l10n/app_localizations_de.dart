@@ -10,7 +10,7 @@ class AppLocalizationsDe extends AppLocalizations {
   AppLocalizationsDe([String locale = 'de']) : super(locale);
 
   @override
-  String get appTitle => 'Synology Explorer';
+  String get appTitle => 'Nuvo Explorer';
 
   @override
   String get tabFiles => 'Dateien';

@@ -2,11 +2,11 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:synology_explorer/core/utils/format.dart';
-import 'package:synology_explorer/features/browser/domain/nas_entry.dart';
-import 'package:synology_explorer/features/viewers/presentation/viewer_common.dart';
-import 'package:synology_explorer/features/viewers/presentation/viewer_providers.dart';
-import 'package:synology_explorer/features/viewers/presentation/viewer_screen.dart';
+import 'package:nuvo_explorer/core/utils/format.dart';
+import 'package:nuvo_explorer/features/browser/domain/nas_entry.dart';
+import 'package:nuvo_explorer/features/viewers/presentation/viewer_common.dart';
+import 'package:nuvo_explorer/features/viewers/presentation/viewer_providers.dart';
+import 'package:nuvo_explorer/features/viewers/presentation/viewer_screen.dart';
 
 import '../../helpers/app_harness.dart';
 import 'fake_media.dart';

@@ -40,7 +40,7 @@ class AppAudioHandler extends BaseAudioHandler with SeekHandler {
     return AudioService.init(
       builder: () => AppAudioHandler(),
       config: AudioServiceConfig(
-        androidNotificationChannelId: 'de.jw29435.synology_explorer.audio',
+        androidNotificationChannelId: 'de.jw29435.nuvo_explorer.audio',
         androidNotificationChannelName: l10n.audioChannelName,
         androidNotificationOngoing: true,
         androidStopForegroundOnPause: true,

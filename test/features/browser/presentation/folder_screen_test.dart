@@ -1,13 +1,13 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:synology_explorer/app/theme.dart';
-import 'package:synology_explorer/features/settings/data/settings_repository.dart';
+import 'package:nuvo_explorer/app/theme.dart';
+import 'package:nuvo_explorer/features/settings/data/settings_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:synology_explorer/core/network/syno_exception.dart';
-import 'package:synology_explorer/features/browser/domain/nas_entry.dart';
-import 'package:synology_explorer/features/browser/data/file_station_list_api.dart';
-import 'package:synology_explorer/features/browser/presentation/entry_widgets.dart';
+import 'package:nuvo_explorer/core/network/syno_exception.dart';
+import 'package:nuvo_explorer/features/browser/domain/nas_entry.dart';
+import 'package:nuvo_explorer/features/browser/data/file_station_list_api.dart';
+import 'package:nuvo_explorer/features/browser/presentation/entry_widgets.dart';
 
 import '../../../helpers/app_harness.dart';
 import '../../../helpers/settings_fakes.dart';

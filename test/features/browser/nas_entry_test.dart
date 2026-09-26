@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:synology_explorer/features/browser/domain/nas_entry.dart';
+import 'package:nuvo_explorer/features/browser/domain/nas_entry.dart';
 
 void main() {
   test('Typ aus Endung', () {

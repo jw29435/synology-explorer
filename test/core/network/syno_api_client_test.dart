@@ -4,10 +4,10 @@ import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:synology_explorer/core/network/certificate_pinning.dart';
-import 'package:synology_explorer/core/network/syno_api_client.dart';
-import 'package:synology_explorer/core/network/syno_exception.dart';
-import 'package:synology_explorer/features/servers/domain/server_profile.dart';
+import 'package:nuvo_explorer/core/network/certificate_pinning.dart';
+import 'package:nuvo_explorer/core/network/syno_api_client.dart';
+import 'package:nuvo_explorer/core/network/syno_exception.dart';
+import 'package:nuvo_explorer/features/servers/domain/server_profile.dart';
 
 /// Antwortet per Skript statt übers Netz; merkt sich jede Anfrage.
 class FakeAdapter implements HttpClientAdapter {

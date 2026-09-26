@@ -3,9 +3,9 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:synology_explorer/core/network/media_proxy.dart';
-import 'package:synology_explorer/features/browser/domain/nas_entry.dart';
-import 'package:synology_explorer/features/viewers/data/media_repository.dart';
+import 'package:nuvo_explorer/core/network/media_proxy.dart';
+import 'package:nuvo_explorer/features/browser/domain/nas_entry.dart';
+import 'package:nuvo_explorer/features/viewers/data/media_repository.dart';
 
 /// Liefert je Dateiname eine Fixture-Datei. Mit [gate] hält der Download an,
 /// bis der Test ihn freigibt; vorher meldet er halben Fortschritt.

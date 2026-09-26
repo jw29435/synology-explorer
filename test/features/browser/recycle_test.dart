@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:synology_explorer/features/browser/domain/recycle.dart';
-import 'package:synology_explorer/features/browser/presentation/file_actions.dart';
+import 'package:nuvo_explorer/features/browser/domain/recycle.dart';
+import 'package:nuvo_explorer/features/browser/presentation/file_actions.dart';
 
 void main() {
   test('Ursprungspfad aus dem #recycle-Pfad', () {

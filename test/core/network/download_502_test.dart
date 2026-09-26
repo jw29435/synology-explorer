@@ -3,11 +3,11 @@ import 'dart:io';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shelf/shelf.dart';
-import 'package:synology_explorer/core/auth/session_manager.dart';
-import 'package:synology_explorer/core/network/certificate_pinning.dart';
-import 'package:synology_explorer/core/network/syno_api_client.dart';
-import 'package:synology_explorer/core/network/syno_exception.dart';
-import 'package:synology_explorer/features/servers/domain/server_profile.dart';
+import 'package:nuvo_explorer/core/auth/session_manager.dart';
+import 'package:nuvo_explorer/core/network/certificate_pinning.dart';
+import 'package:nuvo_explorer/core/network/syno_api_client.dart';
+import 'package:nuvo_explorer/core/network/syno_exception.dart';
+import 'package:nuvo_explorer/features/servers/domain/server_profile.dart';
 
 import '../../../tool/mock_nas/mock_nas.dart';
 import '../../helpers/mock_nas_server.dart';

@@ -1,7 +1,7 @@
 import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:synology_explorer/core/storage/app_database.dart';
+import 'package:nuvo_explorer/core/storage/app_database.dart';
 
 void main() {
   test('v6 → v7: Favoriten bekommen name, remote, broken', () async {

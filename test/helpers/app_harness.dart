@@ -10,23 +10,23 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:synology_explorer/app/app.dart';
-import 'package:synology_explorer/app/router.dart';
-import 'package:synology_explorer/core/auth/session_manager.dart';
-import 'package:synology_explorer/core/network/certificate_pinning.dart';
-import 'package:synology_explorer/core/network/syno_api_client.dart';
-import 'package:synology_explorer/core/storage/app_database.dart';
-import 'package:synology_explorer/core/storage/storage_providers.dart';
-import 'package:synology_explorer/features/browser/data/file_station_list_api.dart';
-import 'package:synology_explorer/features/browser/data/thumbnail_cache.dart';
-import 'package:synology_explorer/features/browser/domain/nas_entry.dart';
-import 'package:synology_explorer/features/browser/presentation/browser_providers.dart';
-import 'package:synology_explorer/features/servers/domain/server_profile.dart';
-import 'package:synology_explorer/features/servers/presentation/server_providers.dart';
-import 'package:synology_explorer/features/transfers/data/offline_store.dart';
-import 'package:synology_explorer/features/transfers/data/transfer_queue.dart';
-import 'package:synology_explorer/features/transfers/presentation/transfer_notifications.dart';
-import 'package:synology_explorer/features/transfers/presentation/transfer_providers.dart';
+import 'package:nuvo_explorer/app/app.dart';
+import 'package:nuvo_explorer/app/router.dart';
+import 'package:nuvo_explorer/core/auth/session_manager.dart';
+import 'package:nuvo_explorer/core/network/certificate_pinning.dart';
+import 'package:nuvo_explorer/core/network/syno_api_client.dart';
+import 'package:nuvo_explorer/core/storage/app_database.dart';
+import 'package:nuvo_explorer/core/storage/storage_providers.dart';
+import 'package:nuvo_explorer/features/browser/data/file_station_list_api.dart';
+import 'package:nuvo_explorer/features/browser/data/thumbnail_cache.dart';
+import 'package:nuvo_explorer/features/browser/domain/nas_entry.dart';
+import 'package:nuvo_explorer/features/browser/presentation/browser_providers.dart';
+import 'package:nuvo_explorer/features/servers/domain/server_profile.dart';
+import 'package:nuvo_explorer/features/servers/presentation/server_providers.dart';
+import 'package:nuvo_explorer/features/transfers/data/offline_store.dart';
+import 'package:nuvo_explorer/features/transfers/data/transfer_queue.dart';
+import 'package:nuvo_explorer/features/transfers/presentation/transfer_notifications.dart';
+import 'package:nuvo_explorer/features/transfers/presentation/transfer_providers.dart';
 
 const testProfile = ServerProfile(
   id: 1,
@@ -165,7 +165,7 @@ Future<({ProviderContainer container, AppDatabase db})> pumpApp(
   await tester.pumpWidget(
     UncontrolledProviderScope(
       container: container,
-      child: const SynologyExplorerApp(),
+      child: const NuvoExplorerApp(),
     ),
   );
   await tester.pump();

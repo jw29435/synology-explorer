@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:synology_explorer/core/network/syno_exception.dart';
+import 'package:nuvo_explorer/core/network/syno_exception.dart';
 
 void main() {
   test('Login-Codes von SYNO.API.Auth', () {

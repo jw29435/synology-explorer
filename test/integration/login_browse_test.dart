@@ -1,13 +1,13 @@
 import 'package:drift/native.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:synology_explorer/core/network/certificate_pinning.dart';
-import 'package:synology_explorer/core/network/syno_exception.dart';
-import 'package:synology_explorer/core/storage/app_database.dart';
-import 'package:synology_explorer/features/browser/data/file_station_list_api.dart';
-import 'package:synology_explorer/features/browser/domain/nas_entry.dart';
-import 'package:synology_explorer/features/servers/data/server_repository.dart';
-import 'package:synology_explorer/features/servers/domain/server_profile.dart';
+import 'package:nuvo_explorer/core/network/certificate_pinning.dart';
+import 'package:nuvo_explorer/core/network/syno_exception.dart';
+import 'package:nuvo_explorer/core/storage/app_database.dart';
+import 'package:nuvo_explorer/features/browser/data/file_station_list_api.dart';
+import 'package:nuvo_explorer/features/browser/domain/nas_entry.dart';
+import 'package:nuvo_explorer/features/servers/data/server_repository.dart';
+import 'package:nuvo_explorer/features/servers/domain/server_profile.dart';
 
 import '../../tool/mock_nas/mock_nas.dart';
 import '../helpers/mock_nas_server.dart';

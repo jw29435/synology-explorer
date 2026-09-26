@@ -17,7 +17,7 @@ import workmanager_apple
     // beim ersten Einplanen aus Dart – Absturz beim Einschalten des
     // Auto-Uploads. Gleiche ID wie in Info.plist und background.dart.
     WorkmanagerPlugin.registerPeriodicTask(
-      withIdentifier: "de.jw29435.synologyExplorer.autoUpload",
+      withIdentifier: "de.jw29435.nuvoExplorer.autoUpload",
       earliestBeginInSeconds: NSNumber(value: 15 * 60)
     )
     WorkmanagerPlugin.setPluginRegistrantCallback { registry in

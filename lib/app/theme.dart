@@ -53,11 +53,11 @@ class Neutrals {
 }
 
 /// Design-Tokens aus den Mockups (siehe CLAUDE.md). Die neutralen Töne
-/// kommen aus [neutrals], das `SynologyExplorerApp` passend zum Design setzt;
+/// kommen aus [neutrals], das `NuvoExplorerApp` passend zum Design setzt;
 /// Akzent- und Statusfarben sind hell wie dunkel gleich.
 abstract final class AppColors {
   // ponytail: globaler Schalter statt ThemeExtension – die App baut beim
-  // Designwechsel komplett neu auf (SynologyExplorerApp._rebuildAll). ThemeExtension,
+  // Designwechsel komplett neu auf (NuvoExplorerApp._rebuildAll). ThemeExtension,
   // falls Widgets je außerhalb dieses Baums gerendert werden.
   static Neutrals neutrals = Neutrals.dark;
 

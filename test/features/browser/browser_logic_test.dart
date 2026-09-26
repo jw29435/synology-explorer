@@ -2,14 +2,14 @@ import 'package:drift/native.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:synology_explorer/core/storage/app_database.dart';
-import 'package:synology_explorer/core/utils/format.dart';
-import 'package:synology_explorer/features/browser/data/local_library_repository.dart';
-import 'package:synology_explorer/features/browser/domain/nas_entry.dart';
-import 'package:synology_explorer/features/browser/presentation/browser_providers.dart';
-import 'package:synology_explorer/features/browser/presentation/entry_sheets.dart';
-import 'package:synology_explorer/features/browser/presentation/search_screen.dart';
-import 'package:synology_explorer/l10n/app_localizations_de.dart';
+import 'package:nuvo_explorer/core/storage/app_database.dart';
+import 'package:nuvo_explorer/core/utils/format.dart';
+import 'package:nuvo_explorer/features/browser/data/local_library_repository.dart';
+import 'package:nuvo_explorer/features/browser/domain/nas_entry.dart';
+import 'package:nuvo_explorer/features/browser/presentation/browser_providers.dart';
+import 'package:nuvo_explorer/features/browser/presentation/entry_sheets.dart';
+import 'package:nuvo_explorer/features/browser/presentation/search_screen.dart';
+import 'package:nuvo_explorer/l10n/app_localizations_de.dart';
 
 void main() {
   test('Zuletzt geöffnet: neueste zuerst, höchstens 50', () async {

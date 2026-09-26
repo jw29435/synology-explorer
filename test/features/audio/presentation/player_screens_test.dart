@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:synology_explorer/app/theme.dart';
-import 'package:synology_explorer/features/audio/domain/playback_queue.dart';
-import 'package:synology_explorer/features/audio/presentation/playback_providers.dart';
-import 'package:synology_explorer/features/audio/presentation/queue_screen.dart';
+import 'package:nuvo_explorer/app/theme.dart';
+import 'package:nuvo_explorer/features/audio/domain/playback_queue.dart';
+import 'package:nuvo_explorer/features/audio/presentation/playback_providers.dart';
+import 'package:nuvo_explorer/features/audio/presentation/queue_screen.dart';
 
 import '../../../helpers/app_harness.dart';
 import '../../../helpers/audio_fakes.dart';

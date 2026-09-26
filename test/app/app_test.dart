@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:synology_explorer/features/audio/data/playback_repository.dart';
+import 'package:nuvo_explorer/features/audio/data/playback_repository.dart';
 
 import '../helpers/app_harness.dart';
 import '../helpers/audio_fakes.dart';

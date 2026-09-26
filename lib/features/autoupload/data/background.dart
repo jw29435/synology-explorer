@@ -20,7 +20,7 @@ import 'camera_roll.dart';
 
 /// Name des periodischen Tasks; auf iOS zugleich die BGTaskScheduler-ID
 /// (Info.plist `BGTaskSchedulerPermittedIdentifiers`).
-const autoUploadTask = 'de.jw29435.synologyExplorer.autoUpload';
+const autoUploadTask = 'de.jw29435.nuvoExplorer.autoUpload';
 
 /// WLAN oder Ethernet; ein VPN über Mobilfunk zählt nicht.
 Future<bool> unmeteredNow() async {

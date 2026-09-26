@@ -101,7 +101,7 @@ abstract class AppLocalizations {
   /// No description provided for @appTitle.
   ///
   /// In de, this message translates to:
-  /// **'Synology Explorer'**
+  /// **'Nuvo Explorer'**
   String get appTitle;
 
   /// No description provided for @tabFiles.

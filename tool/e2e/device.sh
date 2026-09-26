@@ -19,7 +19,7 @@ set -euo pipefail
 : "${DEVICE:?DEVICE=<adb-id> setzen}"
 RUN="${RUN:-$(date +%Y%m%d)}"
 OUT=".e2e/$RUN"
-PKG=de.jw29435.synology_explorer
+PKG=de.jw29435.nuvo_explorer
 APK=build/app/outputs/flutter-apk/app-debug.apk
 mkdir -p "$OUT"
 

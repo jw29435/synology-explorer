@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:synology_explorer/features/servers/presentation/server_providers.dart';
+import 'package:nuvo_explorer/features/servers/presentation/server_providers.dart';
 
-import 'package:synology_explorer/features/browser/domain/nas_entry.dart';
-import 'package:synology_explorer/features/browser/presentation/browser_providers.dart';
+import 'package:nuvo_explorer/features/browser/domain/nas_entry.dart';
+import 'package:nuvo_explorer/features/browser/presentation/browser_providers.dart';
 
 import 'e2e_harness.dart';
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:synology_explorer/core/utils/format.dart';
+import 'package:nuvo_explorer/core/utils/format.dart';
 
 import 'e2e_harness.dart';
 

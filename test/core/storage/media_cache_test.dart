@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:synology_explorer/core/storage/media_cache.dart';
+import 'package:nuvo_explorer/core/storage/media_cache.dart';
 
 void main() {
   late Directory dir;

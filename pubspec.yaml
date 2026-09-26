@@ -1,4 +1,4 @@
-name: synology_explorer
+name: nuvo_explorer
 description: "Flutter-Client für Synology NAS (File Station), Fokus Audio-Wiedergabe."
 publish_to: 'none'
 

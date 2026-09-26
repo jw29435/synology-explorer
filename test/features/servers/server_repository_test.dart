@@ -3,14 +3,14 @@ import 'dart:io';
 import 'package:drift/native.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:synology_explorer/core/network/certificate_pinning.dart';
-import 'package:synology_explorer/core/storage/app_database.dart';
-import 'package:synology_explorer/features/autoupload/data/auto_upload_repository.dart';
-import 'package:synology_explorer/features/servers/data/server_repository.dart';
-import 'package:synology_explorer/features/servers/domain/server_profile.dart';
+import 'package:nuvo_explorer/core/network/certificate_pinning.dart';
+import 'package:nuvo_explorer/core/storage/app_database.dart';
+import 'package:nuvo_explorer/features/autoupload/data/auto_upload_repository.dart';
+import 'package:nuvo_explorer/features/servers/data/server_repository.dart';
+import 'package:nuvo_explorer/features/servers/domain/server_profile.dart';
 
-import 'package:synology_explorer/features/transfers/data/offline_store.dart';
-import 'package:synology_explorer/features/transfers/domain/transfer.dart';
+import 'package:nuvo_explorer/features/transfers/data/offline_store.dart';
+import 'package:nuvo_explorer/features/transfers/domain/transfer.dart';
 
 import '../../helpers/mock_nas_server.dart';
 
@@ -138,6 +138,6 @@ void main() {
     final session = await repo.connect(saved);
     expect(session.client.activeUrl, Uri.parse(nas.url));
     expect(session.client.sid, 'gespeichert');
-    expect(session.deviceName, startsWith('Synology Explorer'));
+    expect(session.deviceName, startsWith('Nuvo Explorer'));
   });
 }

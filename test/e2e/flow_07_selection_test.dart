@@ -4,8 +4,8 @@ import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:synology_explorer/core/storage/app_database.dart' show Transfer;
-import 'package:synology_explorer/features/transfers/domain/transfer.dart'
+import 'package:nuvo_explorer/core/storage/app_database.dart' show Transfer;
+import 'package:nuvo_explorer/features/transfers/domain/transfer.dart'
     show TransferState;
 
 import 'e2e_harness.dart';

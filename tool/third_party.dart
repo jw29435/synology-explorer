@@ -58,7 +58,7 @@ Future<void> main() async {
   File('THIRD_PARTY.md').writeAsStringSync('''
 # Drittanbieter-Lizenzen
 
-Synology Explorer selbst steht unter CC0 (siehe `LICENSE`). Die App enthält die
+Nuvo Explorer selbst steht unter CC0 (siehe `LICENSE`). Die App enthält die
 folgenden Pakete und Bibliotheken mit eigenen Lizenzen. Die vollständigen
 Lizenztexte zeigt die App unter Einstellungen › Über & Lizenzen.
 

@@ -1,6 +1,6 @@
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:synology_explorer/features/audio/domain/sleep_timer.dart';
+import 'package:nuvo_explorer/features/audio/domain/sleep_timer.dart';
 
 void main() {
   test('feste Dauer: pausiert genau nach Ablauf', () {

@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Synology Explorer</string>
+	<string>Nuvo Explorer</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -15,7 +15,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>Synology Explorer</string>
+	<string>Nuvo Explorer</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -80,7 +80,7 @@
 	<!-- Auto-Upload (workmanager, BGAppRefreshTask); gleiche ID wie in Dart. -->
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
-		<string>de.jw29435.synologyExplorer.autoUpload</string>
+		<string>de.jw29435.nuvoExplorer.autoUpload</string>
 	</array>
 	<key>CFBundleLocalizations</key>
 	<array>

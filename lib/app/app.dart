@@ -6,8 +6,8 @@ import '../l10n/app_localizations.dart';
 import 'router.dart';
 import 'theme.dart';
 
-class SynologyExplorerApp extends ConsumerWidget {
-  const SynologyExplorerApp({super.key});
+class NuvoExplorerApp extends ConsumerWidget {
+  const NuvoExplorerApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

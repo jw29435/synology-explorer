@@ -3,9 +3,9 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:synology_explorer/core/storage/media_cache.dart';
-import 'package:synology_explorer/features/audio/data/track_info_loader.dart';
-import 'package:synology_explorer/features/browser/domain/nas_entry.dart';
+import 'package:nuvo_explorer/core/storage/media_cache.dart';
+import 'package:nuvo_explorer/features/audio/data/track_info_loader.dart';
+import 'package:nuvo_explorer/features/browser/domain/nas_entry.dart';
 
 /// Minimaler ID3v2.3-Tag mit Titel, Interpret, Album und Frontcover –
 /// so, wie er am Anfang einer MP3 steht.
