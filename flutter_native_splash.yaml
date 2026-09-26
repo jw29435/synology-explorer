@@ -1,0 +1,11 @@
+# App ist durchgehend dunkel: keine *_dark-Varianten.
+flutter_native_splash:
+  color: "#15171C"
+  image: assets/icon/splash.png
+  android_12:
+    image: assets/icon/splash_android12.png
+    color: "#15171C"
+    icon_background_color: "#032E7B"
+  android: true
+  ios: true
+  web: false

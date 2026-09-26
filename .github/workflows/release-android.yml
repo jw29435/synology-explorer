@@ -1,7 +1,7 @@
 name: Release Android
 
-# Tag v* (von Hand oder über release-please) → signierte APKs als
-# GitHub-Release-Assets und das AAB im Play-Internal-Track.
+# Tag v* (von Hand oder über release-please) → signierte APKs und das AAB
+# als GitHub-Release-Assets, das AAB zusätzlich im Play-Internal-Track.
 on:
   push:
     tags: ['v*']
@@ -93,11 +93,15 @@ jobs:
             exit 1
           fi
 
-      - name: APKs ins GitHub-Release
+      # AAB zusätzlich als Download, z. B. für den manuellen Upload in die
+      # Play Console, solange kein Service-Account hinterlegt ist.
+      - name: APKs und AAB ins GitHub-Release
         uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
         with:
           tag_name: ${{ env.TAG }}
-          files: build/app/outputs/flutter-apk/app-*-release.apk
+          files: |
+            build/app/outputs/flutter-apk/app-*-release.apk
+            build/app/outputs/bundle/release/app-release.aab
 
       - name: AAB in den Play-Internal-Track
         if: env.HAS_PLAY == 'true'
