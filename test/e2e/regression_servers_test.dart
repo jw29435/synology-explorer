@@ -148,4 +148,26 @@ void main() {
     expect(tester.widget<Switch>(find.byType(Switch)).value, isTrue);
     await app.dispose();
   });
+
+  testWidgets('E2E-060: Formularfelder tragen ihre Beschriftung', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    final app = await E2E.start(tester);
+    await app.tapText(l10n.serverAdd);
+    final fields = find.byType(TextFormField);
+    for (final (i, label) in [
+      (0, l10n.fieldName),
+      (1, l10n.fieldLanUrl),
+      (3, l10n.fieldUser),
+      (4, l10n.fieldPassword),
+    ]) {
+      expect(
+        tester.getSemantics(fields.at(i)).label.toLowerCase(),
+        contains(label.toLowerCase()),
+      );
+    }
+    await app.dispose();
+    semantics.dispose();
+  });
 }

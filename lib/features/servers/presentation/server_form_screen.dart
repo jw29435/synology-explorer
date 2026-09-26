@@ -323,12 +323,16 @@ class _Field extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.only(bottom: 16),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SectionLabel(label, padding: const EdgeInsets.only(bottom: 8)),
-        child,
-      ],
+    // Beschriftung und Feld als ein Knoten: TalkBack liest „Name,
+    // Eingabefeld“ statt nur „Eingabefeld“.
+    child: MergeSemantics(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SectionLabel(label, padding: const EdgeInsets.only(bottom: 8)),
+          child,
+        ],
+      ),
     ),
   );
 }
@@ -497,21 +501,31 @@ class _OtpScreenState extends State<OtpScreen> {
             style: TextStyle(color: AppColors.textSecondary),
           ),
           const SizedBox(height: 24),
-          SectionLabel(l10n.otpCode, padding: const EdgeInsets.only(bottom: 8)),
-          TextField(
-            controller: _code,
-            autofocus: true,
-            keyboardType: TextInputType.number,
-            autofillHints: const [AutofillHints.oneTimeCode],
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            maxLength: 6,
-            textAlign: TextAlign.center,
-            style: AppTheme.mono(
-              const TextStyle(fontSize: 28, letterSpacing: 12),
+          MergeSemantics(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                SectionLabel(
+                  l10n.otpCode,
+                  padding: const EdgeInsets.only(bottom: 8),
+                ),
+                TextField(
+                  controller: _code,
+                  autofocus: true,
+                  keyboardType: TextInputType.number,
+                  autofillHints: const [AutofillHints.oneTimeCode],
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  maxLength: 6,
+                  textAlign: TextAlign.center,
+                  style: AppTheme.mono(
+                    const TextStyle(fontSize: 28, letterSpacing: 12),
+                  ),
+                  decoration: const InputDecoration(counterText: ''),
+                  onChanged: (_) => setState(() {}),
+                  onSubmitted: (_) => _submit(),
+                ),
+              ],
             ),
-            decoration: const InputDecoration(counterText: ''),
-            onChanged: (_) => setState(() {}),
-            onSubmitted: (_) => _submit(),
           ),
           const SizedBox(height: 16),
           _SwitchCard(
