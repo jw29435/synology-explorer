@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:synology_explorer/features/browser/data/file_station_task_api.dart';
 import 'package:synology_explorer/features/browser/domain/nas_entry.dart';
 import 'package:synology_explorer/features/browser/presentation/browser_providers.dart';
+import 'package:synology_explorer/features/browser/presentation/entry_widgets.dart';
+import 'package:synology_explorer/features/viewers/presentation/viewer_screen.dart';
 
 import '../../../helpers/app_harness.dart';
 
@@ -96,6 +98,44 @@ void main() {
       ),
     );
     expect(target.height, greaterThanOrEqualTo(44));
+  });
+
+  testWidgets('11: Datei-Treffer öffnet die Datei, Ordner den Ordner '
+      '(E2E-020)', (tester) async {
+    final app = await pumpApp(
+      tester,
+      location: '/files/search?path=/music',
+      overrides: [searchApiProvider.overrideWithValue(_EndlessSearch())],
+    );
+    final router = routerOf(app.container);
+    await tester.enterText(find.byType(TextField), 'nebel');
+    await tester.pump(SearchNotifier.debounce);
+    await tester.pump();
+
+    await tester.tap(
+      find.textContaining('Live 2024', findRichText: true).first,
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(
+      router.state.uri.toString(),
+      folderLocation('/music/Alben/Nebelhorn – Live 2024'),
+    );
+    router.pop();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+
+    await tester.tap(find.textContaining('Setlist', findRichText: true));
+    await tester.pump();
+    expect(
+      router.state.uri.toString(),
+      viewerLocation(
+        '/music/Alben/Nebelhorn – Live 2024/Nebelhorn_Setlist.pdf',
+      ),
+    );
+    // Suche verlassen: Polling endet.
+    router.go('/files');
+    await tester.pumpAndSettle();
   });
 
   test('Filter setzen Dateiendungen', () {
