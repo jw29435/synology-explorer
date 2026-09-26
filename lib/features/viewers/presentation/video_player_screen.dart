@@ -219,60 +219,67 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final state = _player.state;
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: LayoutBuilder(
-        builder: (context, box) => Stack(
-          fit: StackFit.expand,
-          children: [
-            Video(controller: _video, controls: NoVideoControls),
-            GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: _toggleControls,
-              onDoubleTapDown: (d) => _doubleTapX = d.localPosition.dx,
-              onDoubleTap: () => _seekBy(
-                (_doubleTapX ?? 0) < box.maxWidth / 2 ? -_skip : _skip,
-              ),
-              onVerticalDragUpdate: (d) => _drag(d, box),
-              onVerticalDragEnd: (_) => setState(() => _gesture = null),
+    // Immer hell auf dunklem Scrim, auch im hellen Design.
+    return AnnotatedRegion(
+      value: SystemUiOverlayStyle.light,
+      child: Theme(
+        data: AppTheme.dark,
+        child: Scaffold(
+          backgroundColor: Colors.black,
+          body: LayoutBuilder(
+            builder: (context, box) => Stack(
+              fit: StackFit.expand,
+              children: [
+                Video(controller: _video, controls: NoVideoControls),
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: _toggleControls,
+                  onDoubleTapDown: (d) => _doubleTapX = d.localPosition.dx,
+                  onDoubleTap: () => _seekBy(
+                    (_doubleTapX ?? 0) < box.maxWidth / 2 ? -_skip : _skip,
+                  ),
+                  onVerticalDragUpdate: (d) => _drag(d, box),
+                  onVerticalDragEnd: (_) => setState(() => _gesture = null),
+                ),
+                if (_error)
+                  Center(
+                    child: _Pill(
+                      icon: Icons.error_outline,
+                      text: l10n.videoUnavailable,
+                    ),
+                  ),
+                if (_gesture case (:final volume, :final value))
+                  Center(
+                    child: _Pill(
+                      icon: volume ? Icons.volume_up : Icons.brightness_6,
+                      text: volume
+                          ? l10n.volumePercent('${(value * 100).round()}')
+                          : l10n.brightnessPercent('${(value * 100).round()}'),
+                    ),
+                  ),
+                if (_controls) ...[
+                  _topBar(context, l10n, state),
+                  _centerControls(l10n, state),
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: _bottomBar(context, l10n, state),
+                  ),
+                ],
+                if (_resumedAt case final at?)
+                  Align(
+                    alignment: const Alignment(0, -0.55),
+                    child: _ResumeCard(
+                      at: at,
+                      onResume: () => setState(() => _resumedAt = null),
+                      onRestart: () {
+                        _player.seek(Duration.zero);
+                        setState(() => _resumedAt = null);
+                      },
+                    ),
+                  ),
+              ],
             ),
-            if (_error)
-              Center(
-                child: _Pill(
-                  icon: Icons.error_outline,
-                  text: l10n.videoUnavailable,
-                ),
-              ),
-            if (_gesture case (:final volume, :final value))
-              Center(
-                child: _Pill(
-                  icon: volume ? Icons.volume_up : Icons.brightness_6,
-                  text: volume
-                      ? l10n.volumePercent('${(value * 100).round()}')
-                      : l10n.brightnessPercent('${(value * 100).round()}'),
-                ),
-              ),
-            if (_controls) ...[
-              _topBar(context, l10n, state),
-              _centerControls(l10n, state),
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: _bottomBar(context, l10n, state),
-              ),
-            ],
-            if (_resumedAt case final at?)
-              Align(
-                alignment: const Alignment(0, -0.55),
-                child: _ResumeCard(
-                  at: at,
-                  onResume: () => setState(() => _resumedAt = null),
-                  onRestart: () {
-                    _player.seek(Duration.zero);
-                    setState(() => _resumedAt = null);
-                  },
-                ),
-              ),
-          ],
+          ),
         ),
       ),
     );
@@ -312,7 +319,7 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
                     if (info.isNotEmpty)
                       Text(
                         info,
-                        style: TextStyle(color: AppColors.textSecondary),
+                        style: TextStyle(color: Neutrals.dark.textSecondary),
                       ),
                   ],
                 ),
@@ -431,7 +438,7 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        border: Border.all(color: AppColors.textMuted),
+                        border: Border.all(color: Neutrals.dark.textMuted),
                         borderRadius: BorderRadius.circular(22),
                       ),
                       child: Text(
@@ -474,7 +481,7 @@ class _ResumeCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 12, 12, 12),
       decoration: BoxDecoration(
-        color: AppColors.background,
+        color: Neutrals.dark.background,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(

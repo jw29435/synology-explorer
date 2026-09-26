@@ -1,12 +1,16 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:synology_explorer/app/theme.dart';
 import 'package:synology_explorer/features/browser/data/file_station_list_api.dart';
 import 'package:synology_explorer/features/browser/data/file_station_ops_api.dart';
 import 'package:synology_explorer/features/browser/domain/nas_entry.dart';
 import 'package:synology_explorer/features/browser/presentation/browser_providers.dart';
 import 'package:synology_explorer/features/browser/presentation/entry_widgets.dart';
+import 'package:synology_explorer/features/settings/presentation/settings_providers.dart';
+import 'package:synology_explorer/features/viewers/presentation/image_viewer_screen.dart';
 import 'package:synology_explorer/features/viewers/presentation/viewer_providers.dart';
 import 'package:synology_explorer/features/viewers/presentation/viewer_screen.dart';
 
@@ -193,5 +197,55 @@ void main() {
     expect(find.text('1 von 1'), findsNothing);
     expect(find.text('clip.mp4'), findsOne);
     expect(find.text('IMG_2.HEIC'), findsNothing);
+  });
+
+  testWidgets('E2E-047: Design „Hell“ – Leisten hell auf dunklem Scrim', (
+    tester,
+  ) async {
+    addTearDown(() => AppColors.neutrals = Neutrals.dark);
+    await pumpApp(
+      tester,
+      listApi: _PhotoFolder(),
+      location: folderLocation(_folder),
+      overrides: [
+        themeModeProvider.overrideWith((ref) => Stream.value(ThemeMode.light)),
+        mediaRepositoryProvider.overrideWithValue(
+          FakeMediaRepository({
+            'IMG_1.jpg': 'test/fixtures/SYNO.FileStation.Thumb/get.jpg',
+            'IMG_2.HEIC': 'test/fixtures/SYNO.FileStation.Thumb/get.jpg',
+          }),
+        ),
+      ],
+    );
+    expect(AppColors.neutrals, same(Neutrals.light));
+    await tester.tap(find.text('IMG_1.jpg'));
+    await pumpWithIo(tester);
+
+    Color text(String label) {
+      final element = tester.element(find.text(label));
+      final style = (element.widget as Text).style;
+      return DefaultTextStyle.of(element).style.merge(style).color!;
+    }
+
+    bool light(Color c) => c.computeLuminance() > 0.3;
+    for (final label in ['IMG_1.jpg', '1 von 2', 'Teilen', 'Favorit']) {
+      expect(light(text(label)), isTrue, reason: label);
+    }
+    expect(text('Löschen'), Neutrals.dark.errorSoft);
+    expect(
+      light(
+        IconTheme.of(tester.element(find.byIcon(Icons.info_outline))).color!,
+      ),
+      isTrue,
+    );
+    final status = tester.widget<AnnotatedRegion<SystemUiOverlayStyle>>(
+      find
+          .descendant(
+            of: find.byType(ImageViewerScreen),
+            matching: find.byType(AnnotatedRegion<SystemUiOverlayStyle>),
+          )
+          .first,
+    );
+    expect(status.value.statusBarIconBrightness, Brightness.light);
   });
 }
