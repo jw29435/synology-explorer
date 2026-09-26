@@ -109,6 +109,22 @@ void main() {
     }
   });
 
+  test('E2E-028: Fehler nach dem Start nur, wenn das NAS scheitert', () {
+    const offline = SynoNetworkError();
+    // Vor dem Start: jede Meldung, der Proxy-Fehler geht vor.
+    expect(playerError('tcp: failed', started: false), 'tcp: failed');
+    expect(
+      playerError('tcp: failed', started: false, proxyError: offline),
+      offline,
+    );
+    // Danach: harmlose Meldungen nicht, Netzabbruch schon.
+    expect(playerError('vd: late frame', started: true), isNull);
+    expect(
+      playerError('stream: failed', started: true, proxyError: offline),
+      offline,
+    );
+  });
+
   group('E2E-027: Fehlerarten', () {
     Future<List<String>> show(WidgetTester tester, Object error) async {
       final retries = <String>[];

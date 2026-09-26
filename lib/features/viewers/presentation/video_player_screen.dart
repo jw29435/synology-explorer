@@ -35,6 +35,17 @@ void pauseMusicForVideo(WidgetRef ref) {
 bool videoLoading(PlayerState s, {required bool failed}) =>
     !failed && (s.buffering || s.duration == Duration.zero);
 
+/// Welcher Fehler zu einer Meldung des Players erscheint (`null` = keiner):
+/// vor dem Start jede, sonst bliebe das Bild schwarz; danach nur, wenn der
+/// Proxy wirklich gescheitert ist (Netz weg, Session abgelaufen) – unterwegs
+/// meldet mpv auch Harmloses. Der Proxy-Fehler geht vor, er unterscheidet
+/// Netz, Rechte und Session.
+Object? playerError(
+  String message, {
+  required bool started,
+  SynoException? proxyError,
+}) => proxyError ?? (started ? null : message);
+
 /// Screen 16: Streaming mit media_kit (Seek per HTTP-Range) im
 /// Landscape-Vollbild. Doppeltipp ±10 s, Wischen rechts Lautstärke, links
 /// Helligkeit; Position wie bei Audio alle 5 s und bei Pause gespeichert.
@@ -117,12 +128,14 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
           if (done) unawaited(_positions.clear(widget.entry));
         }),
       )
-      // Nur solange nichts läuft: sonst sind es meist harmlose Meldungen.
       ..add(
         s.error.listen((message) {
-          if (_player.state.duration == Duration.zero) {
-            setState(() => _error = _proxy?.lastError ?? message);
-          }
+          final error = playerError(
+            message,
+            started: _player.state.duration > Duration.zero,
+            proxyError: _proxy?.lastError,
+          );
+          if (error != null) setState(() => _error = error);
         }),
       );
     pauseMusicForVideo(ref);

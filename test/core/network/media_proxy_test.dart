@@ -166,6 +166,20 @@ void main() {
     expect(res.statusCode, 502);
     // Der Player unterscheidet darüber Session, Netz und Rechte (E2E-027).
     expect(proxy.lastError, isA<SynoSessionExpired>());
+
+    // Klappt die nächste Anfrage, ist der Fehler vorbei (E2E-028).
+    when(
+      () => client.requestStream(
+        any(),
+        any(),
+        any(),
+        start: any(named: 'start'),
+        end: any(named: 'end'),
+        cancelToken: any(named: 'cancelToken'),
+      ),
+    ).thenAnswer((_) async => ResponseBody(Stream.value(data), 200));
+    await get(proxy.url);
+    expect(proxy.lastError, isNull);
   });
 
   test('Backpressure: langsamer Client zieht nicht die ganze Datei, '
