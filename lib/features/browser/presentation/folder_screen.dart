@@ -343,15 +343,29 @@ class _Breadcrumb extends StatelessWidget {
             InkWell(
               onTap: i == segments.length - 1
                   ? null
-                  : () => context.go(
-                      folderLocation('/${segments.take(i + 1).join('/')}'),
-                    ),
+                  : () => _open(context, '/${segments.take(i + 1).join('/')}'),
               child: Text(segment, style: style),
             ),
           ],
         ],
       ),
     );
+  }
+}
+
+/// Liegt [target] schon im Stack, dorthin zurück; sonst obendrauf – so
+/// bleiben Suche und Zwischenordner erhalten. go_router legt die
+/// Query-Parameter einer Seite in `arguments` ab.
+void _open(BuildContext context, String target) {
+  bool isTarget(RouteSettings s) =>
+      s.name == 'folder' &&
+      s.arguments is Map &&
+      (s.arguments! as Map)['path'] == target;
+  final nav = Navigator.of(context);
+  if (nav.widget.pages.any(isTarget)) {
+    nav.popUntil((route) => isTarget(route.settings));
+  } else {
+    context.push(folderLocation(target));
   }
 }
 

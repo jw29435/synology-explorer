@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:synology_explorer/core/network/syno_exception.dart';
@@ -59,6 +61,35 @@ void main() {
     await tester.tap(find.text('Alben'));
     await tester.pumpAndSettle();
     expect(api.calls.last.path, '/music/Alben');
+  });
+
+  testWidgets('06: Breadcrumb poppt zum Ordner im Stack, sonst push '
+      '(E2E-017)', (tester) async {
+    const search = '/files/search?path=%2Fmusic';
+    final app = await pumpApp(tester, location: search);
+    final router = routerOf(app.container);
+    unawaited(router.push(folderLocation(album)));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Bonus'));
+    await tester.pumpAndSettle();
+
+    // Nicht im Stack: obendrauf, Zurück führt zu Bonus.
+    await tester.ensureVisible(find.text('Alben'));
+    await tester.tap(find.text('Alben'));
+    await tester.pumpAndSettle();
+    expect(router.state.uri.toString(), folderLocation('/music/Alben'));
+    await tester.tap(find.byTooltip('Zurück'));
+    await tester.pumpAndSettle();
+    expect(router.state.uri.toString(), folderLocation('$album/Bonus'));
+
+    // Im Stack: dorthin zurück, die Suche bleibt darunter.
+    await tester.ensureVisible(find.text('Nordlicht – Treibholz'));
+    await tester.tap(find.text('Nordlicht – Treibholz'));
+    await tester.pumpAndSettle();
+    expect(router.state.uri.toString(), folderLocation(album));
+    await tester.tap(find.byTooltip('Zurück'));
+    await tester.pumpAndSettle();
+    expect(router.state.uri.toString(), search);
   });
 
   testWidgets('06: Long-Press setzt die Auswahl, Grid-Umschalter', (
