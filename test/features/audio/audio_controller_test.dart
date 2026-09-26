@@ -22,7 +22,6 @@ import 'package:synology_explorer/features/audio/data/playback_repository.dart';
 import 'package:synology_explorer/features/audio/data/track_info_loader.dart';
 import 'package:synology_explorer/features/audio/domain/playback_queue.dart';
 import 'package:synology_explorer/features/audio/presentation/playback_providers.dart';
-import 'package:synology_explorer/features/browser/data/file_station_list_api.dart';
 import 'package:synology_explorer/features/browser/domain/nas_entry.dart';
 import 'package:synology_explorer/features/browser/presentation/browser_providers.dart';
 import 'package:synology_explorer/features/viewers/data/playback_position_repository.dart';
@@ -220,7 +219,6 @@ void main() {
   late PlaybackRepository repo;
   late PlaybackPositionRepository positions;
   late List<_FakeProxy> proxies;
-  late _FlakyListApi listApi;
 
   final entries = {
     for (final e in fixtureEntries('SYNO.FileStation.List/list.json', 'files'))
@@ -240,9 +238,7 @@ void main() {
       overrides: [
         appDatabaseProvider.overrideWithValue(db),
         sessionProvider.overrideWith(() => FixedSession(_connectableSession())),
-        fileStationListApiProvider.overrideWithValue(
-          listApi = _FlakyListApi(failures: 0),
-        ),
+        fileStationListApiProvider.overrideWithValue(FakeListApi()),
         audioHandlerProvider.overrideWithValue(handler),
         audioProxyStarterProvider.overrideWithValue((path) async {
           final proxy = _FakeProxy(path);
@@ -501,41 +497,4 @@ void main() {
       expect(state().playing, isTrue);
     },
   );
-
-  test('Netzfehler beim Laden (alte Verbindung): neu verbinden, einmal wiederholen', () async {
-    listApi.failures = 1;
-    await controller.playFolder(album, startPath: ebbe);
-    await settle();
-    expect(listApi.failures, 0);
-    expect(player.sources, ['01 Ebbe.flac']);
-    expect(state().error, isNull);
-  });
-}
-
-/// Wie [FakeListApi], aber die ersten [failures] Aufrufe scheitern am Netz.
-class _FlakyListApi extends FakeListApi {
-  _FlakyListApi({required this.failures});
-
-  int failures;
-
-  @override
-  Future<NasPage> list(
-    String folderPath, {
-    NasSortBy sortBy = NasSortBy.name,
-    bool descending = false,
-    int offset = 0,
-    int limit = 500,
-  }) {
-    if (failures > 0) {
-      failures--;
-      throw const SynoNetworkError(cause: 'Connection closed');
-    }
-    return super.list(
-      folderPath,
-      sortBy: sortBy,
-      descending: descending,
-      offset: offset,
-      limit: limit,
-    );
-  }
 }

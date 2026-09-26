@@ -244,14 +244,12 @@ class AudioController extends Notifier<AudioState> {
     bool recursive = false,
   }) async {
     final sort = ref.read(sortProvider);
-    final entries = await _onceMore(
-      () => listFilesDeep(
-        ref.read(fileStationListApiProvider),
-        folder,
-        sortBy: sort.by,
-        descending: sort.descending,
-        depth: recursive ? maxDepth : 0,
-      ),
+    final entries = await listFilesDeep(
+      ref.read(fileStationListApiProvider),
+      folder,
+      sortBy: sort.by,
+      descending: sort.descending,
+      depth: recursive ? maxDepth : 0,
     );
     for (final e in entries) {
       if (folderCoverNames.contains(e.name.toLowerCase())) {
@@ -458,20 +456,6 @@ class AudioController extends Notifier<AudioState> {
     });
   }
 
-  /// Nach Netzwechsel liefert eine alte Keep-alive-Verbindung oft einen
-  /// Netzwerkfehler (auf dem Samsung gesehen: „Connection closed before
-  /// full header“). Dann Adresse neu wählen und genau einmal wiederholen.
-  Future<T> _onceMore<T>(Future<T> Function() request) async {
-    try {
-      return await request();
-    } on SynoNetworkError catch (e) {
-      final session = ref.read(sessionProvider);
-      if (e.statusCode != null || session == null) rethrow;
-      await session.client.connect();
-      return request();
-    }
-  }
-
   Future<void> _closeProxy() async {
     final proxy = _proxy;
     _proxy = null;
@@ -530,9 +514,7 @@ class AudioController extends Notifier<AudioState> {
           _addressStale = false;
           await client.connect();
         }
-        await _onceMore(
-          () => ref.read(fileStationListApiProvider).getInfo(entry.path),
-        );
+        await ref.read(fileStationListApiProvider).getInfo(entry.path);
         if (token != _loadToken) return;
         final proxy = await ref.read(audioProxyStarterProvider)(entry.path);
         if (token != _loadToken) {
