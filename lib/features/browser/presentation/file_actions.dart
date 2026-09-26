@@ -16,10 +16,14 @@ import 'entry_widgets.dart';
 /// Datei-Aktionen für Sheet 09 und die Auswahl-Leiste 08: Umbenennen,
 /// Verschieben/Kopieren, Löschen, Neuer Ordner, Download.
 
+/// Mit [action] bliebe die SnackBar sonst stehen (`persist`); die Aktion
+/// darf den [context] nicht mehr brauchen – er ist beim Tippen oft schon weg.
 void showSnack(BuildContext context, String text, {SnackBarAction? action}) =>
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(text), action: action));
+      ..showSnackBar(
+        SnackBar(content: Text(text), action: action, persist: false),
+      );
 
 /// Lädt die Ordner neu, die sich durch eine Aktion geändert haben.
 void refreshFolders(WidgetRef ref, Iterable<String> folders) {
@@ -157,6 +161,7 @@ Future<void> downloadEntries(
   List<NasEntry> entries,
 ) async {
   final l10n = AppLocalizations.of(context);
+  final router = GoRouter.of(context);
   try {
     final count = await enqueueDownloads(ref, entries);
     if (!context.mounted) return;
@@ -165,7 +170,7 @@ Future<void> downloadEntries(
       l10n.downloadsQueued(count),
       action: SnackBarAction(
         label: l10n.tabTransfers,
-        onPressed: () => context.go('/transfers'),
+        onPressed: () => router.go('/transfers'),
       ),
     );
   } catch (e) {
