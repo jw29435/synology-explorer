@@ -49,7 +49,7 @@ void main() {
     for (final (name, shown) in [
       ('README.md', find.text('NAS-Setup Heim')), // 18
       ('Protokoll.docx', find.text('Protokoll der Vereinssitzung')), // 19
-      ('booklet.pdf', find.byType(PdfViewer)), // 17
+      if (pdfiumAvailable) ('booklet.pdf', find.byType(PdfViewer)), // 17
       ('foto.jpg', find.text('1 von 1')), // 15
     ]) {
       await app.tapThen(find.text(name), shown);

@@ -25,6 +25,12 @@ import '../helpers/audio_fakes.dart';
 import '../helpers/mock_nas_server.dart';
 import '../helpers/settings_fakes.dart';
 
+/// PDFium (pdfrx) liegt nur vor, wenn der Build-Hook von pdfium_dart lokal
+/// gelaufen ist; auf dem CI-Runner fehlt es. Flows, die ein PDF wirklich
+/// rendern, nehmen diesen Schritt nur dann mit – Screen 17 ist zusätzlich
+/// über test/features/viewers/pdf_viewer_screen_test.dart abgedeckt.
+final pdfiumAvailable = File('.dart_tool/lib/libpdfium.so').existsSync();
+
 /// Deutsche Texte der App – Tests suchen Widgets über dieselben Strings.
 final l10n = lookupAppLocalizations(const Locale('de'));
 

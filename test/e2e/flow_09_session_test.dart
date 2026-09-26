@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pdfrx/pdfrx.dart';
 
 import '../../tool/mock_nas/mock_nas.dart';
 import 'e2e_harness.dart';
@@ -41,7 +40,10 @@ void main() {
     // Nochmal ablaufen lassen: der Viewer lädt nach einem Re-Login.
     final mid = logins(app);
     app.nas.control.expireSessions();
-    await app.tapThen(find.text('booklet.pdf'), find.byType(PdfViewer));
+    await app.tapThen(
+      find.text('cover.jpg'),
+      find.text(l10n.imageOf('1', '1')),
+    );
     expect(logins(app), mid + 1);
     await app.backButton();
 

@@ -78,9 +78,12 @@ void main() {
     expect(app.location, startsWith('/view'));
     await app.backButton();
     expect(app.location, '/transfers');
-    await app.tapThen(find.text('booklet.pdf'), find.byType(BackButton));
-    expect(await app.systemBack(), isTrue);
-    expect(app.location, '/transfers');
+    // Der fehlgeschlagene PDF-Transfer öffnet den Viewer online (PDFium).
+    if (pdfiumAvailable) {
+      await app.tapThen(find.text('booklet.pdf'), find.byType(BackButton));
+      expect(await app.systemBack(), isTrue);
+      expect(app.location, '/transfers');
+    }
 
     await app.tapText(l10n.clearList);
     expect(find.text(l10n.transfersNoneDone), findsOneWidget);
