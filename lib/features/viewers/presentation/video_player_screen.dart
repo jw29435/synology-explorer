@@ -10,14 +10,41 @@ import 'package:screen_brightness/screen_brightness.dart';
 
 import '../../../app/theme.dart';
 import '../../../core/network/media_proxy.dart';
+import '../../../core/network/syno_exception.dart';
 import '../../../core/storage/storage_providers.dart';
 import '../../../core/utils/format.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../audio/presentation/playback_providers.dart';
 import '../../browser/domain/nas_entry.dart';
 import '../../browser/presentation/browser_providers.dart';
+import '../../browser/presentation/entry_widgets.dart';
 import '../data/playback_position_repository.dart';
 import 'viewer_common.dart';
 import 'viewer_providers.dart';
+
+/// Video und Musik gleichzeitig ergibt keinen Sinn: Laufende Musik pausiert,
+/// sobald ein Video startet.
+void pauseMusicForVideo(WidgetRef ref) {
+  if (ref.read(audioControllerProvider).playing) {
+    unawaited(ref.read(audioControllerProvider.notifier).pause());
+  }
+}
+
+/// Ladeanzeige statt der Knöpfe in der Mitte: bis das Video geöffnet ist
+/// (Dauer bekannt) und solange es puffert – nicht bei einem Fehler.
+bool videoLoading(PlayerState s, {required bool failed}) =>
+    !failed && (s.buffering || s.duration == Duration.zero);
+
+/// Welcher Fehler zu einer Meldung des Players erscheint (`null` = keiner):
+/// vor dem Start jede, sonst bliebe das Bild schwarz; danach nur, wenn der
+/// Proxy wirklich gescheitert ist (Netz weg, Session abgelaufen) – unterwegs
+/// meldet mpv auch Harmloses. Der Proxy-Fehler geht vor, er unterscheidet
+/// Netz, Rechte und Session.
+Object? playerError(
+  String message, {
+  required bool started,
+  SynoException? proxyError,
+}) => proxyError ?? (started ? null : message);
 
 /// Screen 16: Streaming mit media_kit (Seek per HTTP-Range) im
 /// Landscape-Vollbild. Doppeltipp ±10 s, Wischen rechts Lautstärke, links
@@ -49,7 +76,10 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
   /// gesetzt, steht der Hinweis „Bei mm:ss fortsetzen?“ im Bild.
   Duration? _resumedAt;
   bool _controls = true;
-  bool _error = false;
+
+  /// Grund, warum nichts läuft: [SynoException] vom Proxy bzw. beim Start,
+  /// sonst die Meldung des Players (Format, Decoder).
+  Object? _error;
 
   /// Liefert dem Player die Bytes; die SID steht nie in seiner URL.
   MediaProxy? _proxy;
@@ -78,6 +108,7 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
       s.position,
       s.duration,
       s.buffer,
+      s.buffering,
       s.rate,
       s.tracks,
       s.track,
@@ -97,21 +128,27 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
           if (done) unawaited(_positions.clear(widget.entry));
         }),
       )
-      // Nur solange nichts läuft: sonst sind es meist harmlose Meldungen.
       ..add(
-        s.error.listen((_) {
-          if (_player.state.duration == Duration.zero) {
-            setState(() => _error = true);
-          }
+        s.error.listen((message) {
+          final error = playerError(
+            message,
+            started: _player.state.duration > Duration.zero,
+            proxyError: _proxy?.lastError,
+          );
+          if (error != null) setState(() => _error = error);
         }),
       );
+    pauseMusicForVideo(ref);
     _start();
   }
 
-  Future<void> _start() async {
+  /// Öffnet das Video bei [at], sonst bei der gespeicherten Position (mit
+  /// Hinweis „Bei mm:ss fortsetzen?“).
+  Future<void> _start({Duration? at}) async {
     final Duration? saved;
+    final old = _proxy;
     try {
-      saved = await _positions.load(widget.entry);
+      saved = at ?? await _positions.load(widget.entry);
       if (!mounted) return;
       if (widget.local case final local?) {
         await _player.open(Media(local.file.path, start: saved));
@@ -126,16 +163,27 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
         _proxy = proxy;
         await _player.open(Media(proxy.url.toString(), start: saved));
       }
-    } catch (_) {
-      if (mounted) setState(() => _error = true);
+    } catch (e) {
+      if (mounted) setState(() => _error = e);
       return;
+    } finally {
+      // Erneuter Versuch: den alten Proxy erst schließen, wenn der Player
+      // weg von ihm ist.
+      if (!identical(old, _proxy)) unawaited(old?.close());
     }
     if (!mounted) return;
-    setState(() => _resumedAt = saved);
-    _saveTimer = Timer.periodic(
+    if (at == null) setState(() => _resumedAt = saved);
+    _saveTimer ??= Timer.periodic(
       const Duration(seconds: 5),
       (_) => _savePosition(),
     );
+  }
+
+  /// „Erneut versuchen“: neu öffnen, wo die Wiedergabe stand.
+  void _retry() {
+    final at = _player.state.position;
+    setState(() => _error = null);
+    _start(at: at > Duration.zero ? at : null);
   }
 
   /// Merkt die Position; am Anfang und kurz vor Schluss gibt es nichts
@@ -219,60 +267,65 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final state = _player.state;
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: LayoutBuilder(
-        builder: (context, box) => Stack(
-          fit: StackFit.expand,
-          children: [
-            Video(controller: _video, controls: NoVideoControls),
-            GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: _toggleControls,
-              onDoubleTapDown: (d) => _doubleTapX = d.localPosition.dx,
-              onDoubleTap: () => _seekBy(
-                (_doubleTapX ?? 0) < box.maxWidth / 2 ? -_skip : _skip,
-              ),
-              onVerticalDragUpdate: (d) => _drag(d, box),
-              onVerticalDragEnd: (_) => setState(() => _gesture = null),
+    // Immer hell auf dunklem Scrim, auch im hellen Design.
+    return AnnotatedRegion(
+      value: SystemUiOverlayStyle.light,
+      child: Theme(
+        data: AppTheme.dark,
+        child: Scaffold(
+          backgroundColor: Colors.black,
+          body: LayoutBuilder(
+            builder: (context, box) => Stack(
+              fit: StackFit.expand,
+              children: [
+                Video(controller: _video, controls: NoVideoControls),
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: _toggleControls,
+                  onDoubleTapDown: (d) => _doubleTapX = d.localPosition.dx,
+                  onDoubleTap: () => _seekBy(
+                    (_doubleTapX ?? 0) < box.maxWidth / 2 ? -_skip : _skip,
+                  ),
+                  onVerticalDragUpdate: (d) => _drag(d, box),
+                  onVerticalDragEnd: (_) => setState(() => _gesture = null),
+                ),
+                if (videoLoading(state, failed: _error != null))
+                  const Center(child: CircularProgressIndicator()),
+                if (_error case final error?)
+                  VideoError(error: error, onRetry: _retry),
+                if (_gesture case (:final volume, :final value))
+                  Center(
+                    child: _Pill(
+                      icon: volume ? Icons.volume_up : Icons.brightness_6,
+                      text: volume
+                          ? l10n.volumePercent('${(value * 100).round()}')
+                          : l10n.brightnessPercent('${(value * 100).round()}'),
+                    ),
+                  ),
+                if (_controls) ...[
+                  _topBar(context, l10n, state),
+                  if (_error == null && !videoLoading(state, failed: false))
+                    _centerControls(l10n, state),
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: _bottomBar(context, l10n, state),
+                  ),
+                ],
+                if (_resumedAt case final at?)
+                  Align(
+                    alignment: const Alignment(0, -0.55),
+                    child: ResumeCard(
+                      at: at,
+                      onResume: () => setState(() => _resumedAt = null),
+                      onRestart: () {
+                        _player.seek(Duration.zero);
+                        setState(() => _resumedAt = null);
+                      },
+                    ),
+                  ),
+              ],
             ),
-            if (_error)
-              Center(
-                child: _Pill(
-                  icon: Icons.error_outline,
-                  text: l10n.videoUnavailable,
-                ),
-              ),
-            if (_gesture case (:final volume, :final value))
-              Center(
-                child: _Pill(
-                  icon: volume ? Icons.volume_up : Icons.brightness_6,
-                  text: volume
-                      ? l10n.volumePercent('${(value * 100).round()}')
-                      : l10n.brightnessPercent('${(value * 100).round()}'),
-                ),
-              ),
-            if (_controls) ...[
-              _topBar(context, l10n, state),
-              _centerControls(l10n, state),
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: _bottomBar(context, l10n, state),
-              ),
-            ],
-            if (_resumedAt case final at?)
-              Align(
-                alignment: const Alignment(0, -0.55),
-                child: _ResumeCard(
-                  at: at,
-                  onResume: () => setState(() => _resumedAt = null),
-                  onRestart: () {
-                    _player.seek(Duration.zero);
-                    setState(() => _resumedAt = null);
-                  },
-                ),
-              ),
-          ],
+          ),
         ),
       ),
     );
@@ -312,7 +365,7 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
                     if (info.isNotEmpty)
                       Text(
                         info,
-                        style: TextStyle(color: AppColors.textSecondary),
+                        style: TextStyle(color: Neutrals.dark.textSecondary),
                       ),
                   ],
                 ),
@@ -431,7 +484,7 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        border: Border.all(color: AppColors.textMuted),
+                        border: Border.all(color: Neutrals.dark.textMuted),
                         borderRadius: BorderRadius.circular(22),
                       ),
                       child: Text(
@@ -457,8 +510,54 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
   }
 }
 
-class _ResumeCard extends StatelessWidget {
-  const _ResumeCard({
+/// Fehler über dem Video wie auf den anderen Screens: Netz und Rechte mit
+/// „Erneut versuchen“, abgelaufene Session mit „Anmelden“; kann der Player
+/// die Datei nicht abspielen (Format, Decoder), dies mit „Erneut versuchen“.
+class VideoError extends StatelessWidget {
+  const VideoError({super.key, required this.error, required this.onRetry});
+
+  final Object error;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Center(
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 360),
+        margin: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.playScrim,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: IntrinsicHeight(
+          child: error is SynoException
+              ? ErrorPanel(error: error, onRetry: onRetry)
+              : Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    children: [
+                      Icon(Icons.error_outline, color: Neutrals.dark.errorSoft),
+                      const SizedBox(height: 8),
+                      Text(l10n.videoUnavailable, textAlign: TextAlign.center),
+                      const SizedBox(height: 12),
+                      OutlinedButton(
+                        onPressed: onRetry,
+                        child: Text(l10n.retry),
+                      ),
+                    ],
+                  ),
+                ),
+        ),
+      ),
+    );
+  }
+}
+
+/// „Bei mm:ss fortsetzen?“ mit „Fortsetzen“ und „Von vorn“.
+class ResumeCard extends StatelessWidget {
+  const ResumeCard({
+    super.key,
     required this.at,
     required this.onResume,
     required this.onRestart,
@@ -471,24 +570,39 @@ class _ResumeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    // Knöpfe nur so breit wie nötig (das Theme macht sie volle Breite), der
+    // Text bricht um: passt so auch ins Hochformat.
     return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.fromLTRB(20, 12, 12, 12),
       decoration: BoxDecoration(
-        color: AppColors.background,
+        color: Neutrals.dark.background,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(l10n.resumeAt(formatDuration(at))),
+          Flexible(child: Text(l10n.resumeAt(formatDuration(at)))),
           const SizedBox(width: 16),
-          FilledButton(onPressed: onResume, child: Text(l10n.resume)),
+          FilledButton(
+            style: _compact,
+            onPressed: onResume,
+            child: Text(l10n.resume),
+          ),
           const SizedBox(width: 8),
-          OutlinedButton(onPressed: onRestart, child: Text(l10n.restart)),
+          OutlinedButton(
+            style: _compact,
+            onPressed: onRestart,
+            child: Text(l10n.restart),
+          ),
         ],
       ),
     );
   }
+
+  static const _compact = ButtonStyle(
+    minimumSize: WidgetStatePropertyAll(Size(64, 44)),
+  );
 }
 
 class _Pill extends StatelessWidget {

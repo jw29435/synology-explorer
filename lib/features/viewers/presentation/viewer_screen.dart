@@ -76,7 +76,11 @@ class ViewerScreen extends ConsumerWidget {
           onRetry: () => ref.invalidate(entryInfoProvider(path)),
         ),
       ),
-      _ => const Scaffold(body: Center(child: CircularProgressIndicator())),
+      // Mit App-Leiste: Zurück geht auch, solange das NAS nicht antwortet.
+      _ => Scaffold(
+        appBar: AppBar(),
+        body: const Center(child: CircularProgressIndicator()),
+      ),
     };
   }
 
