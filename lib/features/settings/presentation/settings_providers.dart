@@ -73,6 +73,7 @@ Future<void> clearCache(WidgetRef ref) async {
   ref
     ..invalidate(mediaCacheProvider)
     ..invalidate(thumbnailCacheProvider)
+    ..invalidate(trackInfoLoaderProvider)
     ..invalidate(storageUsageProvider);
 }
 
@@ -102,5 +103,6 @@ Future<void> clearAllLocalData(WidgetRef ref) async {
   ref
     ..invalidate(mediaCacheProvider)
     ..invalidate(thumbnailCacheProvider)
+    ..invalidate(trackInfoLoaderProvider)
     ..invalidate(storageUsageProvider);
 }
