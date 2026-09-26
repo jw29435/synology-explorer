@@ -7,12 +7,14 @@ import '../../../core/utils/format.dart';
 import '../../../l10n/app_localizations.dart';
 import '../data/file_station_task_api.dart';
 import '../domain/nas_entry.dart';
+import '../../sharing/presentation/share_link_sheet.dart';
+import '../../transfers/presentation/transfer_providers.dart';
 import 'browser_providers.dart';
 import 'entry_widgets.dart';
+import 'file_actions.dart';
 
-/// Screen 09: Kontextmenü einer Datei bzw. eines Ordners. Nur Öffnen,
-/// Favorit und Info funktionieren in M1; der Rest ist sichtbar, aber mit
-/// Hinweis auf den Meilenstein deaktiviert.
+/// Screen 09: Kontextmenü einer Datei bzw. eines Ordners. Die Aktionen
+/// laufen nach dem Schließen des Sheets mit [context]/[ref] des Aufrufers.
 Future<void> showEntryActions(
   BuildContext context,
   WidgetRef ref,
@@ -21,29 +23,41 @@ Future<void> showEntryActions(
   context: context,
   useRootNavigator: true,
   isScrollControlled: true,
-  builder: (sheetContext) => _EntryActionsSheet(
-    entry: entry,
-    onOpen: () => openEntry(context, ref, entry),
-    onInfo: () => showEntryInfo(context, entry),
-  ),
+  builder: (sheetContext) =>
+      _EntryActionsSheet(entry: entry, outer: context, outerRef: ref),
 );
 
 class _EntryActionsSheet extends ConsumerWidget {
   const _EntryActionsSheet({
     required this.entry,
-    required this.onOpen,
-    required this.onInfo,
+    required this.outer,
+    required this.outerRef,
   });
 
   final NasEntry entry;
-  final VoidCallback onOpen;
-  final VoidCallback onInfo;
+  final BuildContext outer;
+  final WidgetRef outerRef;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final favorite = ref.watch(isFavoriteProvider(entry.path)).value ?? false;
     final audio = entry.type == NasFileType.audio;
+    // Shared Folder selbst: nicht laden, umbenennen, verschieben, löschen.
+    final share = entry.path.lastIndexOf('/') == 0;
+    final offline =
+        !entry.isDir &&
+        (ref.watch(isOfflineProvider(entry.path)).value ?? false);
+    // Aus: lokale Kopie löschen; an: in den Offline-Bereich laden.
+    Future<void> toggleOffline() async {
+      if (offline) {
+        await outerRef
+            .read(offlineStoreProvider)
+            .remove(outerRef.read(serverIdProvider), entry.path);
+      } else {
+        await downloadEntries(outer, outerRef, [entry]);
+      }
+    }
 
     Widget item(
       IconData icon,
@@ -85,20 +99,41 @@ class _EntryActionsSheet extends ConsumerWidget {
           children: [
             _SheetHeader(entry: entry),
             const Divider(height: 1),
-            item(Icons.open_in_new, l10n.actionOpen, onTap: onOpen),
+            item(
+              Icons.open_in_new,
+              l10n.actionOpen,
+              onTap: () => openEntry(outer, outerRef, entry),
+            ),
             if (audio)
               item(Icons.play_arrow, l10n.actionPlayFromHere, later: 'M2'),
             if (audio || entry.isDir)
               item(Icons.playlist_play, l10n.actionPlayFolder, later: 'M2'),
             if (audio) item(Icons.playlist_add, l10n.actionQueue, later: 'M2'),
             const Divider(indent: 20, endIndent: 20),
-            item(Icons.download_outlined, l10n.actionDownload, later: 'M4'),
-            item(
-              Icons.cloud_download_outlined,
-              l10n.actionOffline,
-              later: 'M4',
-              trailing: const Switch(value: false, onChanged: null),
-            ),
+            // Ganze Shares nicht versehentlich komplett laden.
+            if (!share) ...[
+              item(
+                Icons.download_outlined,
+                l10n.actionDownload,
+                onTap: () => downloadEntries(outer, outerRef, [entry]),
+              ),
+              if (entry.isDir)
+                item(
+                  Icons.cloud_download_outlined,
+                  l10n.actionOffline,
+                  onTap: () => downloadEntries(outer, outerRef, [entry]),
+                )
+              else
+                item(
+                  Icons.cloud_download_outlined,
+                  l10n.actionOffline,
+                  trailing: Switch(
+                    value: offline,
+                    onChanged: (_) => toggleOffline(),
+                  ),
+                  onTap: toggleOffline,
+                ),
+            ],
             item(
               favorite ? Icons.star : Icons.star_border,
               favorite ? l10n.actionFavoriteRemove : l10n.actionFavoriteAdd,
@@ -107,19 +142,45 @@ class _EntryActionsSheet extends ConsumerWidget {
                   .read(localLibraryProvider)
                   .setFavorite(ref.read(serverIdProvider), entry, !favorite),
             ),
-            item(Icons.link, l10n.actionShareLink, later: 'M4'),
-            const Divider(indent: 20, endIndent: 20),
-            item(Icons.edit_outlined, l10n.actionRename, later: 'M4'),
-            item(Icons.drive_file_move_outline, l10n.actionMove, later: 'M4'),
-            item(Icons.copy_outlined, l10n.actionCopy, later: 'M4'),
-            item(Icons.info_outline, l10n.actionInfo, onTap: onInfo),
-            const Divider(indent: 20, endIndent: 20),
             item(
-              Icons.delete_outline,
-              l10n.actionDelete,
-              later: 'M4',
-              color: AppColors.errorSoft,
+              Icons.link,
+              l10n.actionShareLink,
+              onTap: () => showShareLinkSheet(outer, outerRef, [entry]),
             ),
+            const Divider(indent: 20, endIndent: 20),
+            if (!share) ...[
+              item(
+                Icons.edit_outlined,
+                l10n.actionRename,
+                onTap: () => renameEntry(outer, outerRef, entry),
+              ),
+              item(
+                Icons.drive_file_move_outline,
+                l10n.actionMove,
+                onTap: () =>
+                    copyMoveEntries(outer, outerRef, [entry], move: true),
+              ),
+            ],
+            item(
+              Icons.copy_outlined,
+              l10n.actionCopy,
+              onTap: () =>
+                  copyMoveEntries(outer, outerRef, [entry], move: false),
+            ),
+            item(
+              Icons.info_outline,
+              l10n.actionInfo,
+              onTap: () => showEntryInfo(outer, entry),
+            ),
+            if (!share) ...[
+              const Divider(indent: 20, endIndent: 20),
+              item(
+                Icons.delete_outline,
+                l10n.actionDelete,
+                color: AppColors.errorSoft,
+                onTap: () => deleteEntries(outer, outerRef, [entry]),
+              ),
+            ],
           ],
         ),
       ),

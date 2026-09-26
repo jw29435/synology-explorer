@@ -7,14 +7,17 @@ import 'package:go_router/go_router.dart';
 import '../../../app/theme.dart';
 import '../../../core/utils/format.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../sharing/presentation/share_link_sheet.dart';
 import '../data/file_station_list_api.dart';
 import '../domain/nas_entry.dart';
 import 'browser_providers.dart';
 import 'entry_sheets.dart';
 import 'entry_widgets.dart';
+import 'file_actions.dart';
+import 'upload_sheet.dart';
 
 /// Screens 06 (Liste) und 07 (Grid): Ordnerinhalt mit Breadcrumb,
-/// Sortierung, Paging und Pull-to-Refresh.
+/// Sortierung, Paging und Pull-to-Refresh; mit Auswahl Screen 08.
 class FolderScreen extends ConsumerWidget {
   const FolderScreen({super.key, required this.path});
 
@@ -29,102 +32,242 @@ class FolderScreen extends ConsumerWidget {
     final segments = path.split('/').where((s) => s.isNotEmpty).toList();
     final text = Theme.of(context).textTheme;
 
-    return Scaffold(
-      appBar: AppBar(
-        toolbarHeight: 72,
-        titleSpacing: 0,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              segments.last,
-              style: text.titleLarge?.copyWith(fontWeight: FontWeight.w700),
-              overflow: TextOverflow.ellipsis,
-            ),
-            _Breadcrumb(segments: segments),
-          ],
-        ),
-        actions: [
-          IconButton(
-            tooltip: l10n.search,
-            icon: const Icon(Icons.search),
-            onPressed: () => context.push(
-              Uri(
-                path: '/files/search',
-                queryParameters: {'path': path},
-              ).toString(),
-            ),
-          ),
-          IconButton(
-            tooltip: grid ? l10n.viewList : l10n.viewGrid,
-            icon: Icon(grid ? Icons.view_list : Icons.grid_view),
-            onPressed: () => ref.read(gridViewProvider.notifier).set(!grid),
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(l10n.fabLater))),
-        child: const Icon(Icons.add),
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
-            child: Row(
-              children: [
-                const _SortButton(),
-                const Spacer(),
-                if (selection.isNotEmpty) ...[
-                  Text(l10n.selectedCount(selection.length)),
-                  IconButton(
-                    tooltip: l10n.close,
-                    icon: const Icon(Icons.close),
+    final selecting = selection.isNotEmpty;
+    void clearSelection() => ref.read(selectionProvider(path).notifier).clear();
+
+    return PopScope(
+      canPop: !selecting,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) clearSelection();
+      },
+      child: Scaffold(
+        appBar: selecting
+            ? AppBar(
+                toolbarHeight: 72,
+                leading: IconButton(
+                  tooltip: l10n.close,
+                  icon: const Icon(Icons.close),
+                  onPressed: clearSelection,
+                ),
+                title: Text(
+                  l10n.selectedCount(selection.length),
+                  style: text.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+                ),
+                actions: [
+                  TextButton(
                     onPressed: () =>
-                        ref.read(selectionProvider(path).notifier).clear(),
+                        ref.read(selectionProvider(path).notifier).selectAll([
+                          for (final e in folder.value?.entries ?? const [])
+                            e.path,
+                        ]),
+                    child: Text(l10n.selectAll),
                   ),
-                ] else if (folder.value case final state?)
-                  Text(
-                    l10n.itemCount(state.total),
-                    style: text.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
+                  const SizedBox(width: 8),
+                ],
+              )
+            : AppBar(
+                toolbarHeight: 72,
+                titleSpacing: 0,
+                title: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      segments.last,
+                      style: text.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    _Breadcrumb(segments: segments),
+                  ],
+                ),
+                actions: [
+                  IconButton(
+                    tooltip: l10n.search,
+                    icon: const Icon(Icons.search),
+                    onPressed: () => context.push(
+                      Uri(
+                        path: '/files/search',
+                        queryParameters: {'path': path},
+                      ).toString(),
                     ),
                   ),
-              ],
+                  IconButton(
+                    tooltip: grid ? l10n.viewList : l10n.viewGrid,
+                    icon: Icon(grid ? Icons.view_list : Icons.grid_view),
+                    onPressed: () =>
+                        ref.read(gridViewProvider.notifier).set(!grid),
+                  ),
+                  const SizedBox(width: 8),
+                ],
+              ),
+        floatingActionButton: selecting
+            ? null
+            : FloatingActionButton(
+                tooltip: l10n.uploadTitle,
+                onPressed: () => showUploadSheet(context, ref, path),
+                child: const Icon(Icons.add),
+              ),
+        bottomNavigationBar: selecting
+            ? _SelectionBar(
+                path: path,
+                selected: [
+                  for (final e in folder.value?.entries ?? const <NasEntry>[])
+                    if (selection.contains(e.path)) e,
+                ],
+              )
+            : null,
+        body: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+              child: Row(
+                children: [
+                  const _SortButton(),
+                  const Spacer(),
+                  if (folder.value case final state?)
+                    Text(
+                      l10n.itemCount(state.total),
+                      style: text.bodyMedium?.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                ],
+              ),
             ),
-          ),
-          Expanded(
-            child: RefreshIndicator(
-              onRefresh: () => ref.refresh(folderProvider(path).future),
-              child: switch (folder) {
-                AsyncValue(value: final state?) when state.entries.isEmpty =>
-                  ListView(
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: () => ref.refresh(folderProvider(path).future),
+                child: switch (folder) {
+                  AsyncValue(value: final state?) when state.entries.isEmpty =>
+                    ListView(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(32),
+                          child: Center(child: Text(l10n.folderEmpty)),
+                        ),
+                      ],
+                    ),
+                  AsyncValue(value: final state?) =>
+                    grid
+                        ? _FolderGrid(path: path, state: state)
+                        : _FolderList(path: path, state: state),
+                  AsyncError(:final error) => ListView(
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.all(32),
-                        child: Center(child: Text(l10n.folderEmpty)),
+                      ErrorPanel(
+                        error: error,
+                        onRetry: () => ref.invalidate(folderProvider(path)),
                       ),
                     ],
                   ),
-                AsyncValue(value: final state?) =>
-                  grid
-                      ? _FolderGrid(path: path, state: state)
-                      : _FolderList(path: path, state: state),
-                AsyncError(:final error) => ListView(
-                  children: [
-                    ErrorPanel(
-                      error: error,
-                      onRetry: () => ref.invalidate(folderProvider(path)),
-                    ),
-                  ],
-                ),
-                _ => const Center(child: CircularProgressIndicator()),
-              },
+                  _ => const Center(child: CircularProgressIndicator()),
+                },
+              ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SelectionBar extends ConsumerWidget {
+  const _SelectionBar({required this.path, required this.selected});
+
+  final String path;
+  final List<NasEntry> selected;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final bytes = selected.fold(0, (s, e) => s + (e.size ?? 0));
+    void done(bool ok) {
+      if (ok && context.mounted) {
+        ref.read(selectionProvider(path).notifier).clear();
+      }
+    }
+
+    Widget action(
+      IconData icon,
+      String label,
+      Future<bool> Function() onTap, {
+      Color? color,
+    }) => Expanded(
+      child: InkResponse(
+        onTap: selected.isEmpty ? null : () async => done(await onTap()),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, color: color),
+              const SizedBox(height: 6),
+              Text(
+                label,
+                style: TextStyle(color: color, fontWeight: FontWeight.w600),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
           ),
-        ],
+        ),
+      ),
+    );
+
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        color: AppColors.surface,
+        border: Border(top: BorderSide(color: AppColors.border)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  l10n.selectionSize(formatSize(bytes, l10n.localeName)),
+                  style: const TextStyle(color: AppColors.textSecondary),
+                ),
+              ),
+            ),
+            Row(
+              children: [
+                action(
+                  Icons.download_outlined,
+                  l10n.actionDownloadShort,
+                  () async {
+                    await downloadEntries(context, ref, selected);
+                    return true;
+                  },
+                ),
+                action(
+                  Icons.drive_file_move_outline,
+                  l10n.actionMoveShort,
+                  () => copyMoveEntries(context, ref, selected, move: true),
+                ),
+                action(
+                  Icons.copy_outlined,
+                  l10n.actionCopyShort,
+                  () => copyMoveEntries(context, ref, selected, move: false),
+                ),
+                action(Icons.share_outlined, l10n.actionShareShort, () async {
+                  await showShareLinkSheet(context, ref, selected);
+                  return false;
+                }),
+                action(
+                  Icons.delete_outline,
+                  l10n.actionDeleteShort,
+                  () => deleteEntries(context, ref, selected),
+                  color: AppColors.errorSoft,
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -294,16 +437,23 @@ class _FolderList extends ConsumerWidget {
         void toggle() =>
             ref.read(selectionProvider(path).notifier).toggle(e.path);
         return ListTile(
-          contentPadding: const EdgeInsets.only(left: 20, right: 8),
+          contentPadding: EdgeInsets.only(
+            left: selection.isEmpty ? 20 : 8,
+            right: 8,
+          ),
           minVerticalPadding: 12,
           selected: selected,
           selectedTileColor: AppColors.surfaceRaised,
-          leading: selected
-              ? const SizedBox.square(
-                  dimension: 40,
-                  child: Icon(Icons.check_circle, color: AppColors.accent),
-                )
-              : EntryIcon(e),
+          leading: selection.isEmpty
+              ? EntryIcon(e)
+              : Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Checkbox(value: selected, onChanged: (_) => toggle()),
+                    const SizedBox(width: 4),
+                    EntryIcon(e),
+                  ],
+                ),
           title: Text(e.name, overflow: TextOverflow.ellipsis),
           subtitle: Text(
             [
@@ -312,11 +462,13 @@ class _FolderList extends ConsumerWidget {
             ].join(' · '),
             style: const TextStyle(color: AppColors.textSecondary),
           ),
-          trailing: IconButton(
-            tooltip: l10n.more,
-            icon: const Icon(Icons.more_vert),
-            onPressed: () => showEntryActions(context, ref, e),
-          ),
+          trailing: selection.isEmpty
+              ? IconButton(
+                  tooltip: l10n.more,
+                  icon: const Icon(Icons.more_vert),
+                  onPressed: () => showEntryActions(context, ref, e),
+                )
+              : null,
           onTap: selection.isEmpty ? () => openEntry(context, ref, e) : toggle,
           onLongPress: toggle,
         );

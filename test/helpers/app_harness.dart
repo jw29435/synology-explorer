@@ -23,6 +23,10 @@ import 'package:synology_explorer/features/browser/domain/nas_entry.dart';
 import 'package:synology_explorer/features/browser/presentation/browser_providers.dart';
 import 'package:synology_explorer/features/servers/domain/server_profile.dart';
 import 'package:synology_explorer/features/servers/presentation/server_providers.dart';
+import 'package:synology_explorer/features/transfers/data/offline_store.dart';
+import 'package:synology_explorer/features/transfers/data/transfer_queue.dart';
+import 'package:synology_explorer/features/transfers/presentation/transfer_notifications.dart';
+import 'package:synology_explorer/features/transfers/presentation/transfer_providers.dart';
 
 const testProfile = ServerProfile(
   id: 1,
@@ -82,6 +86,12 @@ class NoThumbnails implements ThumbnailCache {
   int get maxBytes => 0;
 }
 
+/// Keine Plattform-Benachrichtigungen in Widget-Tests.
+class NoNotifications implements TransferNotifications {
+  @override
+  Future<void> update(List<Transfer> transfers) async {}
+}
+
 class _FixedSession extends SessionNotifier {
   _FixedSession(this._session);
 
@@ -129,6 +139,20 @@ Future<({ProviderContainer container, AppDatabase db})> pumpApp(
       startupProvider.overrideWith((ref) async => false),
       fileStationListApiProvider.overrideWithValue(listApi ?? FakeListApi()),
       thumbnailCacheProvider.overrideWithValue(NoThumbnails()),
+      transferNotificationsProvider.overrideWithValue(NoNotifications()),
+      offlineStoreProvider.overrideWith(
+        (ref) => OfflineStore(
+          ref.watch(appDatabaseProvider),
+          Future.value(Directory('${Directory.systemTemp.path}/offline')),
+        ),
+      ),
+      // Queue ohne Worker: Widget-Tests übertragen nichts übers Netz.
+      transferQueueProvider.overrideWith(
+        (ref) => TransferQueue(
+          ref.watch(appDatabaseProvider),
+          serverId: ref.watch(sessionProvider)?.client.profile.id,
+        ),
+      ),
       ...overrides,
     ],
   );

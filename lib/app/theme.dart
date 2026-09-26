@@ -16,6 +16,9 @@ abstract final class AppColors {
   static const errorSoft = Color(0xFFF0A8A8);
   static const error = Color(0xFFD64545);
 
+  /// Fläche endgültiger, roter Bestätigungen (Papierkorb).
+  static const errorSurface = Color(0xFF2A1A1C);
+
   /// Akzent als Fläche hinter Icons (15 %).
   static const accentSurface = Color(0x26F2A93B);
 

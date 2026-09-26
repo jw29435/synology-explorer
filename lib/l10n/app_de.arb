@@ -158,7 +158,6 @@
   "folderEmpty": "Dieser Ordner ist leer.",
   "viewGrid": "Rasteransicht",
   "viewList": "Listenansicht",
-  "fabLater": "Hochladen und neue Ordner kommen mit M4.",
   "openLater": "Dateien öffnen kommt mit M2 (Audio) und M3 (Viewer).",
   "selectedCount": "{count} ausgewählt",
   "@selectedCount": {
@@ -268,5 +267,354 @@
       }
     }
   },
-  "searchFooter": "Suche nach Dateiname. Filter schränken auf Dateiendungen ein; beim Verlassen wird der Search-Task gestoppt und aufgeräumt."
+  "searchFooter": "Suche nach Dateiname. Filter schränken auf Dateiendungen ein; beim Verlassen wird der Search-Task gestoppt und aufgeräumt.",
+  "selectAll": "Alle",
+  "selectionSize": "Auswahl: {size}",
+  "@selectionSize": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "actionDownloadShort": "Download",
+  "actionMoveShort": "Verschieben",
+  "actionCopyShort": "Kopieren",
+  "actionShareShort": "Teilen",
+  "back": "Zurück",
+  "create": "Anlegen",
+  "edit": "Bearbeiten",
+  "copy": "Kopieren",
+  "share": "Teilen",
+  "pause": "Pausieren",
+  "resume": "Fortsetzen",
+  "validationName": "Ungültiger Name (kein „/“).",
+  "newFolder": "Neuer Ordner",
+  "newFolderHint": "Im aktuellen Verzeichnis",
+  "moveTo": "Verschieben nach …",
+  "copyTo": "Kopieren nach …",
+  "moveHere": "Hierher verschieben",
+  "copyHere": "Hierher kopieren",
+  "noSubfolders": "Keine Unterordner.",
+  "moving": "{count, plural, =1{Verschiebe 1 Element …} other{Verschiebe {count} Elemente …}}",
+  "@moving": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "copying": "{count, plural, =1{Kopiere 1 Element …} other{Kopiere {count} Elemente …}}",
+  "@copying": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "deleting": "{count, plural, =1{Lösche 1 Element …} other{Lösche {count} Elemente …}}",
+  "@deleting": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "deleteConfirmOne": "„{name}“ löschen?",
+  "@deleteConfirmOne": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteConfirmMany": "{count} Elemente löschen?",
+  "@deleteConfirmMany": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "deleteToRecycle": "Die Freigabe hat einen Papierkorb: Gelöschtes lässt sich dort wiederherstellen.",
+  "deleteNoRecycle": "Die Freigabe hat keinen Papierkorb: Löschen ist endgültig.",
+  "deleteRecycleUnknown": "Ob die Freigabe einen Papierkorb hat, ist nicht prüfbar (evtl. nur für Administratoren sichtbar). Im Zweifel ist Löschen endgültig.",
+  "downloadsQueued": "{count, plural, =0{Nichts herunterzuladen.} =1{1 Download eingereiht.} other{{count} Downloads eingereiht.}}",
+  "@downloadsQueued": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "uploadsQueued": "{count, plural, =1{1 Upload eingereiht.} other{{count} Uploads eingereiht.}}",
+  "@uploadsQueued": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "uploadTitle": "Hinzufügen",
+  "uploadTarget": "Ziel: {path}",
+  "@uploadTarget": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "uploadFiles": "Dateien",
+  "uploadFilesHint": "Aus dem System-Dateipicker",
+  "uploadMedia": "Fotos & Videos",
+  "uploadMediaHint": "Aus der Kamera-Rolle",
+  "uploadCamera": "Kamera",
+  "uploadCameraHint": "Aufnehmen und direkt hochladen",
+  "uploadOverwrite": "Vorhandene Dateien überschreiben",
+  "uploadOverwriteHint": "Sonst wird „ (1)“ angehängt",
+  "pauseAll": "Alle pausieren",
+  "clearList": "Liste leeren",
+  "transfersActive": "Aktiv ({count})",
+  "@transfersActive": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "transfersDone": "Fertig ({count})",
+  "@transfersDone": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "transfersNone": "Keine laufenden Transfers.",
+  "transfersNoneDone": "Noch nichts fertig.",
+  "transfersFooter": "Die Queue überlebt einen App-Neustart. Downloads werden per HTTP-Range fortgesetzt, Uploads starten auf Datei-Ebene neu.",
+  "transferToOffline": "Download → Offline",
+  "transferToFolder": "Upload → {folder}",
+  "@transferToFolder": {
+    "placeholders": {
+      "folder": {
+        "type": "String"
+      }
+    }
+  },
+  "transferQueued": "wartet",
+  "transferPaused": "Pausiert",
+  "transferFailed": "Fehlgeschlagen: {reason}",
+  "@transferFailed": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "bytesOf": "{done} von {total}",
+  "@bytesOf": {
+    "placeholders": {
+      "done": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "remaining": "noch {time}",
+  "@remaining": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "durationSeconds": "{n} s",
+  "@durationSeconds": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "durationMinutes": "{n} min",
+  "@durationMinutes": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "durationHours": "{n} h",
+  "@durationHours": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "resumesWithRange": "wird fortgesetzt (Range)",
+  "notificationTransfers": "{count, plural, =1{1 Transfer läuft} other{{count} Transfers laufen}}",
+  "@notificationTransfers": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "errorExists": "Ein Element mit diesem Namen gibt es dort schon.",
+  "errorLocalFile": "Lokale Datei nicht lesbar oder schreibbar.",
+  "storageUsed": "Belegt auf diesem Gerät",
+  "storageOffline": "Offline-Dateien {size}",
+  "@storageOffline": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "storageCache": "Cache {size}",
+  "@storageCache": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "offlineInfo": "Alles hier ist ohne Verbindung nutzbar. Änderungen auf dem NAS werden beim nächsten Kontakt geprüft (mtime).",
+  "offlineEmpty": "Noch keine Offline-Dateien. „Offline verfügbar halten“ im Datei-Menü lädt Dateien hierher.",
+  "offlineChanged": "Auf dem NAS geändert – aktualisieren?",
+  "offlineRemove": "Entfernen",
+  "moreItems": "+ {count} weitere",
+  "@moreItems": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "openFailed": "Keine App zum Öffnen gefunden.",
+  "shareLinkTitle": "Freigabelink",
+  "shareValidUntil": "Gültig bis",
+  "expiryDay1": "1 Tag",
+  "expiryDays": "{count} Tage",
+  "@expiryDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "expiryNever": "Nie",
+  "expiryNone": "Kein Ablauf",
+  "expiresOn": "Läuft ab am {date}",
+  "@expiresOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "expiresToday": "Läuft heute ab",
+  "expiresInDays": "{count, plural, =1{Läuft morgen ab} other{Läuft ab in {count} Tagen}}",
+  "@expiresInDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "expiredOn": "Abgelaufen am {date}",
+  "@expiredOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "sharePassword": "Passwort (optional)",
+  "generate": "Generieren",
+  "shareCreate": "Link erstellen",
+  "shareCreated": "Link erstellt",
+  "linkCopied": "Link kopiert.",
+  "shareExternalHint": "Der Link zeigt auf die externe Adresse. Verwaltung aller Links unter Einstellungen › Freigabelinks.",
+  "shareNoExternal": "Für diesen Server ist keine externe Adresse hinterlegt: Der Link nutzt die Adresse, die DSM meldet, und ist evtl. nur im LAN erreichbar.",
+  "shareLinksTitle": "Freigabelinks",
+  "shareLinksCount": "{active} aktiv · {expired} abgelaufen",
+  "@shareLinksCount": {
+    "placeholders": {
+      "active": {
+        "type": "int"
+      },
+      "expired": {
+        "type": "int"
+      }
+    }
+  },
+  "shareLinksEmpty": "Keine Freigabelinks.",
+  "shareLinksFooter": "Quelle: SYNO.FileStation.Sharing list. Ablauf oder Passwort ändern geht über Link neu erstellen.",
+  "passwordBadge": "Passwort",
+  "cleanUp": "Aufräumen",
+  "trashTitle": "Papierkorb",
+  "trashEmptyAction": "Leeren",
+  "trashChecking": "Prüfe Papierkörbe …",
+  "trashInfo": "Zeigt #recycle der Freigabe.",
+  "trashNone": "Kein Papierkorb sichtbar.",
+  "trashHidden": "Fehlt: {shares} – dort ist der Papierkorb nur für Admins sichtbar.",
+  "@trashHidden": {
+    "placeholders": {
+      "shares": {
+        "type": "String"
+      }
+    }
+  },
+  "trashIsEmpty": "Der Papierkorb ist leer.",
+  "trashFooter": "Wiederherstellen = Verschieben zurück an den Ursprungspfad (aus dem Papierkorb-Pfad abgeleitet). Endgültiges Löschen braucht eine zweite, rote Bestätigung.",
+  "trashFrom": "aus {folder}",
+  "@trashFrom": {
+    "placeholders": {
+      "folder": {
+        "type": "String"
+      }
+    }
+  },
+  "trashDeleted": "gelöscht {when}",
+  "@trashDeleted": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "restore": "Wiederherstellen",
+  "restoring": "Stelle wieder her …",
+  "restored": "Wiederhergestellt nach {path}",
+  "@restored": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteForever": "Endgültig löschen",
+  "deleteForeverTitle": "Endgültig löschen?",
+  "deleteForeverOne": "„{name}“ wird aus dem Papierkorb entfernt. Das kann nur noch ein Snapshot rückgängig machen.",
+  "@deleteForeverOne": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteForeverMany": "{count} Elemente werden aus dem Papierkorb entfernt. Das kann nur noch ein Snapshot rückgängig machen.",
+  "@deleteForeverMany": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "actionDeleteShort": "Löschen"
 }

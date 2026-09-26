@@ -69,6 +69,9 @@ void main() {
     await tester.longPress(find.text('02 Strandgut.flac'));
     await tester.pumpAndSettle();
     expect(find.text('1 ausgewählt'), findsOne);
+    await tester.tap(find.byTooltip('Schließen'));
+    await tester.pumpAndSettle();
+    expect(find.text('1 ausgewählt'), findsNothing);
 
     await tester.tap(find.byTooltip('Rasteransicht'));
     await tester.pumpAndSettle();
@@ -91,8 +94,8 @@ void main() {
         matching: find.byType(ListTile),
       ),
     );
-    expect(download.enabled, isFalse);
-    expect(find.byTooltip('ab M4'), findsWidgets);
+    expect(download.enabled, isTrue);
+    expect(find.byTooltip('ab M4'), findsNothing);
 
     await tester.tap(find.text('Info'));
     await tester.pumpAndSettle();

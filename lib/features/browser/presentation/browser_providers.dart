@@ -5,13 +5,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../../../core/network/syno_api_client.dart';
+import '../../../core/network/syno_exception.dart';
 import '../../../core/storage/storage_providers.dart';
 import '../../servers/presentation/server_providers.dart';
 import '../data/file_station_list_api.dart';
+import '../data/file_station_ops_api.dart';
 import '../data/file_station_task_api.dart';
 import '../data/local_library_repository.dart';
 import '../data/thumbnail_cache.dart';
 import '../domain/nas_entry.dart';
+import '../domain/recycle.dart';
 
 SynoApiClient _client(Ref ref) =>
     (ref.watch(sessionProvider) ?? (throw StateError('Keine Session'))).client;
@@ -26,6 +29,10 @@ final searchApiProvider = Provider<FileStationSearchApi>(
 
 final dirSizeApiProvider = Provider<FileStationDirSizeApi>(
   (ref) => FileStationDirSizeApi(_client(ref)),
+);
+
+final fileOpsApiProvider = Provider<FileStationOpsApi>(
+  (ref) => FileStationOpsApi(_client(ref)),
 );
 
 final thumbnailCacheProvider = Provider<ThumbnailCache>(
@@ -169,7 +176,7 @@ class FolderNotifier extends AsyncNotifier<FolderState> {
   }
 }
 
-/// Auswahl je Ordner (Long-Press). Die Aktionsleiste dazu kommt in M4.
+/// Auswahl je Ordner (Long-Press, Screen 08).
 final selectionProvider = NotifierProvider.autoDispose
     .family<SelectionNotifier, Set<String>, String>(SelectionNotifier.new);
 
@@ -184,6 +191,8 @@ class SelectionNotifier extends Notifier<Set<String>> {
   void toggle(String path) => state = state.contains(path)
       ? ({...state}..remove(path))
       : {...state, path};
+
+  void selectAll(Iterable<String> paths) => state = {...paths};
 
   void clear() => state = const {};
 }
@@ -284,6 +293,59 @@ Future<void> _quietly(Future<void> Function() action) async {
     // Aufräumen ist best effort.
   }
 }
+
+/// Pollt einen CopyMove-/Delete-Task bis `finished` und liefert dabei den
+/// Fortschritt (0…1, `null` = unbekannt). Wer das Abo vorher beendet, stoppt
+/// den Task auf dem NAS.
+Stream<double?> pollTask({
+  required Future<String> Function() start,
+  required Future<TaskProgress> Function(String task) status,
+  required Future<void> Function(String task) stop,
+}) async* {
+  final task = await start();
+  var finished = false;
+  final poll = Backoff();
+  try {
+    while (true) {
+      final p = await status(task);
+      if (p.finished) {
+        finished = true;
+        yield 1;
+        return;
+      }
+      yield p.progress;
+      await poll.wait();
+    }
+  } finally {
+    if (!finished) unawaited(_quietly(() => stop(task)));
+  }
+}
+
+/// Ob Gelöschtes in [share] im Papierkorb landet.
+enum RecycleBin {
+  /// `#recycle` ist listbar.
+  available,
+
+  /// Kein `#recycle` (408): Löschen ist endgültig.
+  missing,
+
+  /// Nicht prüfbar, z. B. „Papierkorb nur für Administratoren“ (407).
+  unknown,
+}
+
+final recycleBinProvider = FutureProvider.autoDispose
+    .family<RecycleBin, String>((ref, share) async {
+      try {
+        await ref
+            .watch(fileStationListApiProvider)
+            .list(recycleFolder(share), limit: 1);
+        return RecycleBin.available;
+      } on SynoNotFound {
+        return RecycleBin.missing;
+      } on SynoException {
+        return RecycleBin.unknown;
+      }
+    });
 
 // ---------------------------------------------------------------------------
 // Suche (Screen 11)

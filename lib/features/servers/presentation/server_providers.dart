@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/auth/session_manager.dart';
 import '../../../core/network/certificate_pinning.dart';
+import '../../../core/network/syno_api_client.dart';
 import '../../../core/storage/storage_providers.dart';
 import '../data/server_repository.dart';
 import '../domain/server_profile.dart';
@@ -84,6 +85,10 @@ class SessionNotifier extends Notifier<SessionManager?> {
     }
   }
 }
+
+/// Client der aktiven Session; wirft ohne Session.
+SynoApiClient sessionClient(Ref ref) =>
+    (ref.watch(sessionProvider) ?? (throw StateError('Keine Session'))).client;
 
 /// Einmal pro App-Start: [SessionNotifier.resumeLast].
 final startupProvider = FutureProvider<bool>(

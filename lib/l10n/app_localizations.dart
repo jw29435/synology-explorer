@@ -608,12 +608,6 @@ abstract class AppLocalizations {
   /// **'Listenansicht'**
   String get viewList;
 
-  /// No description provided for @fabLater.
-  ///
-  /// In de, this message translates to:
-  /// **'Hochladen und neue Ordner kommen mit M4.'**
-  String get fabLater;
-
   /// No description provided for @openLater.
   ///
   /// In de, this message translates to:
@@ -865,6 +859,678 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Suche nach Dateiname. Filter schränken auf Dateiendungen ein; beim Verlassen wird der Search-Task gestoppt und aufgeräumt.'**
   String get searchFooter;
+
+  /// No description provided for @selectAll.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle'**
+  String get selectAll;
+
+  /// No description provided for @selectionSize.
+  ///
+  /// In de, this message translates to:
+  /// **'Auswahl: {size}'**
+  String selectionSize(String size);
+
+  /// No description provided for @actionDownloadShort.
+  ///
+  /// In de, this message translates to:
+  /// **'Download'**
+  String get actionDownloadShort;
+
+  /// No description provided for @actionMoveShort.
+  ///
+  /// In de, this message translates to:
+  /// **'Verschieben'**
+  String get actionMoveShort;
+
+  /// No description provided for @actionCopyShort.
+  ///
+  /// In de, this message translates to:
+  /// **'Kopieren'**
+  String get actionCopyShort;
+
+  /// No description provided for @actionShareShort.
+  ///
+  /// In de, this message translates to:
+  /// **'Teilen'**
+  String get actionShareShort;
+
+  /// No description provided for @back.
+  ///
+  /// In de, this message translates to:
+  /// **'Zurück'**
+  String get back;
+
+  /// No description provided for @create.
+  ///
+  /// In de, this message translates to:
+  /// **'Anlegen'**
+  String get create;
+
+  /// No description provided for @edit.
+  ///
+  /// In de, this message translates to:
+  /// **'Bearbeiten'**
+  String get edit;
+
+  /// No description provided for @copy.
+  ///
+  /// In de, this message translates to:
+  /// **'Kopieren'**
+  String get copy;
+
+  /// No description provided for @share.
+  ///
+  /// In de, this message translates to:
+  /// **'Teilen'**
+  String get share;
+
+  /// No description provided for @pause.
+  ///
+  /// In de, this message translates to:
+  /// **'Pausieren'**
+  String get pause;
+
+  /// No description provided for @resume.
+  ///
+  /// In de, this message translates to:
+  /// **'Fortsetzen'**
+  String get resume;
+
+  /// No description provided for @validationName.
+  ///
+  /// In de, this message translates to:
+  /// **'Ungültiger Name (kein „/“).'**
+  String get validationName;
+
+  /// No description provided for @newFolder.
+  ///
+  /// In de, this message translates to:
+  /// **'Neuer Ordner'**
+  String get newFolder;
+
+  /// No description provided for @newFolderHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Im aktuellen Verzeichnis'**
+  String get newFolderHint;
+
+  /// No description provided for @moveTo.
+  ///
+  /// In de, this message translates to:
+  /// **'Verschieben nach …'**
+  String get moveTo;
+
+  /// No description provided for @copyTo.
+  ///
+  /// In de, this message translates to:
+  /// **'Kopieren nach …'**
+  String get copyTo;
+
+  /// No description provided for @moveHere.
+  ///
+  /// In de, this message translates to:
+  /// **'Hierher verschieben'**
+  String get moveHere;
+
+  /// No description provided for @copyHere.
+  ///
+  /// In de, this message translates to:
+  /// **'Hierher kopieren'**
+  String get copyHere;
+
+  /// No description provided for @noSubfolders.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Unterordner.'**
+  String get noSubfolders;
+
+  /// No description provided for @moving.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{Verschiebe 1 Element …} other{Verschiebe {count} Elemente …}}'**
+  String moving(int count);
+
+  /// No description provided for @copying.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{Kopiere 1 Element …} other{Kopiere {count} Elemente …}}'**
+  String copying(int count);
+
+  /// No description provided for @deleting.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{Lösche 1 Element …} other{Lösche {count} Elemente …}}'**
+  String deleting(int count);
+
+  /// No description provided for @deleteConfirmOne.
+  ///
+  /// In de, this message translates to:
+  /// **'„{name}“ löschen?'**
+  String deleteConfirmOne(String name);
+
+  /// No description provided for @deleteConfirmMany.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} Elemente löschen?'**
+  String deleteConfirmMany(int count);
+
+  /// No description provided for @deleteToRecycle.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Freigabe hat einen Papierkorb: Gelöschtes lässt sich dort wiederherstellen.'**
+  String get deleteToRecycle;
+
+  /// No description provided for @deleteNoRecycle.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Freigabe hat keinen Papierkorb: Löschen ist endgültig.'**
+  String get deleteNoRecycle;
+
+  /// No description provided for @deleteRecycleUnknown.
+  ///
+  /// In de, this message translates to:
+  /// **'Ob die Freigabe einen Papierkorb hat, ist nicht prüfbar (evtl. nur für Administratoren sichtbar). Im Zweifel ist Löschen endgültig.'**
+  String get deleteRecycleUnknown;
+
+  /// No description provided for @downloadsQueued.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =0{Nichts herunterzuladen.} =1{1 Download eingereiht.} other{{count} Downloads eingereiht.}}'**
+  String downloadsQueued(int count);
+
+  /// No description provided for @uploadsQueued.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Upload eingereiht.} other{{count} Uploads eingereiht.}}'**
+  String uploadsQueued(int count);
+
+  /// No description provided for @uploadTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Hinzufügen'**
+  String get uploadTitle;
+
+  /// No description provided for @uploadTarget.
+  ///
+  /// In de, this message translates to:
+  /// **'Ziel: {path}'**
+  String uploadTarget(String path);
+
+  /// No description provided for @uploadFiles.
+  ///
+  /// In de, this message translates to:
+  /// **'Dateien'**
+  String get uploadFiles;
+
+  /// No description provided for @uploadFilesHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Aus dem System-Dateipicker'**
+  String get uploadFilesHint;
+
+  /// No description provided for @uploadMedia.
+  ///
+  /// In de, this message translates to:
+  /// **'Fotos & Videos'**
+  String get uploadMedia;
+
+  /// No description provided for @uploadMediaHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Aus der Kamera-Rolle'**
+  String get uploadMediaHint;
+
+  /// No description provided for @uploadCamera.
+  ///
+  /// In de, this message translates to:
+  /// **'Kamera'**
+  String get uploadCamera;
+
+  /// No description provided for @uploadCameraHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Aufnehmen und direkt hochladen'**
+  String get uploadCameraHint;
+
+  /// No description provided for @uploadOverwrite.
+  ///
+  /// In de, this message translates to:
+  /// **'Vorhandene Dateien überschreiben'**
+  String get uploadOverwrite;
+
+  /// No description provided for @uploadOverwriteHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Sonst wird „ (1)“ angehängt'**
+  String get uploadOverwriteHint;
+
+  /// No description provided for @pauseAll.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle pausieren'**
+  String get pauseAll;
+
+  /// No description provided for @clearList.
+  ///
+  /// In de, this message translates to:
+  /// **'Liste leeren'**
+  String get clearList;
+
+  /// No description provided for @transfersActive.
+  ///
+  /// In de, this message translates to:
+  /// **'Aktiv ({count})'**
+  String transfersActive(int count);
+
+  /// No description provided for @transfersDone.
+  ///
+  /// In de, this message translates to:
+  /// **'Fertig ({count})'**
+  String transfersDone(int count);
+
+  /// No description provided for @transfersNone.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine laufenden Transfers.'**
+  String get transfersNone;
+
+  /// No description provided for @transfersNoneDone.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch nichts fertig.'**
+  String get transfersNoneDone;
+
+  /// No description provided for @transfersFooter.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Queue überlebt einen App-Neustart. Downloads werden per HTTP-Range fortgesetzt, Uploads starten auf Datei-Ebene neu.'**
+  String get transfersFooter;
+
+  /// No description provided for @transferToOffline.
+  ///
+  /// In de, this message translates to:
+  /// **'Download → Offline'**
+  String get transferToOffline;
+
+  /// No description provided for @transferToFolder.
+  ///
+  /// In de, this message translates to:
+  /// **'Upload → {folder}'**
+  String transferToFolder(String folder);
+
+  /// No description provided for @transferQueued.
+  ///
+  /// In de, this message translates to:
+  /// **'wartet'**
+  String get transferQueued;
+
+  /// No description provided for @transferPaused.
+  ///
+  /// In de, this message translates to:
+  /// **'Pausiert'**
+  String get transferPaused;
+
+  /// No description provided for @transferFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Fehlgeschlagen: {reason}'**
+  String transferFailed(String reason);
+
+  /// No description provided for @bytesOf.
+  ///
+  /// In de, this message translates to:
+  /// **'{done} von {total}'**
+  String bytesOf(String done, String total);
+
+  /// No description provided for @remaining.
+  ///
+  /// In de, this message translates to:
+  /// **'noch {time}'**
+  String remaining(String time);
+
+  /// No description provided for @durationSeconds.
+  ///
+  /// In de, this message translates to:
+  /// **'{n} s'**
+  String durationSeconds(int n);
+
+  /// No description provided for @durationMinutes.
+  ///
+  /// In de, this message translates to:
+  /// **'{n} min'**
+  String durationMinutes(int n);
+
+  /// No description provided for @durationHours.
+  ///
+  /// In de, this message translates to:
+  /// **'{n} h'**
+  String durationHours(int n);
+
+  /// No description provided for @resumesWithRange.
+  ///
+  /// In de, this message translates to:
+  /// **'wird fortgesetzt (Range)'**
+  String get resumesWithRange;
+
+  /// No description provided for @notificationTransfers.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Transfer läuft} other{{count} Transfers laufen}}'**
+  String notificationTransfers(int count);
+
+  /// No description provided for @errorExists.
+  ///
+  /// In de, this message translates to:
+  /// **'Ein Element mit diesem Namen gibt es dort schon.'**
+  String get errorExists;
+
+  /// No description provided for @errorLocalFile.
+  ///
+  /// In de, this message translates to:
+  /// **'Lokale Datei nicht lesbar oder schreibbar.'**
+  String get errorLocalFile;
+
+  /// No description provided for @storageUsed.
+  ///
+  /// In de, this message translates to:
+  /// **'Belegt auf diesem Gerät'**
+  String get storageUsed;
+
+  /// No description provided for @storageOffline.
+  ///
+  /// In de, this message translates to:
+  /// **'Offline-Dateien {size}'**
+  String storageOffline(String size);
+
+  /// No description provided for @storageCache.
+  ///
+  /// In de, this message translates to:
+  /// **'Cache {size}'**
+  String storageCache(String size);
+
+  /// No description provided for @offlineInfo.
+  ///
+  /// In de, this message translates to:
+  /// **'Alles hier ist ohne Verbindung nutzbar. Änderungen auf dem NAS werden beim nächsten Kontakt geprüft (mtime).'**
+  String get offlineInfo;
+
+  /// No description provided for @offlineEmpty.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch keine Offline-Dateien. „Offline verfügbar halten“ im Datei-Menü lädt Dateien hierher.'**
+  String get offlineEmpty;
+
+  /// No description provided for @offlineChanged.
+  ///
+  /// In de, this message translates to:
+  /// **'Auf dem NAS geändert – aktualisieren?'**
+  String get offlineChanged;
+
+  /// No description provided for @offlineRemove.
+  ///
+  /// In de, this message translates to:
+  /// **'Entfernen'**
+  String get offlineRemove;
+
+  /// No description provided for @moreItems.
+  ///
+  /// In de, this message translates to:
+  /// **'+ {count} weitere'**
+  String moreItems(int count);
+
+  /// No description provided for @openFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine App zum Öffnen gefunden.'**
+  String get openFailed;
+
+  /// No description provided for @shareLinkTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Freigabelink'**
+  String get shareLinkTitle;
+
+  /// No description provided for @shareValidUntil.
+  ///
+  /// In de, this message translates to:
+  /// **'Gültig bis'**
+  String get shareValidUntil;
+
+  /// No description provided for @expiryDay1.
+  ///
+  /// In de, this message translates to:
+  /// **'1 Tag'**
+  String get expiryDay1;
+
+  /// No description provided for @expiryDays.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} Tage'**
+  String expiryDays(int count);
+
+  /// No description provided for @expiryNever.
+  ///
+  /// In de, this message translates to:
+  /// **'Nie'**
+  String get expiryNever;
+
+  /// No description provided for @expiryNone.
+  ///
+  /// In de, this message translates to:
+  /// **'Kein Ablauf'**
+  String get expiryNone;
+
+  /// No description provided for @expiresOn.
+  ///
+  /// In de, this message translates to:
+  /// **'Läuft ab am {date}'**
+  String expiresOn(String date);
+
+  /// No description provided for @expiresToday.
+  ///
+  /// In de, this message translates to:
+  /// **'Läuft heute ab'**
+  String get expiresToday;
+
+  /// No description provided for @expiresInDays.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{Läuft morgen ab} other{Läuft ab in {count} Tagen}}'**
+  String expiresInDays(int count);
+
+  /// No description provided for @expiredOn.
+  ///
+  /// In de, this message translates to:
+  /// **'Abgelaufen am {date}'**
+  String expiredOn(String date);
+
+  /// No description provided for @sharePassword.
+  ///
+  /// In de, this message translates to:
+  /// **'Passwort (optional)'**
+  String get sharePassword;
+
+  /// No description provided for @generate.
+  ///
+  /// In de, this message translates to:
+  /// **'Generieren'**
+  String get generate;
+
+  /// No description provided for @shareCreate.
+  ///
+  /// In de, this message translates to:
+  /// **'Link erstellen'**
+  String get shareCreate;
+
+  /// No description provided for @shareCreated.
+  ///
+  /// In de, this message translates to:
+  /// **'Link erstellt'**
+  String get shareCreated;
+
+  /// No description provided for @linkCopied.
+  ///
+  /// In de, this message translates to:
+  /// **'Link kopiert.'**
+  String get linkCopied;
+
+  /// No description provided for @shareExternalHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Link zeigt auf die externe Adresse. Verwaltung aller Links unter Einstellungen › Freigabelinks.'**
+  String get shareExternalHint;
+
+  /// No description provided for @shareNoExternal.
+  ///
+  /// In de, this message translates to:
+  /// **'Für diesen Server ist keine externe Adresse hinterlegt: Der Link nutzt die Adresse, die DSM meldet, und ist evtl. nur im LAN erreichbar.'**
+  String get shareNoExternal;
+
+  /// No description provided for @shareLinksTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Freigabelinks'**
+  String get shareLinksTitle;
+
+  /// No description provided for @shareLinksCount.
+  ///
+  /// In de, this message translates to:
+  /// **'{active} aktiv · {expired} abgelaufen'**
+  String shareLinksCount(int active, int expired);
+
+  /// No description provided for @shareLinksEmpty.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Freigabelinks.'**
+  String get shareLinksEmpty;
+
+  /// No description provided for @shareLinksFooter.
+  ///
+  /// In de, this message translates to:
+  /// **'Quelle: SYNO.FileStation.Sharing list. Ablauf oder Passwort ändern geht über Link neu erstellen.'**
+  String get shareLinksFooter;
+
+  /// No description provided for @passwordBadge.
+  ///
+  /// In de, this message translates to:
+  /// **'Passwort'**
+  String get passwordBadge;
+
+  /// No description provided for @cleanUp.
+  ///
+  /// In de, this message translates to:
+  /// **'Aufräumen'**
+  String get cleanUp;
+
+  /// No description provided for @trashTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Papierkorb'**
+  String get trashTitle;
+
+  /// No description provided for @trashEmptyAction.
+  ///
+  /// In de, this message translates to:
+  /// **'Leeren'**
+  String get trashEmptyAction;
+
+  /// No description provided for @trashChecking.
+  ///
+  /// In de, this message translates to:
+  /// **'Prüfe Papierkörbe …'**
+  String get trashChecking;
+
+  /// No description provided for @trashInfo.
+  ///
+  /// In de, this message translates to:
+  /// **'Zeigt #recycle der Freigabe.'**
+  String get trashInfo;
+
+  /// No description provided for @trashNone.
+  ///
+  /// In de, this message translates to:
+  /// **'Kein Papierkorb sichtbar.'**
+  String get trashNone;
+
+  /// No description provided for @trashHidden.
+  ///
+  /// In de, this message translates to:
+  /// **'Fehlt: {shares} – dort ist der Papierkorb nur für Admins sichtbar.'**
+  String trashHidden(String shares);
+
+  /// No description provided for @trashIsEmpty.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Papierkorb ist leer.'**
+  String get trashIsEmpty;
+
+  /// No description provided for @trashFooter.
+  ///
+  /// In de, this message translates to:
+  /// **'Wiederherstellen = Verschieben zurück an den Ursprungspfad (aus dem Papierkorb-Pfad abgeleitet). Endgültiges Löschen braucht eine zweite, rote Bestätigung.'**
+  String get trashFooter;
+
+  /// No description provided for @trashFrom.
+  ///
+  /// In de, this message translates to:
+  /// **'aus {folder}'**
+  String trashFrom(String folder);
+
+  /// No description provided for @trashDeleted.
+  ///
+  /// In de, this message translates to:
+  /// **'gelöscht {when}'**
+  String trashDeleted(String when);
+
+  /// No description provided for @restore.
+  ///
+  /// In de, this message translates to:
+  /// **'Wiederherstellen'**
+  String get restore;
+
+  /// No description provided for @restoring.
+  ///
+  /// In de, this message translates to:
+  /// **'Stelle wieder her …'**
+  String get restoring;
+
+  /// No description provided for @restored.
+  ///
+  /// In de, this message translates to:
+  /// **'Wiederhergestellt nach {path}'**
+  String restored(String path);
+
+  /// No description provided for @deleteForever.
+  ///
+  /// In de, this message translates to:
+  /// **'Endgültig löschen'**
+  String get deleteForever;
+
+  /// No description provided for @deleteForeverTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Endgültig löschen?'**
+  String get deleteForeverTitle;
+
+  /// No description provided for @deleteForeverOne.
+  ///
+  /// In de, this message translates to:
+  /// **'„{name}“ wird aus dem Papierkorb entfernt. Das kann nur noch ein Snapshot rückgängig machen.'**
+  String deleteForeverOne(String name);
+
+  /// No description provided for @deleteForeverMany.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} Elemente werden aus dem Papierkorb entfernt. Das kann nur noch ein Snapshot rückgängig machen.'**
+  String deleteForeverMany(int count);
+
+  /// No description provided for @actionDeleteShort.
+  ///
+  /// In de, this message translates to:
+  /// **'Löschen'**
+  String get actionDeleteShort;
 }
 
 class _AppLocalizationsDelegate

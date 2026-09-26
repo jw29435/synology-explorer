@@ -61,6 +61,11 @@ class StartScreen extends ConsumerWidget {
             onPressed: () => context.push('/files/search'),
           ),
           IconButton(
+            tooltip: l10n.trashTitle,
+            icon: const Icon(Icons.delete_outline),
+            onPressed: () => context.push('/files/trash'),
+          ),
+          IconButton(
             tooltip: l10n.switchServer,
             icon: const Icon(Icons.dns_outlined),
             onPressed: () => context.go('/servers'),
