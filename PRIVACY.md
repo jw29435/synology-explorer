@@ -1,6 +1,6 @@
-# Datenschutzerklärung – Synology Explorer
+# Datenschutzerklärung – Nuvo Explorer
 
-Stand: September 2026 · Gilt für die Android- und iOS-App „Synology Explorer“.
+Stand: September 2026 · Gilt für die Android- und iOS-App „Nuvo Explorer“.
 
 **Kurz:** Die App erhebt keine Daten. Sie spricht ausschließlich mit dem NAS, das du selbst einträgst. Es gibt
 keine Analytics, keine Werbung, keine Crash-Reporter mit Upload und keine Server des Entwicklers.

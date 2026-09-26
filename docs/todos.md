@@ -90,4 +90,5 @@ nur gegen den Mock. Bitte in einem Testordner prüfen:
 - [ ] Den Release-Build einmal mit dem echten Keystore (GitHub-Secret) bauen lassen. Lokal wurde er ohne
       `key.properties` mit der Debug-Signatur gebaut; der erste lokale Release-Lauf brach einmal ohne klare Meldung
       ab, der zweite lief durch.
-- [ ] Nach dem Merge den offenen release-please-PR (#9, „release 1.0.0“) prüfen – die Fixes gehören in den Changelog.
+- [x] Nach dem Merge den offenen release-please-PR (#9, „release 1.0.0“) prüfen – die Fixes gehören in den Changelog.
+      Erledigt: geschlossen, 0.1.1 manuell als Pre-Release.

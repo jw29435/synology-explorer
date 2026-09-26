@@ -1,4 +1,4 @@
-# Claude-Code-Prompts – Synology Explorer
+# Claude-Code-Prompts – Nuvo Explorer
 
 Reihenfolge einhalten; jeder Prompt ist eine eigene Claude-Code-Session (lokal im Repo unter WSL2) und endet mit einem PR.
 Vor Prompt 0 müssen im Repo liegen: `CLAUDE.md`, `docs/CONCEPT.md`, `docs/mockups/01…26.png`.
