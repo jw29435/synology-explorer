@@ -1,0 +1,231 @@
+import 'dart:io';
+
+import 'package:drift/native.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:synology_explorer/app/app.dart';
+import 'package:synology_explorer/app/router.dart';
+import 'package:synology_explorer/core/storage/app_database.dart';
+import 'package:synology_explorer/core/storage/storage_providers.dart';
+import 'package:synology_explorer/features/audio/presentation/playback_providers.dart';
+import 'package:synology_explorer/features/transfers/presentation/transfer_providers.dart';
+import 'package:synology_explorer/l10n/app_localizations.dart';
+
+import '../../tool/mock_nas/mock_nas.dart';
+import '../helpers/app_harness.dart' show NoNotifications;
+import '../helpers/audio_fakes.dart';
+import '../helpers/mock_nas_server.dart';
+import '../helpers/settings_fakes.dart';
+
+/// Deutsche Texte der App – Tests suchen Widgets über dieselben Strings.
+final l10n = lookupAppLocalizations(const Locale('de'));
+
+/// Headless E2E: die ganze App mit echtem HTTP gegen den Mock-NAS.
+///
+/// Ersetzt werden nur Plattform-Teile: drift in-memory, Secure Storage und
+/// path_provider gefaked, Player, Benachrichtigungen, WorkManager und
+/// Fotozugriff durch Fakes. Alles andere – Router, Provider, Repositories,
+/// `SynoApiClient` mit Re-Login – läuft wie auf dem Gerät.
+class E2E {
+  E2E._(this.tester, this.nas, this.container, this.db, this.audio);
+
+  final WidgetTester tester;
+  final MockNasServer nas;
+  final ProviderContainer container;
+  final AppDatabase db;
+  final FakeAudioController audio;
+
+  /// Startet Mock-NAS und App (auf `/servers`, ohne Server).
+  static Future<E2E> start(
+    WidgetTester tester, {
+    List<Override> overrides = const [],
+    Map<String, String> secureStorage = const {},
+  }) async {
+    // flutter_test beantwortet jedes HTTP mit 400 – hier soll echtes HTTP
+    // an den Loopback-Mock gehen.
+    final httpOverrides = HttpOverrides.current;
+    HttpOverrides.global = null;
+    addTearDown(() => HttpOverrides.global = httpOverrides);
+    GoogleFonts.config.allowRuntimeFetching = false;
+    tester.platformDispatcher.localesTestValue = const [Locale('de')];
+    addTearDown(tester.platformDispatcher.clearLocalesTestValue);
+    tester.view
+      ..physicalSize = const Size(1170, 2532)
+      ..devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
+    FlutterSecureStorage.setMockInitialValues({...secureStorage});
+
+    final dir = (await tester.runAsync(
+      () => Directory.systemTemp.createTemp('e2e'),
+    ))!;
+    addTearDown(() => dir.delete(recursive: true));
+    const pathChannel = MethodChannel('plugins.flutter.io/path_provider');
+    final messenger =
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    messenger.setMockMethodCallHandler(pathChannel, (call) async {
+      final sub = switch (call.method) {
+        'getApplicationCacheDirectory' || 'getTemporaryDirectory' => 'cache',
+        _ => 'docs',
+      };
+      final d = Directory('${dir.path}/$sub')..createSync(recursive: true);
+      return d.path;
+    });
+    addTearDown(() => messenger.setMockMethodCallHandler(pathChannel, null));
+
+    final nas = (await tester.runAsync(MockNasServer.start))!;
+    addTearDown(() => tester.runAsync(nas.close));
+    final db = AppDatabase(NativeDatabase.memory());
+    final audio = FakeAudioController(const AudioState());
+    final container = ProviderContainer(
+      retry: (_, _) => null,
+      overrides: [
+        appDatabaseProvider.overrideWithValue(db),
+        transferNotificationsProvider.overrideWithValue(NoNotifications()),
+        audioControllerProvider.overrideWith(() => audio),
+        ...settingsOverrides(),
+        ...overrides,
+      ],
+    );
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const SynologyExplorerApp(),
+      ),
+    );
+    final e2e = E2E._(tester, nas, container, db, audio);
+    addTearDown(() async {
+      if (!e2e._disposed) await e2e.dispose();
+    });
+    await e2e.settle();
+    return e2e;
+  }
+
+  bool _disposed = false;
+
+  /// Baut die App ab (Tree, Provider, DB) und lässt Einmal-Timer auslaufen.
+  /// Am Ende jedes Tests aufrufen: flutter_test prüft danach, dass kein
+  /// Timer mehr aussteht (Polling, das beim Verlassen nicht stoppt, u. ä.).
+  Future<void> dispose() async {
+    _disposed = true;
+    await tester.pumpWidget(const SizedBox());
+    container.dispose();
+    // Keep-alive-Verbindungen des HttpClient schließen nach 15 s Leerlauf.
+    await tester.pump(const Duration(seconds: 20));
+    await db.close();
+  }
+
+  String get location =>
+      container.read(routerProvider).routerDelegate.state.uri.toString();
+
+  /// Frames und echte Zeit abwechselnd, bis [finder] etwas findet (höchstens
+  /// [timeout] echte Zeit). HTTP an den Mock läuft außerhalb der Fake-Zeit.
+  Future<void> waitFor(
+    Finder finder, {
+    Duration timeout = const Duration(seconds: 10),
+  }) async {
+    final deadline = DateTime.now().add(timeout);
+    while (finder.evaluate().isEmpty) {
+      if (DateTime.now().isAfter(deadline)) {
+        fail(
+          'Nicht gefunden nach $timeout: $finder (Route: $location)\n'
+          'Sichtbar: $visibleTexts',
+        );
+      }
+      await tester.pump(const Duration(milliseconds: 50));
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 20)),
+      );
+    }
+    await tester.pump();
+  }
+
+  /// Einige Runden Frames + echte Zeit, dann Animationen auslaufen lassen.
+  Future<void> settle({int rounds = 10}) async {
+    for (var i = 0; i < rounds; i++) {
+      await tester.pump(const Duration(milliseconds: 50));
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 10)),
+      );
+    }
+    await tester.pumpAndSettle();
+  }
+
+  Future<void> tap(Finder finder) async {
+    await tester.ensureVisible(finder);
+    await tester.tap(finder);
+    await settle();
+  }
+
+  Future<void> tapText(String text) => tap(find.text(text).first);
+
+  /// Text eingeben und einen Frame bauen (Buttons hängen an `onChanged`).
+  Future<void> type(Finder field, String text) async {
+    await tester.enterText(field, text);
+    await tester.pump();
+  }
+
+  /// Alle sichtbaren Texte – für Fehlermeldungen der Tests.
+  List<String> get visibleTexts => [
+    for (final e in find.byType(Text).hitTestable().evaluate())
+      (e.widget as Text).data ??
+          (e.widget as Text).textSpan?.toPlainText() ??
+          '',
+  ];
+
+  /// Zurück-Pfeil der AppBar bzw. Schließen-Knopf (Tooltip „Zurück“/
+  /// „Schließen“). `pageBack()` aus flutter_test sucht nur den englischen
+  /// Tooltip.
+  Finder get backButtonFinder {
+    // Tooltips von MaterialLocalizations auf Deutsch.
+    for (final f in [
+      find.byType(BackButton),
+      find.byType(CloseButton),
+      find.byTooltip('Zurück'),
+      find.byTooltip('Schließen'),
+    ]) {
+      if (f.hitTestable().evaluate().isNotEmpty) return f.hitTestable().first;
+    }
+    return find.byType(BackButton).hitTestable();
+  }
+
+  /// Zurück über den Zurück-Pfeil (schlägt fehl, wenn es keinen gibt – der
+  /// typische „Screen ohne Zurückknopf“-Fehler).
+  Future<void> backButton() async {
+    final back = backButtonFinder;
+    expect(
+      back,
+      findsOneWidget,
+      reason: 'Kein Zurückknopf auf $location. Sichtbar: $visibleTexts',
+    );
+    await tester.tap(back);
+    await settle();
+  }
+
+  /// Android-Zurück-Geste. Liefert, ob die App sie selbst verarbeitet hat
+  /// (`false` = App würde in den Hintergrund gehen).
+  Future<bool> systemBack() async {
+    final handled = await tester.binding.handlePopRoute();
+    await settle();
+    return handled;
+  }
+
+  /// Server-Profil über Screen 02 anlegen und anmelden (Mock mit 2FA).
+  Future<void> addServerAndLogin() async {
+    await tapText(l10n.serverAdd);
+    final fields = find.byType(TextFormField);
+    await type(fields.at(0), 'Heim-NAS');
+    await type(fields.at(1), nas.url);
+    await type(fields.at(3), mockUser);
+    await type(fields.at(4), mockPassword);
+    await tap(find.text(l10n.connect));
+    await waitFor(find.text(l10n.otpTitle));
+    await type(find.byType(TextField).first, mockOtp);
+    await tap(find.text(l10n.signIn));
+    await waitFor(find.text(l10n.sectionShares.toUpperCase()));
+  }
+}
