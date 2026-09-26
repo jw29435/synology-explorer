@@ -91,4 +91,22 @@ void main() {
     expect(find.text(l10n.serverLogout), findsOneWidget);
     await app.dispose();
   });
+
+  testWidgets('E2E-058: Verbinden bleibt über der Tastatur erreichbar', (
+    tester,
+  ) async {
+    final app = await E2E.start(tester);
+    await app.tapText(l10n.serverAdd);
+    // Tastatur mit 300 dp Höhe (Handy 390 × 844 dp, dpr 3).
+    tester.view.viewInsets = const FakeViewPadding(bottom: 900);
+    addTearDown(tester.view.resetViewInsets);
+    await app.settle();
+
+    final button = find.widgetWithText(FilledButton, l10n.connect);
+    expect(tester.getRect(button).bottom, lessThanOrEqualTo(844 - 300));
+    await tester.tap(button);
+    await app.settle();
+    expect(find.text(l10n.validationRequired), findsWidgets);
+    await app.dispose();
+  });
 }

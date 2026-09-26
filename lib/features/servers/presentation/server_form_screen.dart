@@ -257,10 +257,16 @@ class _ServerFormScreenState extends ConsumerState<ServerFormScreen> {
           ),
         ),
       ),
-      // Fehler direkt über dem Button, damit er ohne Scrollen sichtbar ist.
+      // Fehler direkt über dem Button, damit er ohne Scrollen sichtbar ist;
+      // beides über der Tastatur (Scaffold legt die Leiste sonst darunter).
       bottomNavigationBar: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+          padding: EdgeInsets.fromLTRB(
+            20,
+            8,
+            20,
+            16 + MediaQuery.viewInsetsOf(context).bottom,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -513,9 +519,15 @@ class _OtpScreenState extends State<OtpScreen> {
           ],
         ],
       ),
+      // Über der Tastatur, wie auf Screen 02.
       bottomNavigationBar: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
+          padding: EdgeInsets.fromLTRB(
+            20,
+            8,
+            20,
+            8 + MediaQuery.viewInsetsOf(context).bottom,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
