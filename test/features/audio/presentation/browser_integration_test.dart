@@ -99,4 +99,23 @@ void main() {
     // Snackbar-Timer ablaufen lassen.
     await tester.pumpAndSettle(const Duration(seconds: 10));
   });
+
+  testWidgets('Fortsetzen-Snackbar verschwindet von selbst', (tester) async {
+    final controller = FakeAudioController(
+      const AudioState(),
+      resume: const Duration(minutes: 1, seconds: 40),
+    );
+    await pumpApp(
+      tester,
+      location: folderLocation(album),
+      overrides: audioOverrides(controller),
+    );
+    await tester.tap(find.text('02 Strandgut.flac'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.text('Bei 1:40 fortsetzen?'), findsOne);
+    await tester.pump(const Duration(seconds: 10));
+    await tester.pumpAndSettle();
+    expect(find.text('Bei 1:40 fortsetzen?'), findsNothing);
+  });
 }

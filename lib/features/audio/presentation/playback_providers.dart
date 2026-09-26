@@ -313,7 +313,7 @@ class AudioController extends Notifier<AudioState> {
         position: _attached ? _player.position : null,
       );
     }
-    if (!await _networkAllowed()) return;
+    if (!await _networkAllowed(resumeAt: _player.position)) return;
     unawaited(_player.play());
   }
 
@@ -524,7 +524,7 @@ class AudioController extends Notifier<AudioState> {
         _proxy = null;
         source = AudioSource.file(file.path);
       } else {
-        if (!await _networkAllowed()) return;
+        if (!await _networkAllowed(resumeAt: position)) return;
         final client = ref.read(sessionProvider)!.client;
         if (_addressStale) {
           _addressStale = false;
@@ -639,8 +639,10 @@ class AudioController extends Notifier<AudioState> {
     }
   }
 
-  Future<bool> _networkAllowed() async {
+  /// [resumeAt]: dort geht es weiter, wenn das WLAN zurückkommt.
+  Future<bool> _networkAllowed({Duration? resumeAt}) async {
     if (await streamingAllowed(ref)) return true;
+    _errorPosition = resumeAt;
     await _player.pause();
     state = state.copyWith(loading: false, error: const WifiRequired());
     return false;

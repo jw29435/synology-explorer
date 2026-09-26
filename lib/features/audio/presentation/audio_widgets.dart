@@ -32,7 +32,10 @@ Future<void> startPlayback(
   final controller = container.read(audioControllerProvider.notifier);
   void show(String text, [SnackBarAction? action]) => messenger
     ..hideCurrentSnackBar()
-    ..showSnackBar(SnackBar(content: Text(text), action: action));
+    ..showSnackBar(
+      // Mit Aktion bliebe die Snackbar sonst stehen, bis man sie wegwischt.
+      SnackBar(content: Text(text), action: action, persist: false),
+    );
   try {
     final resume = await controller.playFolder(
       folder,
@@ -76,6 +79,7 @@ Future<void> playOfflineAudio(
       ..showSnackBar(
         SnackBar(
           content: Text(l10n.resumeAt(formatDuration(resume))),
+          persist: false,
           action: SnackBarAction(
             label: l10n.resumeAction,
             onPressed: () => controller.seek(resume),

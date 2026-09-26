@@ -408,6 +408,31 @@ void main() {
     },
   );
 
+  test(
+    '„Nur WLAN“: Play ohne WLAN, WLAN kommt zurück → weiter an der Stelle',
+    () async {
+      await repo.setWifiOnly(true);
+      await controller.playFolder(album, startPath: ebbe);
+      await settle();
+      player.position = const Duration(seconds: 80);
+      await controller.pause();
+      net.now = [ConnectivityResult.none];
+      await handler.play(); // Kopfhörertaste ohne WLAN
+      await settle();
+      expect(state().error, isA<WifiRequired>());
+      expect(player.calls.where((c) => c == 'play'), hasLength(1));
+
+      net.now = [ConnectivityResult.wifi];
+      net.changes.add(net.now);
+      for (var i = 0; i < 50 && player.sources.length < 2; i++) {
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+      }
+      expect(player.sources, ['01 Ebbe.flac', '01 Ebbe.flac']);
+      expect(player.position, const Duration(seconds: 80));
+      expect(state().playing, isTrue);
+    },
+  );
+
   test('WLAN fällt weg während der Wiedergabe: Pause mit Hinweis', () async {
     await repo.setWifiOnly(true);
     await controller.playFolder(album, startPath: ebbe);
