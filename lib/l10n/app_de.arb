@@ -557,6 +557,23 @@
   "shareLinksFooter": "Quelle: SYNO.FileStation.Sharing list. Ablauf oder Passwort ändern geht über Link neu erstellen.",
   "passwordBadge": "Passwort",
   "cleanUp": "Aufräumen",
+  "shareLinkDeleteConfirm": "Freigabelink für „{name}“ löschen?",
+  "@shareLinkDeleteConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "shareLinksCleanUpConfirm": "{count, plural, =1{1 abgelaufenen Link löschen?} other{{count} abgelaufene Links löschen?}}",
+  "@shareLinksCleanUpConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shareLinkDeleteHint": "Der Link funktioniert danach nicht mehr. Die Dateien auf dem NAS bleiben erhalten.",
   "trashTitle": "Papierkorb",
   "trashEmptyAction": "Leeren",
   "trashChecking": "Prüfe Papierkörbe …",

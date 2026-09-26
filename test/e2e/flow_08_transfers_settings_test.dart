@@ -176,11 +176,16 @@ void main() {
     expect(app.location, '/settings/shares');
     expect(find.text(l10n.shareLinksCount(1, 0)), findsOneWidget);
 
+    // Löschen erst nach Bestätigung (E2E-035).
     await app.tapThen(
       find.byTooltip(l10n.actionDelete),
+      find.text(l10n.shareLinkDeleteConfirm('booklet.pdf')),
+    );
+    expect(app.nas.calls('SYNO.FileStation.Sharing', 'delete'), isEmpty);
+    await app.tapThen(
+      find.widgetWithText(FilledButton, l10n.actionDeleteShort),
       find.text(l10n.shareLinksEmpty),
     );
-    // E2E-Finding: E2E-035 – Löschen ohne Bestätigungsdialog.
     expect(app.nas.calls('SYNO.FileStation.Sharing', 'delete'), hasLength(1));
 
     await app.backButton();

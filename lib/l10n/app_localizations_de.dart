@@ -840,6 +840,26 @@ class AppLocalizationsDe extends AppLocalizations {
   String get cleanUp => 'Aufräumen';
 
   @override
+  String shareLinkDeleteConfirm(String name) {
+    return 'Freigabelink für „$name“ löschen?';
+  }
+
+  @override
+  String shareLinksCleanUpConfirm(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count abgelaufene Links löschen?',
+      one: '1 abgelaufenen Link löschen?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get shareLinkDeleteHint =>
+      'Der Link funktioniert danach nicht mehr. Die Dateien auf dem NAS bleiben erhalten.';
+
+  @override
   String get trashTitle => 'Papierkorb';
 
   @override
